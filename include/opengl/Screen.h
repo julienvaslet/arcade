@@ -1,5 +1,5 @@
-#ifndef _GRAPHICS_SCREEN_H
-#define	_GRAPHICS_SCREEN_H	1
+#ifndef __OPENGL_SCREEN_H
+#define	__OPENGL_SCREEN_H	1
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>

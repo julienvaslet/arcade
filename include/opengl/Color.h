@@ -1,5 +1,5 @@
-#ifndef __GRAPHICS_COLOR_H
-#define __GRAPHICS_COLOR_H	1
+#ifndef __OPENGL_COLOR_H
+#define __OPENGL_COLOR_H	1
 
 #include <string>
 using namespace std;
