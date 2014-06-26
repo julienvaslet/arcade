@@ -10,18 +10,18 @@ namespace opengl
 {
 	Screen * Screen::instance = NULL;
 
-	Screen::Screen() : window(NULL), renderer(NULL)
+	Screen::Screen() : window(NULL), context(NULL)
 	{
 	}
 
 	Screen::~Screen()
 	{
-		if( this->renderer != NULL )
+		if( this->context != NULL )
 		{	
-			SDL_DestroyRenderer( this->renderer );
+			SDL_GL_DeleteContext( this->context );
 		
 			#ifdef DEBUG0
-			cout << "[Screen] Renderer destroyed." << endl;
+			cout << "[Screen] Context destroyed." << endl;
 			#endif
 		}
 		
@@ -58,7 +58,7 @@ namespace opengl
 			SDL_WINDOWPOS_CENTERED,
 			width,
 			height,
-			( width == 0 || height == 0 ) ? SDL_WINDOW_FULLSCREEN : ( resizable ? SDL_WINDOW_RESIZABLE : 0 )
+			( width == 0 || height == 0 ) ? SDL_WINDOW_FULLSCREEN : ( resizable ? SDL_WINDOW_RESIZABLE : 0 ) | SDL_WINDOW_OPENGL
 		);
 	
 		// do no specify width & height and put in fullscreen
@@ -79,12 +79,12 @@ namespace opengl
 			cout << "[Screen] Window created." << endl;
 			#endif
 		
-			screen->renderer = SDL_CreateRenderer( screen->window, -1, 0 );
+			screen->context = SDL_GL_CreateContext( screen->window );
 	
-			if( screen->renderer == NULL )
+			if( screen->context == NULL )
 			{
 				#ifdef DEBUG0
-				cout << "[Screen] Unable to create the renderer: " << SDL_GetError() << endl;
+				cout << "[Screen] Unable to create the context: " << SDL_GetError() << endl;
 				#endif
 		
 				success = false;
@@ -93,7 +93,7 @@ namespace opengl
 			else
 			{
 				#ifdef DEBUG0
-				cout << "[Screen] Renderer created." << endl;
+				cout << "[Screen] Context created." << endl;
 				#endif
 			
 				screen->clear();
@@ -121,60 +121,61 @@ namespace opengl
 		SDL_Quit();
 	}
 
-	SDL_Renderer * Screen::getRenderer()
+	SDL_GLContext Screen::getContext()
 	{
-		return this->renderer;
+		return this->context;
 	}
 
 	void Screen::clear()
 	{
-		this->resetRenderColor();
-		SDL_RenderClear( this->renderer );
+		//this->resetRenderColor();
+		glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+		glClear( GL_COLOR_BUFFER_BIT );
 	}
 
 	void Screen::render()
 	{
-		SDL_RenderPresent( this->renderer );
+		SDL_GL_SwapWindow( this->window );
 	}
 	
 	void Screen::resetRenderColor()
 	{
-		SDL_SetRenderDrawColor( this->renderer, 0, 0, 0, 255 );
+		//SDL_SetRenderDrawColor( this->renderer, 0, 0, 0, 255 );
 	}
 	
 	void Screen::setRenderColor( const Color& color )
 	{
-		SDL_SetRenderDrawColor( this->renderer, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
+		//SDL_SetRenderDrawColor( this->renderer, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
 	}
 	
 	int Screen::getWidth()
 	{
 		int width = 0;
-		int height = 0;
+		//int height = 0;
 		
-		if( SDL_GetRendererOutputSize( this->renderer, &width, &height ) != 0 )
+		/*if( SDL_GetRendererOutputSize( this->renderer, &width, &height ) != 0 )
 		{
 			width = 0;
 			#ifdef DEBUG0
 			cout << "[Screen] An error has occured when output size was requested: " << SDL_GetError() << endl;
 			#endif
-		}
+		}*/
 		
 		return width;
 	}
 	
 	int Screen::getHeight()
 	{
-		int width = 0;
+		//int width = 0;
 		int height = 0;
-		
+		/*
 		if( SDL_GetRendererOutputSize( this->renderer, &width, &height ) != 0 )
 		{
 			height = 0;
 			#ifdef DEBUG0
 			cout << "[Screen] An error has occured when output size was requested: " << SDL_GetError() << endl;
 			#endif
-		}
+		}*/
 		
 		return height;
 	}

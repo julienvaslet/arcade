@@ -1,11 +1,5 @@
 #include <SDL2/SDL.h>
 #include <iostream>
-#include <sstream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <set>
-#include <map>
 
 #include <opengl/Screen.h>
 

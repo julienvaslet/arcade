@@ -2,6 +2,7 @@
 #define	_GRAPHICS_SCREEN_H	1
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
 #include <opengl/Color.h>
 
 namespace opengl
@@ -12,7 +13,7 @@ namespace opengl
 			static Screen * instance;
 		
 			SDL_Window * window;
-			SDL_Renderer * renderer;
+			SDL_GLContext context;
 		
 			Screen();
 			~Screen();
@@ -22,7 +23,7 @@ namespace opengl
 			static Screen * get();
 			static void destroy();
 		
-			SDL_Renderer * getRenderer();
+			SDL_GLContext getContext();
 			void resetRenderColor();
 			void setRenderColor( const Color& color );
 			void render();
