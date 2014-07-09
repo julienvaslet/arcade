@@ -1,21 +1,21 @@
 #include <opengl/Color.h>
+
 #include <sstream>
 #include <cstdlib>
-
-#include <iostream> 
+#include <iostream>
 using namespace std;
 
 namespace opengl
 {
-	Color::Color() : red(0), green(0), blue(0), alpha(255)
+	Color::Color( float red, float green, float blue, float alpha ) : red(red), green(green), blue(blue), alpha(alpha)
 	{
 	}
 	
-	Color::Color( unsigned char r, unsigned char g, unsigned char b, unsigned char a ) : red(r), green(g), blue(b), alpha(a)
+	Color::Color( const Color& color ) : red(color.red), green(color.green), blue(color.blue), alpha(color.alpha)
 	{
 	}
 	
-	Color::Color( const string& hexstring ) : red(0), green(0), blue(0), alpha(255)
+	Color::Color( const string& hexstring ) : red(0.0f), green(0.0f), blue(0.0f), alpha(1.0f)
 	{
 		this->parseHexString( hexstring );
 	}
@@ -28,31 +28,56 @@ namespace opengl
 	{		
 		if( hexstring.length() >= 6 )
 		{
-			this->red = static_cast<unsigned char>( strtol( hexstring.substr( 0, 2 ).c_str(), 0, 16 ) );
-			this->green = static_cast<unsigned char>( strtol( hexstring.substr( 2, 2 ).c_str(), 0, 16 ) );
-			this->blue = static_cast<unsigned char>( strtol( hexstring.substr( 4, 2 ).c_str(), 0, 16 ) );
+			this->red = static_cast<float>( strtol( hexstring.substr( 0, 2 ).c_str(), 0, 16 ) ) / 255.0f;
+			this->green = static_cast<float>( strtol( hexstring.substr( 2, 2 ).c_str(), 0, 16 ) ) / 255.0f;
+			this->blue = static_cast<float>( strtol( hexstring.substr( 4, 2 ).c_str(), 0, 16 ) ) / 255.0f;
 			
 			if( hexstring.length() >= 8 )
-				this->alpha = static_cast<unsigned char>( strtol( hexstring.substr( 6, 2 ).c_str(), 0, 16 ) );
+				this->alpha = static_cast<float>( strtol( hexstring.substr( 6, 2 ).c_str(), 0, 16 ) ) / 255.0f;
 		}
 	}
 	
-	unsigned char Color::getRed() const
+	void Color::setRed( float red )
+	{
+		this->red = red;
+	}
+	
+	void Color::setGreen( float green )
+	{
+		this->green = green;
+	}
+	
+	void Color::setBlue( float blue )
+	{
+		this->blue = blue;
+	}
+	
+	void Color::setAlpha( float alpha )
+	{
+		this->alpha = alpha;
+	}
+	
+	void Color::setColor( const string& hexstring )
+	{
+		this->parseHexString( hexstring );
+	}
+	
+	float Color::getRed() const
 	{
 		return this->red;
 	}
 	
-	unsigned char Color::getGreen() const
+	float Color::getGreen() const
 	{
 		return this->green;
 	}
-	
-	unsigned char Color::getBlue() const
+
+	float Color::getBlue() const
 	{
 		return this->blue;
 	}
 	
-	unsigned char Color::getAlpha() const
+	float Color::getAlpha() const
 	{
 		return this->alpha;
 	}
@@ -61,36 +86,11 @@ namespace opengl
 	{
 		stringstream ss;
 		ss.setf( std::ios::hex, std::ios::basefield );
-		ss << static_cast<int>( this->red ) << static_cast<int>( this->green ) << static_cast<int>( this->blue );
+		ss << static_cast<int>( this->red * 255.0f ) << static_cast<int>( this->green * 255.0f ) << static_cast<int>( this->blue * 255.0f );
 		
 		if( printAlpha )
 			ss << static_cast<int>( this->alpha );
 		
 		return ss.str();
-	}
-	
-	void Color::setRed( unsigned char r )
-	{
-		this->red = r;
-	}
-	
-	void Color::setGreen( unsigned char g )
-	{
-		this->green = g;
-	}
-	
-	void Color::setBlue( unsigned char b )
-	{
-		this->blue = b;
-	}
-	
-	void Color::setAlpha( unsigned char a )
-	{
-		this->alpha = a;
-	}
-	
-	void Color::setColor( const string& hexstring )
-	{
-		this->parseHexString( hexstring );
 	}
 }
