@@ -5,6 +5,7 @@
 #define GL_GLEXT_PROTOTYPES
 #include <opengl/Screen.h>
 #include <opengl/OpenGL.h>
+#include <opengl/Camera.h>
 #include <opengl/ArrayBufferObject.h>
 #include <opengl/Point.h>
 #include <opengl/Color.h>
@@ -46,7 +47,7 @@ int main( int argc, char ** argv )
 	ArrayBufferObject * cbo = new ArrayBufferObject();
 	cbo->setData( m_colors );
 	
-	Matrix projectionMatrix = Matrix::perspective( 45.0f, 800.0f / 600.0f, 1.0f, 100.0f );
+	Camera camera;
 
 	while( running )
 	{
@@ -62,8 +63,8 @@ int main( int argc, char ** argv )
 				
 				case SDL_KEYDOWN:
 				{
-		            if (lastEvent.key.keysym.sym == SDLK_ESCAPE)
-		                running = false;
+		            if( lastEvent.key.keysym.sym == SDLK_ESCAPE )
+						running = false;
 		                
 		            else if( lastEvent.key.keysym.sym == SDLK_SPACE )
 		            {
@@ -86,19 +87,19 @@ int main( int argc, char ** argv )
 		{
 			Screen::get()->clear();
 			
-			glMatrixMode( GL_PROJECTION );
-			
 			if( customMatrix )
 			{
-				glLoadMatrixf( projectionMatrix.get() );
+				camera.setPerspective( 45.0f, 800.0f / 600.0f, 1.0f, 100.0f );
 			}
 			else
 			{
+				glMatrixMode( GL_PROJECTION );
 				glLoadIdentity();
 				gluPerspective( 45.0f, 800.0f / 600.0f, 1.0f, 100.0f );
 			}
 			
 			glMatrixMode( GL_MODELVIEW );
+			camera.look();
 			
 			glBindBuffer( GL_ARRAY_BUFFER, cbo->getBuffer() );
 			glColorPointer( 4, GL_FLOAT, 0, 0 );

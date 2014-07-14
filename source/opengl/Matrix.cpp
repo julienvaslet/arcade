@@ -1,7 +1,10 @@
 #include <opengl/Matrix.h>
 #include <opengl/Vector.h>
+
+#include <SDL2/SDL.h>
 #include <cmath>
 #include <iostream>
+#include <GL/glu.h>
 
 namespace opengl
 {
@@ -79,6 +82,11 @@ namespace opengl
 		}
 	
 		this->set( result.get() );
+	}
+	
+	void Matrix::load() const
+	{
+		glLoadMatrixf( this->matrix );
 	}
 	
 	void Matrix::show() const

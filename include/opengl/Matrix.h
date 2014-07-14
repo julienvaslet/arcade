@@ -25,6 +25,7 @@ namespace opengl
 			void transpose();
 			void multiply( Matrix& matrix );
 			
+			void load() const;
 			void show() const;
 
 			static Matrix identity();

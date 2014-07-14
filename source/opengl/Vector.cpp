@@ -16,17 +16,17 @@ namespace opengl
 	{
 	}
 
-	float Vector::getX()
+	float Vector::getX() const
 	{
 		return this->x;
 	}
 	
-	float Vector::getY()
+	float Vector::getY() const
 	{
 		return this->y;
 	}
 	
-	float Vector::getZ()
+	float Vector::getZ() const
 	{
 		return this->z;
 	}

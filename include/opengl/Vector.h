@@ -18,9 +18,9 @@ namespace opengl
 			Vector( float x, float y, float z );
 			~Vector();
 		
-			float getX();
-			float getY();
-			float getZ();
+			float getX() const;
+			float getY() const;
+			float getZ() const;
 		
 			void show() const;
 		
