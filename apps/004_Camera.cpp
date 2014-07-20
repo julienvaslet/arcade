@@ -7,6 +7,7 @@
 #include <opengl/OpenGL.h>
 #include <opengl/Camera.h>
 #include <opengl/ArrayBufferObject.h>
+#include <opengl/ElementArrayBufferObject.h>
 #include <opengl/Point.h>
 #include <opengl/Color.h>
 #include <opengl/Matrix.h>
@@ -114,6 +115,9 @@ int main( int argc, char ** argv )
 	
 	ArrayBufferObject * cbo = new ArrayBufferObject();
 	cbo->setData( m_colors );
+	
+	ElementArrayBufferObject * ibo = new ElementArrayBufferObject();
+	ibo->setData( m_indices );
 	
 	Camera camera;
 	camera.getEye().moveTo( 0.0f, 1.25f, 4.0f );
@@ -275,7 +279,26 @@ int main( int argc, char ** argv )
 			// Render with Vertex Arrays
 			glEnableClientState( GL_COLOR_ARRAY );
 			glEnableClientState( GL_VERTEX_ARRAY );
-			glDrawElements( GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, m_indices.data() );
+			
+			ibo->draw();
+			
+			glPushMatrix();
+			
+			if( customMatrix )
+				glMultMatrixf( Matrix::translation( 2.0f, 0.0f, 1.0f ).get() );
+			else
+				glTranslatef( 2.0f, 0.0f, 1.0f );
+			ibo->draw();
+			
+			glPopMatrix();
+			
+			if( customMatrix )
+				glMultMatrixf( Matrix::translation( -2.0f, 0.0f, -1.0f ).get() );
+			else
+				glTranslatef( -2.0f, 0.0f, -1.0f );
+				
+			ibo->draw();
+			
 			glDisableClientState( GL_VERTEX_ARRAY );
 			glDisableClientState( GL_COLOR_ARRAY );
 			
@@ -285,6 +308,7 @@ int main( int argc, char ** argv )
 		}
 	}
 
+	delete ibo;
 	delete cbo;
 	delete vbo;
 	Screen::destroy();
