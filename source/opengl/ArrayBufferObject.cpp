@@ -49,4 +49,16 @@ namespace opengl
 		
 		this->setData( colors, frequency, access );
 	}
+	
+	void ArrayBufferObject::bindColorPointer( unsigned int stride )
+	{
+		this->bind();
+		glColorPointer( 4, GL_FLOAT, stride, 0 );
+	}
+	
+	void ArrayBufferObject::bindVertexPointer( unsigned int stride )
+	{
+		this->bind();
+		glVertexPointer( 3, GL_FLOAT, stride, 0 );
+	}
 }

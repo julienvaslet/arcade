@@ -269,11 +269,8 @@ int main( int argc, char ** argv )
 			
 			glColor3f( 1.0f, 1.0f, 1.0f );
 			
-			glBindBuffer( GL_ARRAY_BUFFER, cbo->getBuffer() );
-			glColorPointer( 4, GL_FLOAT, 0, 0 );
-			
-			glBindBuffer( GL_ARRAY_BUFFER, vbo->getBuffer() );
-			glVertexPointer( 3, GL_FLOAT, 0, 0 );
+			cbo->bindColorPointer();
+			vbo->bindVertexPointer();
 			
 			// Render with Vertex Arrays
 			glEnableClientState( GL_COLOR_ARRAY );
