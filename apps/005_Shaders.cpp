@@ -1,6 +1,11 @@
 #include <SDL2/SDL.h>
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
 #include <vector>
+
+#include <tools/logger/Stdout.h>
 
 #define GL_GLEXT_PROTOTYPES
 #include <opengl/Screen.h>
@@ -11,24 +16,36 @@
 #include <opengl/Point.h>
 #include <opengl/Color.h>
 #include <opengl/Matrix.h>
+#include <opengl/Program.h>
 
 #include <GL/glu.h>
 
 using namespace opengl;
 using namespace std;
+using namespace tools::logger;
 
 int main( int argc, char ** argv )
 {
+	// Initialize standard-output logger
+	new Stdout( "stdout", true );
+	
 	if( !Screen::initialize( "005 - Shaders" ) )
 	{
-		cout << "Unable to initialize screen. Exiting." << endl;
+		Logger::get() << "Unable to initialize screen. Exiting.\n";
 		return 1;
 	}
+	
+	
+	/* Should check if shader's extensions are available.
+	if( !OpenGL::hasExtension( ) )
+	{
+		cout << "OpenGL .. extensions is not available. Exiting." << endl;
+	}*/
 	
 	bool running = true;
 	SDL_Event lastEvent;
 	unsigned int lastDrawTicks = 0;
-	bool customMatrix = false;
+	bool useShaders = true;
 	
 	float yRotation = 0.0f;
 	unsigned int lastRotateTicks = 0;
@@ -36,6 +53,98 @@ int main( int argc, char ** argv )
 	bool cameraOrtho = false;
 	bool cameraPerspective = true;
 	bool cameraFrustum = false;
+	
+	// Shaders initialization
+	GLint compileResult;
+	string shaderStringSrc;
+	const char * shaderSrc;
+	
+	Program * program = new Program();
+	
+	GLuint vertexShader = glCreateShader( GL_VERTEX_SHADER );
+	stringstream srcVertexShader;
+	ifstream vertexFile( "data/shaders/vertex.vs" );
+	if( vertexFile.is_open() )
+	{
+		srcVertexShader << vertexFile.rdbuf();
+		vertexFile.close();
+	}
+	else
+		cout << "Unable to open vertex shader source." << endl;
+	
+	shaderStringSrc = srcVertexShader.str();
+	shaderSrc = shaderStringSrc.c_str();
+	glShaderSource( vertexShader, 1, &shaderSrc, NULL );
+	glCompileShader( vertexShader );
+	glGetShaderiv( vertexShader, GL_COMPILE_STATUS, &compileResult );
+	
+	if( compileResult == GL_TRUE )
+		cout << "Vertex shader compilation is ok." << endl;
+	else
+	{
+		cout << "Vertex shader compilation problem!" << endl;
+		GLint infoLogLength = 0;
+		glGetShaderiv( vertexShader, GL_INFO_LOG_LENGTH, &infoLogLength );
+		string infoLog( infoLogLength, ' ' );
+		glGetShaderInfoLog( vertexShader, infoLogLength, &infoLogLength, &infoLog[0] );
+		cout << infoLog << endl;
+		cout << shaderSrc << endl;
+	}
+	
+	shaderSrc = NULL;
+	
+	GLuint fragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
+	stringstream srcFragmentShader;
+	ifstream fragmentFile( "data/shaders/fragment.fs" );
+	if( fragmentFile.is_open() )
+	{
+		srcFragmentShader << fragmentFile.rdbuf();
+		fragmentFile.close();
+	}
+	else
+		cout << "Unable to open fragment shader source." << endl;
+		
+	shaderStringSrc = srcFragmentShader.str();
+	shaderSrc = shaderStringSrc.c_str();
+	glShaderSource( fragmentShader, 1, &shaderSrc, NULL );
+	glCompileShader( fragmentShader );
+	glGetShaderiv( fragmentShader, GL_COMPILE_STATUS, &compileResult );
+	
+	if( compileResult == GL_TRUE )
+		cout << "Fragment shader compilation is ok." << endl;
+	else
+	{
+		cout << "Fragment shader compilation problem!" << endl;
+		
+		GLint infoLogLength = 0;
+		glGetShaderiv( fragmentShader, GL_INFO_LOG_LENGTH, &infoLogLength );
+		string infoLog( infoLogLength, ' ' );
+		glGetShaderInfoLog( vertexShader, infoLogLength, &infoLogLength, &infoLog[0] );
+		cout << infoLog << endl;
+		cout << shaderSrc << endl;
+	}
+	
+	shaderSrc = NULL;
+
+	// check?
+	glAttachShader( program->getId(), vertexShader );
+	glAttachShader( program->getId(), fragmentShader );
+	
+	// This could be auto-done by OpenGL after linking with glGetAttribLocation...
+	glBindAttribLocation( program->getId(), 0, "a_Vertex" );
+	glBindAttribLocation( program->getId(), 1, "a_Color" );
+	
+	program->link();
+	
+	GLuint modelviewUniform = glGetUniformLocation( program->getId(), "modelview_matrix" );
+	GLuint projectionUniform = glGetUniformLocation( program->getId(), "projection_matrix" );
+		
+	glDeleteShader( vertexShader );
+	glDeleteShader( fragmentShader );
+	
+	program->use();
+	glEnableVertexAttribArray( 0 );
+	glEnableVertexAttribArray( 1 );
 
 	// Generating points
 	vector<Point> m_points;
@@ -126,7 +235,7 @@ int main( int argc, char ** argv )
 	glEnable( GL_DEPTH_TEST );
 	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	
-	cout << "Press [SPACE] to switch between custom and OpenGL camera and matrices management." << endl;
+	cout << "Press [SPACE] to switch between rendering with or without shaders." << endl;
 	cout << "Press [F1], [F2], [F3] to switch between, respectively, perspective view, orthogonal view and frustum view." << endl;
 	cout << "Press arrow keys to move the box." << endl;
 
@@ -149,12 +258,18 @@ int main( int argc, char ** argv )
 		                
 		            else if( lastEvent.key.keysym.sym == SDLK_SPACE )
 		            {
-		            	customMatrix = !customMatrix;
+		            	useShaders = !useShaders;
 		            	
-		            	if( customMatrix )
-		            		cout << "Using custom matrices." << endl;
+		            	if( useShaders )
+		            	{
+		            		cout << "Using shaders." << endl;
+		            		program->use();
+		            	}
 		            	else
-		            		cout << "Using OpenGL matrices." << endl;
+		            	{
+		            		cout << "Stop using shaders." << endl;
+		            		glUseProgram( 0 );
+		            	}
 		            }
 		            else if( lastEvent.key.keysym.sym == SDLK_F1 )
 		            {
@@ -221,97 +336,103 @@ int main( int argc, char ** argv )
 		
 		if( ticks - lastDrawTicks > 15 )
 		{
+			float projection[16];
+			float modelview[16];
 			Screen::get()->clear();
 			
-			if( customMatrix )
+			if( cameraPerspective )
 			{
-				if( cameraPerspective )
-				{
-					camera.setPerspective( 45.0f, 800.0f / 600.0f, 1.0f, 100.0f );
-				}
-				else if( cameraOrtho )
-				{
-					camera.setOrthogonal( -2.5f, 2.5f, -1.88f, 1.88f, 1.0f, 100.0f );
-				}
-				else if( cameraFrustum )
-				{
-					camera.setFrustum( -1.25f, 1.25f, -0.89f, 0.89f, 1.0f, 100.0f );
-				}
+				camera.setPerspective( 45.0f, 800.0f / 600.0f, 1.0f, 100.0f );
 			}
-			else
+			else if( cameraOrtho )
 			{
-				glMatrixMode( GL_PROJECTION );
-				glLoadIdentity();
-				
-				if( cameraPerspective )
-				{
-					gluPerspective( 45.0f, 800.0f / 600.0f, 1.0f, 100.0f );
-				}
-				else if( cameraOrtho )
-				{
-					glOrtho( -2.5f, 2.5f, -1.88f, 1.88f, 1.0f, 100.0f );
-				}
-				else if( cameraFrustum )
-				{
-					glFrustum( -1.25f, 1.25f, -0.89f, 0.89f, 1.0f, 100.0f );
-				}
+				camera.setOrthogonal( -2.5f, 2.5f, -1.88f, 1.88f, 1.0f, 100.0f );
+			}
+			else if( cameraFrustum )
+			{
+				camera.setFrustum( -1.25f, 1.25f, -0.89f, 0.89f, 1.0f, 100.0f );
 			}
 			
 			glMatrixMode( GL_MODELVIEW );
 			camera.look();
+
+			glMultMatrixf( Matrix::translation( camera.getCenter().getX(), camera.getCenter().getY(), camera.getCenter().getZ() ).get() );
+			glMultMatrixf( Matrix::rotationY( yRotation ).get() );
 			
-			if( customMatrix )
+			if( useShaders )
 			{
-				glMultMatrixf( Matrix::translation( camera.getCenter().getX(), camera.getCenter().getY(), camera.getCenter().getZ() ).get() );
-				glMultMatrixf( Matrix::rotationY( yRotation ).get() );
-			}
-			else
-			{
-				glTranslatef( camera.getCenter().getX(), camera.getCenter().getY(), camera.getCenter().getZ() );
-				glRotatef( yRotation, 0.0f, 1.0f, 0.0 );
-			}
-			
-			glColor3f( 1.0f, 1.0f, 1.0f );
-			
-			cbo->bindColorPointer();
-			vbo->bindVertexPointer();
-			
-			// Render with Vertex Arrays
-			glEnableClientState( GL_COLOR_ARRAY );
-			glEnableClientState( GL_VERTEX_ARRAY );
-			
-			ibo->draw();
-			
-			glPushMatrix();
-			
-			if( customMatrix )
-				glMultMatrixf( Matrix::translation( 2.0f, 0.0f, 1.0f ).get() );
-			else
-				glTranslatef( 2.0f, 0.0f, 1.0f );
-			ibo->draw( 0, 24 );
-			
-			glPopMatrix();
-			
-			if( customMatrix )
-				glMultMatrixf( Matrix::translation( -2.0f, 0.0f, -1.0f ).get() );
-			else
-				glTranslatef( -2.0f, 0.0f, -1.0f );
+				glGetFloatv( GL_MODELVIEW_MATRIX, modelview );
+				glUniformMatrix4fv( modelviewUniform, 1, GL_FALSE, modelview );
 				
-			ibo->draw( 0, 12 );
-			
-			glDisableClientState( GL_VERTEX_ARRAY );
-			glDisableClientState( GL_COLOR_ARRAY );
+				glGetFloatv( GL_PROJECTION_MATRIX, projection );
+				glUniformMatrix4fv( projectionUniform, 1, GL_FALSE, projection );
+				
+				glBindBuffer( GL_ARRAY_BUFFER, vbo->getBuffer() );
+				glVertexAttribPointer( (GLint) 0, 3, GL_FLOAT, GL_FALSE, 0, 0 );
+				
+				glBindBuffer( GL_ARRAY_BUFFER, cbo->getBuffer() );
+				glVertexAttribPointer( (GLint) 1, 4, GL_FLOAT, GL_FALSE, 0, 0 );
+				
+				ibo->draw();
+		
+				glMultMatrixf( Matrix::translation( -1 * camera.getCenter().getX(), -1 * camera.getCenter().getY(), -1 * camera.getCenter().getZ() ).get() );
+				glPushMatrix();
+				glMultMatrixf( Matrix::translation( 2.0f, 0.0f, 1.0f ).get() );
+				
+				glGetFloatv( GL_MODELVIEW_MATRIX, modelview );
+				glUniformMatrix4fv( modelviewUniform, 1, GL_FALSE, modelview );
+				
+				ibo->draw( 0, 24 );
+		
+				glPopMatrix();
+				glMultMatrixf( Matrix::translation( -2.0f, 0.0f, -1.0f ).get() );
+				
+				glGetFloatv( GL_MODELVIEW_MATRIX, modelview );
+				glUniformMatrix4fv( modelviewUniform, 1, GL_FALSE, modelview );
+				
+				ibo->draw( 0, 12 );
+			}
+			else
+			{
+				glColor3f( 1.0f, 1.0f, 1.0f );
+				
+				cbo->bindColorPointer();
+				vbo->bindVertexPointer();
+		
+				// Render with Vertex Arrays
+				glEnableClientState( GL_COLOR_ARRAY );
+				glEnableClientState( GL_VERTEX_ARRAY );
+		
+				ibo->draw();
+		
+				glPushMatrix();
+				glMultMatrixf( Matrix::translation( 2.0f, 0.0f, 1.0f ).get() );
+				
+				ibo->draw( 0, 24 );
+		
+				glPopMatrix();
+				glMultMatrixf( Matrix::translation( -2.0f, 0.0f, -1.0f ).get() );
+				
+				ibo->draw( 0, 12 );
+		
+				glDisableClientState( GL_VERTEX_ARRAY );
+				glDisableClientState( GL_COLOR_ARRAY );
+			}
 			
 			Screen::get()->render();
 			
 			lastDrawTicks = ticks;
 		}
 	}
+	
+	delete program;
 
 	delete ibo;
 	delete cbo;
 	delete vbo;
 	Screen::destroy();
+	
+	Logger::destroy();
 	
 	return 0;
 }
