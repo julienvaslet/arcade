@@ -4,6 +4,9 @@
 #define GL_GLEXT_PROTOTYPES
 #include <SDL2/SDL_opengl.h>
 
+#include <opengl/VertexShader.h>
+#include <opengl/FragmentShader.h>
+
 #include <string>
 #include <map>
 

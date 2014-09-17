@@ -60,9 +60,10 @@ int main( int argc, char ** argv )
 	const char * shaderSrc;
 	
 	Program * program = new Program();
+	VertexShader * vertexShader = new VertexShader();
+	vertexShader->load( "data/shader/vertex.vs" );
 	
-	GLuint vertexShader = glCreateShader( GL_VERTEX_SHADER );
-	stringstream srcVertexShader;
+	/*stringstream srcVertexShader;
 	ifstream vertexFile( "data/shaders/vertex.vs" );
 	if( vertexFile.is_open() )
 	{
@@ -89,7 +90,7 @@ int main( int argc, char ** argv )
 		glGetShaderInfoLog( vertexShader, infoLogLength, &infoLogLength, &infoLog[0] );
 		cout << infoLog << endl;
 		cout << shaderSrc << endl;
-	}
+	}*/
 	
 	shaderSrc = NULL;
 	
@@ -119,7 +120,7 @@ int main( int argc, char ** argv )
 		GLint infoLogLength = 0;
 		glGetShaderiv( fragmentShader, GL_INFO_LOG_LENGTH, &infoLogLength );
 		string infoLog( infoLogLength, ' ' );
-		glGetShaderInfoLog( vertexShader, infoLogLength, &infoLogLength, &infoLog[0] );
+		glGetShaderInfoLog( fragmentShader, infoLogLength, &infoLogLength, &infoLog[0] );
 		cout << infoLog << endl;
 		cout << shaderSrc << endl;
 	}
@@ -127,7 +128,7 @@ int main( int argc, char ** argv )
 	shaderSrc = NULL;
 
 	// check?
-	glAttachShader( program->getId(), vertexShader );
+	glAttachShader( program->getId(), vertexShader->getId() );
 	glAttachShader( program->getId(), fragmentShader );
 	
 	// This could be auto-done by OpenGL after linking with glGetAttribLocation...
@@ -139,7 +140,7 @@ int main( int argc, char ** argv )
 	GLuint modelviewUniform = glGetUniformLocation( program->getId(), "modelview_matrix" );
 	GLuint projectionUniform = glGetUniformLocation( program->getId(), "projection_matrix" );
 		
-	glDeleteShader( vertexShader );
+	glDeleteShader( vertexShader->getId() );
 	glDeleteShader( fragmentShader );
 	
 	program->use();

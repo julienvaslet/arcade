@@ -1,5 +1,5 @@
-#ifndef __OPENGL_VERTEXSHADER_H
-#define __OPENGL_VERTEXSHADER_H	1
+#ifndef __OPENGL_FRAGMENTSHADER_H
+#define __OPENGL_FRAGMENTSHADER_H	1
 
 #include <opengl/Shader.h>
 
@@ -10,13 +10,13 @@ using namespace std;
 
 namespace opengl
 {
-	class VertexShader : public Shader
+	class FragmentShader : public Shader
 	{
 		protected:
 			
 		public:
-			VertexShader();
-			virtual ~VertexShader();
+			FragmentShader();
+			virtual ~FragmentShader();
 			
 			virtual Shader::Type getShaderType() const;
 	};
