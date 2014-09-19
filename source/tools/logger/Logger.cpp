@@ -103,6 +103,83 @@ namespace tools
 			Logger::instances.clear();
 		}
 		
+		Logger& Logger::operator<<( bool value )
+		{
+			stringstream ss;
+			ss << value;
+			return (*this << ss.str());
+		}
+		
+		Logger& Logger::operator<<( char value )
+		{
+			stringstream ss;
+			ss << value;
+			return (*this << ss.str());
+		}
+		
+		Logger& Logger::operator<<( short value )
+		{
+			stringstream ss;
+			ss << value;
+			return (*this << ss.str());
+		}
+		
+		Logger& Logger::operator<<( unsigned short value )
+		{
+			stringstream ss;
+			ss << value;
+			return (*this << ss.str());
+		}
+		
+		Logger& Logger::operator<<( int value )
+		{
+			stringstream ss;
+			ss << value;
+			return (*this << ss.str());
+		}
+		
+		Logger& Logger::operator<<( unsigned int value )
+		{
+			stringstream ss;
+			ss << value;
+			return (*this << ss.str());
+		}
+		
+		Logger& Logger::operator<<( long value )
+		{
+			stringstream ss;
+			ss << value;
+			return (*this << ss.str());
+		}
+		
+		Logger& Logger::operator<<( unsigned long value )
+		{
+			stringstream ss;
+			ss << value;
+			return (*this << ss.str());
+		}
+		
+		Logger& Logger::operator<<( float value )
+		{
+			stringstream ss;
+			ss << value;
+			return (*this << ss.str());
+		}
+		
+		Logger& Logger::operator<<( double value )
+		{
+			stringstream ss;
+			ss << value;
+			return (*this << ss.str());
+		}
+		
+		Logger& Logger::operator<<( const void * value )
+		{
+			stringstream ss;
+			ss << value;
+			return (*this << ss.str());
+		}
+		
 		Logger& Logger::operator<<( LoggerFunction func )
 		{
 			return func(*this);

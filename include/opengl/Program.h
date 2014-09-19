@@ -36,6 +36,10 @@ namespace opengl
 			string getInfoLog() const;
 			
 			unsigned int getId() const;
+			bool loadVertexShader( const string& filename );
+			bool loadFragmentShader( const string& filename );
+			
+			bool attachShader( Shader * shader, bool deleteShader = false );
 			bool link();
 			
 			void use();

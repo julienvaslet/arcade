@@ -1,6 +1,9 @@
 #ifndef __OPENGL_OPENGL_H
 #define __OPENGL_OPENGL_H	1
 
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+
 #include <string>
 #include <set>
 using namespace std;
@@ -24,6 +27,7 @@ namespace opengl
 			static const string& getVersion();
 			static const set<string>& getExtensions();
 			static bool hasExtension( const string& extension );
+			static GLenum getError();
 	};
 }
 

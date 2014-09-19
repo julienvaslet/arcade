@@ -1,5 +1,8 @@
 #include <opengl/Shader.h>
 
+#include <sstream>
+#include <fstream>
+
 #include <tools/logger/Logger.h>
 using namespace tools::logger;
 
@@ -10,7 +13,7 @@ namespace opengl
 		this->id = glCreateShader( static_cast<GLenum>( type ) );
 		
 		#ifdef DEBUG0
-		Logger::get() << "[" << ( type == Shader::Vertex ? "Vertex" : ( type == Shader::Fragment ? "Fragment" : "" ) ) << "Shader#" << this->id << "] Created." << Logger::endl;
+		Logger::get() << "[" << this->getShaderTypeString() << "#" << this->id << "] Created." << Logger::endl;
 		#endif
 	}
 	
@@ -26,17 +29,39 @@ namespace opengl
 		#endif
 	}
 	
+	string Shader::getShaderTypeString() const
+	{
+		string value = "";
+		Shader::Type type = this->getShaderType();
+		
+		switch( type )
+		{
+			case Shader::Vertex:
+				value = "VertexShader";
+				break;
+			
+			case Shader::Fragment:
+				value = "FragmentShader";
+				break;
+				
+			default:
+				value = "Shader";
+		}
+		
+		return value;
+	}
+	
 	bool Shader::getCompileStatus() const
 	{
 		GLint status;
-		glGetProgramiv( this->id, GL_COMPILE_STATUS, &status );
+		glGetShaderiv( this->id, GL_COMPILE_STATUS, &status );
 		return status == GL_TRUE;
 	}
 	
 	bool Shader::getDeleteStatus() const
 	{
 		GLint status;
-		glGetProgramiv( this->id, GL_DELETE_STATUS, &status );
+		glGetShaderiv( this->id, GL_DELETE_STATUS, &status );
 		return status == GL_TRUE;
 	}
 
@@ -74,13 +99,41 @@ namespace opengl
 		return this->id;
 	}
 	
-	bool Shader::load( const string& file )
+	bool Shader::load( const string& filename )
 	{
-		return false;
+		bool status = false;
+		
+		stringstream source;
+		ifstream shaderFile( filename.c_str() );
+		
+		if( shaderFile.is_open() )
+		{
+			source << shaderFile.rdbuf();
+			shaderFile.close();
+			
+			status = this->compile( source.str() );
+		}
+		#ifdef DEBUG1
+		else
+			Logger::get() << "[" << this->getShaderTypeString() << "#" << this->id << "] Unable to open file \"" << filename << "\"." << Logger::endl;
+		#endif
+			
+		return status;
 	}
 	
 	bool Shader::compile( const string& content )
 	{
-		return false;
+		const char * source = content.c_str();
+		glShaderSource( this->id, 1, &source, NULL );
+		glCompileShader( this->id );
+
+		#ifdef DEBUG1
+		if( this->getCompileStatus() )
+			Logger::get() << "[" << this->getShaderTypeString() << "#" << this->id << "] Successfuly compiled." << Logger::endl;
+		else
+			Logger::get() << "[" << this->getShaderTypeString() << "#" << this->id << "] Compilation error: " << this->getInfoLog() << Logger::endl;
+		#endif
+		
+		return this->getCompileStatus();
 	}
 }

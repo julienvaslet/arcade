@@ -11,14 +11,6 @@ namespace opengl
 	
 	VertexShader::~VertexShader()
 	{
-		glDeleteShader( this->id );
-		
-		#ifdef DEBUG0
-		if( this->getDeleteStatus() )
-			Logger::get() << "[VertexShader#" << this->id << "] Deleted." << Logger::endl;
-		else
-			Logger::get() << "[VertexShader#" << this->id << "] Could not be marked for deletion." << Logger::endl;
-		#endif
 	}
 	
 	Shader::Type VertexShader::getShaderType() const

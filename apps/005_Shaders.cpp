@@ -1,6 +1,5 @@
 #include <SDL2/SDL.h>
 #include <iostream>
-#include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -55,81 +54,9 @@ int main( int argc, char ** argv )
 	bool cameraFrustum = false;
 	
 	// Shaders initialization
-	GLint compileResult;
-	string shaderStringSrc;
-	const char * shaderSrc;
-	
 	Program * program = new Program();
-	VertexShader * vertexShader = new VertexShader();
-	vertexShader->load( "data/shader/vertex.vs" );
-	
-	/*stringstream srcVertexShader;
-	ifstream vertexFile( "data/shaders/vertex.vs" );
-	if( vertexFile.is_open() )
-	{
-		srcVertexShader << vertexFile.rdbuf();
-		vertexFile.close();
-	}
-	else
-		cout << "Unable to open vertex shader source." << endl;
-	
-	shaderStringSrc = srcVertexShader.str();
-	shaderSrc = shaderStringSrc.c_str();
-	glShaderSource( vertexShader, 1, &shaderSrc, NULL );
-	glCompileShader( vertexShader );
-	glGetShaderiv( vertexShader, GL_COMPILE_STATUS, &compileResult );
-	
-	if( compileResult == GL_TRUE )
-		cout << "Vertex shader compilation is ok." << endl;
-	else
-	{
-		cout << "Vertex shader compilation problem!" << endl;
-		GLint infoLogLength = 0;
-		glGetShaderiv( vertexShader, GL_INFO_LOG_LENGTH, &infoLogLength );
-		string infoLog( infoLogLength, ' ' );
-		glGetShaderInfoLog( vertexShader, infoLogLength, &infoLogLength, &infoLog[0] );
-		cout << infoLog << endl;
-		cout << shaderSrc << endl;
-	}*/
-	
-	shaderSrc = NULL;
-	
-	GLuint fragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
-	stringstream srcFragmentShader;
-	ifstream fragmentFile( "data/shaders/fragment.fs" );
-	if( fragmentFile.is_open() )
-	{
-		srcFragmentShader << fragmentFile.rdbuf();
-		fragmentFile.close();
-	}
-	else
-		cout << "Unable to open fragment shader source." << endl;
-		
-	shaderStringSrc = srcFragmentShader.str();
-	shaderSrc = shaderStringSrc.c_str();
-	glShaderSource( fragmentShader, 1, &shaderSrc, NULL );
-	glCompileShader( fragmentShader );
-	glGetShaderiv( fragmentShader, GL_COMPILE_STATUS, &compileResult );
-	
-	if( compileResult == GL_TRUE )
-		cout << "Fragment shader compilation is ok." << endl;
-	else
-	{
-		cout << "Fragment shader compilation problem!" << endl;
-		
-		GLint infoLogLength = 0;
-		glGetShaderiv( fragmentShader, GL_INFO_LOG_LENGTH, &infoLogLength );
-		string infoLog( infoLogLength, ' ' );
-		glGetShaderInfoLog( fragmentShader, infoLogLength, &infoLogLength, &infoLog[0] );
-		cout << infoLog << endl;
-		cout << shaderSrc << endl;
-	}
-	
-	shaderSrc = NULL;
-
-	// check?
-	glAttachShader( program->getId(), vertexShader->getId() );
-	glAttachShader( program->getId(), fragmentShader );
+	program->loadVertexShader( "data/shaders/vertex.vs" );
+	program->loadFragmentShader( "data/shaders/fragment.fs" );
 	
 	// This could be auto-done by OpenGL after linking with glGetAttribLocation...
 	glBindAttribLocation( program->getId(), 0, "a_Vertex" );
@@ -139,9 +66,6 @@ int main( int argc, char ** argv )
 	
 	GLuint modelviewUniform = glGetUniformLocation( program->getId(), "modelview_matrix" );
 	GLuint projectionUniform = glGetUniformLocation( program->getId(), "projection_matrix" );
-		
-	glDeleteShader( vertexShader->getId() );
-	glDeleteShader( fragmentShader );
 	
 	program->use();
 	glEnableVertexAttribArray( 0 );
@@ -217,7 +141,7 @@ int main( int argc, char ** argv )
 	m_colors.push_back( Color( "ffff00" ) );
 	m_colors.push_back( Color( "00ffff" ) );
 	m_colors.push_back( Color( "ff00ff" ) );
-	m_colors.push_back( Color( "000000" ) );
+	m_colors.push_back( Color( "f0f0f0" ) );
 	m_colors.push_back( Color( "ffffff" ) );
 	
 	ArrayBufferObject * vbo = new ArrayBufferObject();

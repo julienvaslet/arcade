@@ -32,6 +32,17 @@ namespace tools
 				static Logger& endl( Logger& logger );
 			
 				virtual Logger& operator<<( const string& value ) = 0;
+				virtual Logger& operator<<( bool value );
+				virtual Logger& operator<<( char value );
+				virtual Logger& operator<<( short value );
+				virtual Logger& operator<<( unsigned short value );
+				virtual Logger& operator<<( int value );
+				virtual Logger& operator<<( unsigned int value );
+				virtual Logger& operator<<( long value );
+				virtual Logger& operator<<( unsigned long value );
+				virtual Logger& operator<<( float value );
+				virtual Logger& operator<<( double value );
+				virtual Logger& operator<<( const void * value );
 				
 				template<class T> Logger& operator<<( T& value )
 				{

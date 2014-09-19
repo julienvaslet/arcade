@@ -75,4 +75,9 @@ namespace opengl
 		set<string>::const_iterator it = OpenGL::getExtensions().find( extension );
 		return it != OpenGL::getExtensions().end();
 	}
+	
+	GLenum OpenGL::getError()
+	{
+		return glGetError();
+	}
 }

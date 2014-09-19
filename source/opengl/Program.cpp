@@ -1,4 +1,5 @@
 #include <opengl/Program.h>
+#include <opengl/OpenGL.h>
 
 #include <tools/logger/Logger.h>
 using namespace tools::logger;
@@ -100,6 +101,47 @@ namespace opengl
 	unsigned int Program::getId() const
 	{
 		return this->id;
+	}
+	
+	bool Program::loadVertexShader( const string& filename )
+	{
+		bool status = false;
+		
+		VertexShader * shader = new VertexShader();
+		if( shader->load( filename ) )
+			status = this->attachShader( shader, true );
+		
+		return status;
+	}
+	
+	bool Program::loadFragmentShader( const string& filename )
+	{
+		bool status = false;
+		
+		FragmentShader * shader = new FragmentShader();
+		if( shader->load( filename ) )
+			status = this->attachShader( shader, true );
+		
+		return status;
+	}
+	
+	bool Program::attachShader( Shader * shader, bool deleteShader )
+	{
+		bool status = true;
+		glAttachShader( this->id, shader->getId() );
+		status = (OpenGL::getError() == GL_NO_ERROR);
+		
+		#ifdef DEBUG0
+		if( status )
+			Logger::get() << "[Program#" << this->id << "] Shader#" << shader->getId() << " attached." << Logger::endl;
+		else
+			Logger::get() << "[Program#" << this->id << "] Could not attach Shader#" << shader->getId() << "." << Logger::endl;
+		#endif
+		
+		if( deleteShader )
+			delete shader;
+			
+		return status;
 	}
 	
 	bool Program::link()
