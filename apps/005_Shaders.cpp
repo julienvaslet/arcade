@@ -55,8 +55,8 @@ int main( int argc, char ** argv )
 	
 	// Shaders initialization
 	Program * program = new Program();
-	program->loadVertexShader( "data/shaders/vertex.vs" );
-	program->loadFragmentShader( "data/shaders/fragment.fs" );
+	program->loadVertexShaderFile( "data/shaders/vertex.vs" );
+	program->loadFragmentShaderFile( "data/shaders/fragment.fs" );
 	
 	// This could be auto-done by OpenGL after linking with glGetAttribLocation...
 	glBindAttribLocation( program->getId(), 0, "a_Vertex" );
