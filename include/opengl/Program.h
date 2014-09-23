@@ -18,7 +18,9 @@ namespace opengl
 	{
 		protected:
 			GLuint id;
-			map<string, GLuint> variables;
+			map<Shader::Type, GLuint> shaders;
+			map<string, GLuint> attributes;
+			map<string, GLuint> uniforms;
 			
 		public:
 			Program();
@@ -36,8 +38,10 @@ namespace opengl
 			string getInfoLog() const;
 			
 			unsigned int getId() const;
-			bool loadVertexShader( const string& filename );
-			bool loadFragmentShader( const string& filename );
+			bool loadVertexShaderFile( const string& filename );
+			bool loadFragmentShaderFile( const string& filename );
+			bool loadVertexShader( const string& source );
+			bool loadFragmentShader( const string& source );
 			
 			bool attachShader( Shader * shader, bool deleteShader = false );
 			bool link();
