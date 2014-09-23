@@ -103,7 +103,7 @@ namespace opengl
 		return this->id;
 	}
 	
-	bool Program::loadVertexShader( const string& filename )
+	bool Program::loadVertexShaderFile( const string& filename )
 	{
 		bool status = false;
 		
@@ -114,7 +114,7 @@ namespace opengl
 		return status;
 	}
 	
-	bool Program::loadFragmentShader( const string& filename )
+	bool Program::loadFragmentShaderFile( const string& filename )
 	{
 		bool status = false;
 		
@@ -125,8 +125,32 @@ namespace opengl
 		return status;
 	}
 	
+	bool Program::loadVertexShader( const string& source )
+	{
+		bool status = false;
+		
+		VertexShader * shader = new VertexShader();
+		if( shader->compile( source ) )
+			status = this->attachShader( shader, true );
+		
+		return status;
+	}
+	
+	bool Program::loadFragmentShader( const string& source )
+	{
+		bool status = false;
+		
+		FragmentShader * shader = new FragmentShader();
+		if( shader->compile( source ) )
+			status = this->attachShader( shader, true );
+		
+		return status;
+	}
+	
 	bool Program::attachShader( Shader * shader, bool deleteShader )
 	{
+		// TODO: integrate use of "shaders" map
+		
 		bool status = true;
 		glAttachShader( this->id, shader->getId() );
 		status = (OpenGL::getError() == GL_NO_ERROR);
