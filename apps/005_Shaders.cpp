@@ -59,17 +59,15 @@ int main( int argc, char ** argv )
 	program->loadFragmentShaderFile( "data/shaders/fragment.fs" );
 	
 	// This could be auto-done by OpenGL after linking with glGetAttribLocation...
-	glBindAttribLocation( program->getId(), 0, "a_Vertex" );
-	glBindAttribLocation( program->getId(), 1, "a_Color" );
+	program->bindAttribute( "a_Vertex", 0 );
+	program->bindAttribute( "a_Color", 1 );
 	
 	program->link();
 	
-	GLuint modelviewUniform = glGetUniformLocation( program->getId(), "modelview_matrix" );
-	GLuint projectionUniform = glGetUniformLocation( program->getId(), "projection_matrix" );
-	
 	program->use();
-	glEnableVertexAttribArray( 0 );
-	glEnableVertexAttribArray( 1 );
+
+	glEnableVertexAttribArray( program->getAttributeLocation( "a_Vertex" ) );
+	glEnableVertexAttribArray( program->getAttributeLocation( "a_Color" ) );
 
 	// Generating points
 	vector<Point> m_points;
@@ -261,8 +259,6 @@ int main( int argc, char ** argv )
 		
 		if( ticks - lastDrawTicks > 15 )
 		{
-			float projection[16];
-			float modelview[16];
 			Screen::get()->clear();
 			
 			if( cameraPerspective )
@@ -286,17 +282,11 @@ int main( int argc, char ** argv )
 			
 			if( useShaders )
 			{
-				glGetFloatv( GL_MODELVIEW_MATRIX, modelview );
-				glUniformMatrix4fv( modelviewUniform, 1, GL_FALSE, modelview );
+				program->sendProjectionMatrix( "projection_matrix" );
+				program->sendModelviewMatrix( "modelview_matrix" );
 				
-				glGetFloatv( GL_PROJECTION_MATRIX, projection );
-				glUniformMatrix4fv( projectionUniform, 1, GL_FALSE, projection );
-				
-				glBindBuffer( GL_ARRAY_BUFFER, vbo->getBuffer() );
-				glVertexAttribPointer( (GLint) 0, 3, GL_FLOAT, GL_FALSE, 0, 0 );
-				
-				glBindBuffer( GL_ARRAY_BUFFER, cbo->getBuffer() );
-				glVertexAttribPointer( (GLint) 1, 4, GL_FLOAT, GL_FALSE, 0, 0 );
+				program->sendVertexPointer( "a_Vertex", vbo );
+				program->sendColorPointer( "a_Color", cbo );
 				
 				ibo->draw();
 		
@@ -304,16 +294,14 @@ int main( int argc, char ** argv )
 				glPushMatrix();
 				glMultMatrixf( Matrix::translation( 2.0f, 0.0f, 1.0f ).get() );
 				
-				glGetFloatv( GL_MODELVIEW_MATRIX, modelview );
-				glUniformMatrix4fv( modelviewUniform, 1, GL_FALSE, modelview );
+				program->sendModelviewMatrix( "modelview_matrix" );
 				
 				ibo->draw( 0, 24 );
 		
 				glPopMatrix();
 				glMultMatrixf( Matrix::translation( -2.0f, 0.0f, -1.0f ).get() );
 				
-				glGetFloatv( GL_MODELVIEW_MATRIX, modelview );
-				glUniformMatrix4fv( modelviewUniform, 1, GL_FALSE, modelview );
+				program->sendModelviewMatrix( "modelview_matrix" );
 				
 				ibo->draw( 0, 12 );
 			}

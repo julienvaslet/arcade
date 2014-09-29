@@ -35,8 +35,8 @@ namespace opengl
 			string getInfoLog() const;
 			
 			unsigned int getId() const;
-			bool load( const string& filename );
-			bool compile( const string& content );
+			bool loadFile( const string& filename );
+			bool load( const string& source );
 	};
 }
 

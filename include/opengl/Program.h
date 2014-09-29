@@ -6,6 +6,8 @@
 
 #include <opengl/VertexShader.h>
 #include <opengl/FragmentShader.h>
+#include <opengl/Matrix.h>
+#include <opengl/ArrayBufferObject.h>
 
 #include <string>
 #include <map>
@@ -18,9 +20,8 @@ namespace opengl
 	{
 		protected:
 			GLuint id;
-			map<Shader::Type, GLuint> shaders;
-			map<string, GLuint> attributes;
-			map<string, GLuint> uniforms;
+			map<string, int> attributes;
+			map<string, GLint> uniforms;
 			
 		public:
 			Program();
@@ -44,7 +45,34 @@ namespace opengl
 			bool loadFragmentShader( const string& source );
 			
 			bool attachShader( Shader * shader, bool deleteShader = false );
-			bool link();
+			void bindAttribute( const string& name, unsigned int index );
+			int getAttributeLocation( const string& name );
+			int getUniformLocation( const string& name );
+			bool link( bool cacheLocations = false );
+			
+			void sendUniform( const string& uniform, float v0 );
+			void sendUniform( const string& uniform, float v0, float v1 );
+			void sendUniform( const string& uniform, float v0, float v1, float v2 );
+			void sendUniform( const string& uniform, float v0, float v1, float v2, float v3 );
+			void sendUniform( const string& uniform, float * values, unsigned int size, unsigned int count = 1 );
+			void sendUniform( const string& uniform, int v0 );
+			void sendUniform( const string& uniform, int v0, int v1 );
+			void sendUniform( const string& uniform, int v0, int v1, int v2 );
+			void sendUniform( const string& uniform, int v0, int v1, int v2, int v3 );
+			void sendUniform( const string& uniform, int * values, unsigned int size, unsigned int count = 1 );
+			void sendUniform( const string& uniform, unsigned int v0 );
+			void sendUniform( const string& uniform, unsigned int v0, unsigned int v1 );
+			void sendUniform( const string& uniform, unsigned int v0, unsigned int v1, unsigned int v2 );
+			void sendUniform( const string& uniform, unsigned int v0, unsigned int v1, unsigned int v2, unsigned int v3 );
+			void sendUniform( const string& uniform, unsigned int * values, unsigned int size, unsigned int count = 1 );
+			void sendUniform( const string& uniform, const Matrix& matrix, bool transpose = false );
+			
+			void sendModelviewMatrix( const string& uniform );
+			void sendProjectionMatrix( const string& uniform );
+			
+			void sendAttributePointer( const string& name, ArrayBufferObject * buffer, unsigned int size, unsigned int stride = 0 );
+			void sendVertexPointer( const string& name, ArrayBufferObject * vbo, unsigned int stride = 0 );
+			void sendColorPointer( const string& name, ArrayBufferObject * cbo, unsigned int stride = 0 );
 			
 			void use();
 	};

@@ -99,7 +99,7 @@ namespace opengl
 		return this->id;
 	}
 	
-	bool Shader::load( const string& filename )
+	bool Shader::loadFile( const string& filename )
 	{
 		bool status = false;
 		
@@ -111,7 +111,7 @@ namespace opengl
 			source << shaderFile.rdbuf();
 			shaderFile.close();
 			
-			status = this->compile( source.str() );
+			status = this->load( source.str() );
 		}
 		#ifdef DEBUG1
 		else
@@ -121,10 +121,10 @@ namespace opengl
 		return status;
 	}
 	
-	bool Shader::compile( const string& content )
+	bool Shader::load( const string& source )
 	{
-		const char * source = content.c_str();
-		glShaderSource( this->id, 1, &source, NULL );
+		const char * src = source.c_str();
+		glShaderSource( this->id, 1, &src, NULL );
 		glCompileShader( this->id );
 
 		#ifdef DEBUG1
