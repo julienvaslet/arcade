@@ -66,8 +66,8 @@ int main( int argc, char ** argv )
 	
 	program->use();
 
-	glEnableVertexAttribArray( program->getAttributeLocation( "a_Vertex" ) );
-	glEnableVertexAttribArray( program->getAttributeLocation( "a_Color" ) );
+	program->enableAttribute( "a_Vertex" );
+	program->enableAttribute( "a_Color" );
 
 	// Generating points
 	vector<Point> m_points;
