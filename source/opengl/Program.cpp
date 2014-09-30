@@ -179,7 +179,43 @@ namespace opengl
 		
 		if( cacheLocations && this->getLinkStatus() )
 		{
+			// Attributes
+			int count = this->getActiveAttributes();
+			int maxlength = this->getActiveAttributeMaxLength();
+			string name( maxlength, 0 );
 			
+			for( int i = 0 ; i < count ; i++ )
+			{
+				GLsizei size = 0;
+				GLenum type = GL_FLOAT;
+				glGetActiveAttrib( this->id, i, bufSize, NULL, &size, &type, &name[0] );
+				
+				// TODO: Check errors
+				this->attributes[name] = i;
+				
+				#ifdef DEBUG0
+				Logger::get() << "[Program#" << this->id << "] Cached attribute \"" << name << ""\"'s location (" << i << ")." << Logger::endl;
+				#endif
+			}
+			
+			// Uniforms
+			count = this->getActiveUniforms();
+			maxlength = this->getActiveUniformMaxLength();
+			name.reserve( maxlength );
+			
+			for( int i = 0 ; i < count ; i++ )
+			{
+				GLsizei size = 0;
+				GLenum type = GL_FLOAT;
+				glGetActiveUniform( this->id, i, bufSize, NULL, &size, &type, &name[0] );
+				
+				// TODO: Check errors
+				this->uniforms[name] = i;
+				
+				#ifdef DEBUG0
+				Logger::get() << "[Program#" << this->id << "] Cached uniform \"" << name << ""\"'s location (" << i << ")." << Logger::endl;
+				#endif
+			}
 		}
 		
 		return this->getLinkStatus();
@@ -201,6 +237,11 @@ namespace opengl
 		else
 			Logger::get() << "[Program#" << this->id << "] Could not bind attribute \"" << name << "\" at index " << index << "." << Logger::endl;
 		#endif
+	}
+	
+	void Program::enableAttribute( const string& name )
+	{
+		glEnableVertexAttribArray( this->getAttributeLocation( name ) );
 	}
 	
 	int Program::getAttributeLocation( const string& name )
