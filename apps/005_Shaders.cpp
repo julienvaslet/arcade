@@ -58,14 +58,12 @@ int main( int argc, char ** argv )
 	program->loadVertexShaderFile( "data/shaders/vertex.vs" );
 	program->loadFragmentShaderFile( "data/shaders/fragment.fs" );
 	
-	// This could be auto-done by OpenGL after linking with glGetAttribLocation...
-	program->bindAttribute( "a_Vertex", 0 );
-	program->bindAttribute( "a_Color", 1 );
-	
-	program->link();
+	program->link( true );
 	
 	program->use();
 
+	// TODO: Test to switch between two shader, with different attributes id
+	// TODO: integrate this enable... into use( true ) and test if we must call "true" in every use() call
 	program->enableAttribute( "a_Vertex" );
 	program->enableAttribute( "a_Color" );
 

@@ -182,20 +182,17 @@ namespace opengl
 			// Attributes
 			int count = this->getActiveAttributes();
 			int maxlength = this->getActiveAttributeMaxLength();
-			string name( maxlength, 0 );
+			string name( maxlength, '\0' );
 			
 			for( int i = 0 ; i < count ; i++ )
 			{
+				int length = 0;
 				GLsizei size = 0;
 				GLenum type = GL_FLOAT;
-				glGetActiveAttrib( this->id, i, bufSize, NULL, &size, &type, &name[0] );
+				glGetActiveAttrib( this->id, i, name.capacity(), &length, &size, &type, &(name[0]) );
 				
-				// TODO: Check errors
-				this->attributes[name] = i;
-				
-				#ifdef DEBUG0
-				Logger::get() << "[Program#" << this->id << "] Cached attribute \"" << name << ""\"'s location (" << i << ")." << Logger::endl;
-				#endif
+				if( OpenGL::getError() == GL_NO_ERROR )
+					this->getAttributeLocation( name.c_str() );
 			}
 			
 			// Uniforms
@@ -205,16 +202,13 @@ namespace opengl
 			
 			for( int i = 0 ; i < count ; i++ )
 			{
+				int length = 0;
 				GLsizei size = 0;
 				GLenum type = GL_FLOAT;
-				glGetActiveUniform( this->id, i, bufSize, NULL, &size, &type, &name[0] );
+				glGetActiveUniform( this->id, i, name.capacity(), &length, &size, &type, &(name[0]) );
 				
-				// TODO: Check errors
-				this->uniforms[name] = i;
-				
-				#ifdef DEBUG0
-				Logger::get() << "[Program#" << this->id << "] Cached uniform \"" << name << ""\"'s location (" << i << ")." << Logger::endl;
-				#endif
+				if( OpenGL::getError() == GL_NO_ERROR )
+					this->getUniformLocation( name.c_str() );
 			}
 		}
 		
