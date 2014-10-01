@@ -75,7 +75,7 @@ namespace opengl
 			void sendVertexPointer( const string& name, ArrayBufferObject * vbo, unsigned int stride = 0 );
 			void sendColorPointer( const string& name, ArrayBufferObject * cbo, unsigned int stride = 0 );
 			
-			void use();
+			void use( bool enableAttributes = false );
 	};
 }
 
