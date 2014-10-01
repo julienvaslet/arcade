@@ -54,18 +54,21 @@ int main( int argc, char ** argv )
 	bool cameraFrustum = false;
 	
 	// Shaders initialization
-	Program * program = new Program();
-	program->loadVertexShaderFile( "data/shaders/vertex.vs" );
-	program->loadFragmentShaderFile( "data/shaders/fragment.fs" );
+	Program * program = NULL;
 	
-	program->link( true );
+	Program * program1 = new Program();
+	program1->loadVertexShaderFile( "data/shaders/vertex.vs" );
+	program1->loadFragmentShaderFile( "data/shaders/fragment.fs" );
+	program1->link( true );
+	program1->use( true );
 	
-	program->use();
+	Program * program2 = new Program();
+	program2->loadVertexShaderFile( "data/shaders/vertex_nocolor.vs" );
+	program2->loadFragmentShaderFile( "data/shaders/fragment.fs" );
+	program2->link( true );
+	program2->use( true );
 
-	// TODO: Test to switch between two shader, with different attributes id
-	// TODO: integrate this enable... into use( true ) and test if we must call "true" in every use() call
-	program->enableAttribute( "a_Vertex" );
-	program->enableAttribute( "a_Color" );
+	program = program2;
 
 	// Generating points
 	vector<Point> m_points;
@@ -156,6 +159,7 @@ int main( int argc, char ** argv )
 	glEnable( GL_DEPTH_TEST );
 	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	
+	cout << "Press [ENTER] to switch between shaders." << endl;
 	cout << "Press [SPACE] to switch between rendering with or without shaders." << endl;
 	cout << "Press [F1], [F2], [F3] to switch between, respectively, perspective view, orthogonal view and frustum view." << endl;
 	cout << "Press arrow keys to move the box." << endl;
@@ -176,6 +180,22 @@ int main( int argc, char ** argv )
 				{
 		            if( lastEvent.key.keysym.sym == SDLK_ESCAPE )
 						running = false;
+		                
+		            else if( lastEvent.key.keysym.sym == SDLK_RETURN )
+		            {
+		            	if( program == program1 )
+		            	{
+		            		cout << "Using shader with white color." << endl;
+		            		program = program2;
+		            	}
+		            	else
+		            	{
+		            		cout << "Using shader with dynamic color." << endl;
+		            		program = program1;
+		            	}
+		            	
+		            	program->use();
+		            }
 		                
 		            else if( lastEvent.key.keysym.sym == SDLK_SPACE )
 		            {
@@ -284,7 +304,9 @@ int main( int argc, char ** argv )
 				program->sendModelviewMatrix( "modelview_matrix" );
 				
 				program->sendVertexPointer( "a_Vertex", vbo );
-				program->sendColorPointer( "a_Color", cbo );
+				
+				if( program == program1 )
+					program->sendColorPointer( "a_Color", cbo );
 				
 				ibo->draw();
 		
@@ -336,7 +358,9 @@ int main( int argc, char ** argv )
 		}
 	}
 	
-	delete program;
+	program = NULL;
+	delete program1;
+	delete program2;
 
 	delete ibo;
 	delete cbo;
