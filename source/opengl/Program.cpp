@@ -300,9 +300,15 @@ namespace opengl
 		return location;
 	}
 	
-	void Program::use()
+	void Program::use( bool enableAttributes )
 	{
 		glUseProgram( this->id );
+		
+		if( enableAttributes )
+		{
+			for( map<string, int>::iterator it = this->attributes.begin() ; it != this->attributes.end() ; it++ )
+				this->enableAttribute( it->first );
+		}
 	}
 	
 	
