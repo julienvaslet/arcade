@@ -28,7 +28,7 @@ int main( int argc, char ** argv )
 	// Initialize standard-output logger
 	new Stdout( "stdout", true );
 	
-	if( !Screen::initialize( "005 - Shaders" ) )
+	if( !Screen::initialize( "006 - Textures" ) )
 	{
 		Logger::get() << "Unable to initialize screen. Exiting.\n";
 		return 1;
@@ -44,7 +44,6 @@ int main( int argc, char ** argv )
 	bool running = true;
 	SDL_Event lastEvent;
 	unsigned int lastDrawTicks = 0;
-	bool useShaders = true;
 	
 	float yRotation = 0.0f;
 	unsigned int lastRotateTicks = 0;
@@ -160,7 +159,6 @@ int main( int argc, char ** argv )
 	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	
 	cout << "Press [ENTER] to switch between shaders." << endl;
-	cout << "Press [SPACE] to switch between rendering with or without shaders." << endl;
 	cout << "Press [F1], [F2], [F3] to switch between, respectively, perspective view, orthogonal view and frustum view." << endl;
 	cout << "Press arrow keys to move the box." << endl;
 
@@ -195,22 +193,6 @@ int main( int argc, char ** argv )
 		            	}
 		            	
 		            	program->use();
-		            }
-		                
-		            else if( lastEvent.key.keysym.sym == SDLK_SPACE )
-		            {
-		            	useShaders = !useShaders;
-		            	
-		            	if( useShaders )
-		            	{
-		            		cout << "Using shaders." << endl;
-		            		program->use();
-		            	}
-		            	else
-		            	{
-		            		cout << "Stop using shaders." << endl;
-		            		glUseProgram( 0 );
-		            	}
 		            }
 		            else if( lastEvent.key.keysym.sym == SDLK_F1 )
 		            {
@@ -298,59 +280,30 @@ int main( int argc, char ** argv )
 			glMultMatrixf( Matrix::translation( camera.getCenter().getX(), camera.getCenter().getY(), camera.getCenter().getZ() ).get() );
 			glMultMatrixf( Matrix::rotationY( yRotation ).get() );
 			
-			if( useShaders )
-			{
-				program->sendProjectionMatrix( "projection_matrix" );
-				program->sendModelviewMatrix( "modelview_matrix" );
-				
-				program->sendVertexPointer( "a_Vertex", vbo );
-				
-				if( program == program1 )
-					program->sendColorPointer( "a_Color", cbo );
-				
-				ibo->draw();
-		
-				glMultMatrixf( Matrix::translation( -1 * camera.getCenter().getX(), -1 * camera.getCenter().getY(), -1 * camera.getCenter().getZ() ).get() );
-				glPushMatrix();
-				glMultMatrixf( Matrix::translation( 2.0f, 0.0f, 1.0f ).get() );
-				
-				program->sendModelviewMatrix( "modelview_matrix" );
-				
-				ibo->draw( 0, 24 );
-		
-				glPopMatrix();
-				glMultMatrixf( Matrix::translation( -2.0f, 0.0f, -1.0f ).get() );
-				
-				program->sendModelviewMatrix( "modelview_matrix" );
-				
-				ibo->draw( 0, 12 );
-			}
-			else
-			{
-				glColor3f( 1.0f, 1.0f, 1.0f );
-				
-				cbo->bindColorPointer();
-				vbo->bindVertexPointer();
-		
-				// Render with Vertex Arrays
-				glEnableClientState( GL_COLOR_ARRAY );
-				glEnableClientState( GL_VERTEX_ARRAY );
-		
-				ibo->draw();
-		
-				glPushMatrix();
-				glMultMatrixf( Matrix::translation( 2.0f, 0.0f, 1.0f ).get() );
-				
-				ibo->draw( 0, 24 );
-		
-				glPopMatrix();
-				glMultMatrixf( Matrix::translation( -2.0f, 0.0f, -1.0f ).get() );
-				
-				ibo->draw( 0, 12 );
-		
-				glDisableClientState( GL_VERTEX_ARRAY );
-				glDisableClientState( GL_COLOR_ARRAY );
-			}
+			program->sendProjectionMatrix( "projection_matrix" );
+			program->sendModelviewMatrix( "modelview_matrix" );
+			
+			program->sendVertexPointer( "a_Vertex", vbo );
+			
+			if( program == program1 )
+				program->sendColorPointer( "a_Color", cbo );
+			
+			ibo->draw();
+	
+			glMultMatrixf( Matrix::translation( -1 * camera.getCenter().getX(), -1 * camera.getCenter().getY(), -1 * camera.getCenter().getZ() ).get() );
+			glPushMatrix();
+			glMultMatrixf( Matrix::translation( 2.0f, 0.0f, 1.0f ).get() );
+			
+			program->sendModelviewMatrix( "modelview_matrix" );
+			
+			ibo->draw( 0, 24 );
+	
+			glPopMatrix();
+			glMultMatrixf( Matrix::translation( -2.0f, 0.0f, -1.0f ).get() );
+			
+			program->sendModelviewMatrix( "modelview_matrix" );
+			
+			ibo->draw( 0, 12 );
 			
 			Screen::get()->render();
 			
