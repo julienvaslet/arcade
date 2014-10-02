@@ -238,6 +238,11 @@ namespace opengl
 		glEnableVertexAttribArray( this->getAttributeLocation( name ) );
 	}
 	
+	void Program::disableAttribute( const string& name )
+	{
+		glDisableVertexAttribArray( this->getAttributeLocation( name ) );
+	}
+	
 	int Program::getAttributeLocation( const string& name )
 	{
 		int location = -1;

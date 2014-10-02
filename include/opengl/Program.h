@@ -47,6 +47,7 @@ namespace opengl
 			bool attachShader( Shader * shader, bool deleteShader = false );
 			void bindAttribute( const string& name, unsigned int index );
 			void enableAttribute( const string& name );
+			void disableAttribute( const string& name );
 			int getAttributeLocation( const string& name );
 			int getUniformLocation( const string& name );
 			bool link( bool cacheLocations = false );
