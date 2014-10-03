@@ -62,8 +62,8 @@ int main( int argc, char ** argv )
 	program1->use( true );
 	
 	Program * program2 = new Program();
-	program2->loadVertexShaderFile( "data/shaders/vertex_nocolor.vs" );
-	program2->loadFragmentShaderFile( "data/shaders/fragment.fs" );
+	program2->loadVertexShaderFile( "data/shaders/vertex_texture.vs" );
+	program2->loadFragmentShaderFile( "data/shaders/fragment_texture.fs" );
 	program2->link( true );
 	program2->use( true );
 
@@ -156,9 +156,9 @@ int main( int argc, char ** argv )
 	camera.getCenter().moveTo( 0.0f, 0.0f, 0.0f );
 	
 	glEnable( GL_DEPTH_TEST );
-	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	
-	cout << "Press [ENTER] to switch between shaders." << endl;
+	cout << "Press [ENTER] to switch between shaders (texture or no texture)." << endl;
 	cout << "Press [F1], [F2], [F3] to switch between, respectively, perspective view, orthogonal view and frustum view." << endl;
 	cout << "Press arrow keys to move the box." << endl;
 
@@ -183,12 +183,12 @@ int main( int argc, char ** argv )
 		            {
 		            	if( program == program1 )
 		            	{
-		            		cout << "Using shader with white color." << endl;
+		            		cout << "Using shader with texturing." << endl;
 		            		program = program2;
 		            	}
 		            	else
 		            	{
-		            		cout << "Using shader with dynamic color." << endl;
+		            		cout << "Using shader with colors." << endl;
 		            		program = program1;
 		            	}
 		            	
