@@ -315,8 +315,6 @@ namespace opengl
 				this->enableAttribute( it->first );
 		}
 	}
-	
-	
 			
 	void Program::sendUniform( const string& uniform, float v0 )
 	{

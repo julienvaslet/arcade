@@ -16,6 +16,7 @@
 #include <opengl/Color.h>
 #include <opengl/Matrix.h>
 #include <opengl/Program.h>
+#include <opengl/Texture2D.h>
 
 #include <GL/glu.h>
 
@@ -33,7 +34,6 @@ int main( int argc, char ** argv )
 		Logger::get() << "Unable to initialize screen. Exiting.\n";
 		return 1;
 	}
-	
 	
 	/* Should check if shader's extensions are available.
 	if( !OpenGL::hasExtension( ) )
@@ -68,6 +68,27 @@ int main( int argc, char ** argv )
 	program2->use( true );
 
 	program = program2;
+	
+	// Texture initialization
+	GLubyte textureData[16] = {
+		255, 0, 0, 255,
+		0, 255, 0, 255,
+		0, 0, 255, 255,
+		255, 255, 0, 255 };
+		
+	Texture2D * texture = new Texture2D();
+	texture->bind();
+	texture->setData( textureData, 2, 2, GL_RGBA );
+
+	vector<float> m_texcoords;
+	m_texcoords.push_back( 0.0f ); m_texcoords.push_back( 0.0f );
+	m_texcoords.push_back( 0.0f ); m_texcoords.push_back( 1.0f );
+	m_texcoords.push_back( 1.0f ); m_texcoords.push_back( 1.0f );
+	m_texcoords.push_back( 1.0f ); m_texcoords.push_back( 0.0f );
+	m_texcoords.push_back( 1.0f ); m_texcoords.push_back( 1.0f );
+	m_texcoords.push_back( 0.0f ); m_texcoords.push_back( 1.0f );
+	m_texcoords.push_back( 0.0f ); m_texcoords.push_back( 0.0f );
+	m_texcoords.push_back( 1.0f ); m_texcoords.push_back( 0.0f );
 
 	// Generating points
 	vector<Point> m_points;
@@ -148,6 +169,9 @@ int main( int argc, char ** argv )
 	ArrayBufferObject * cbo = new ArrayBufferObject();
 	cbo->setData( m_colors );
 	
+	ArrayBufferObject * tbo = new ArrayBufferObject();
+	tbo->setData( m_texcoords );
+	
 	ElementArrayBufferObject * ibo = new ElementArrayBufferObject();
 	ibo->setData( m_indices );
 	
@@ -184,12 +208,14 @@ int main( int argc, char ** argv )
 		            	if( program == program1 )
 		            	{
 		            		cout << "Using shader with texturing." << endl;
-		            		program = program2;
+		            		program = program2;	
+							glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 		            	}
 		            	else
 		            	{
 		            		cout << "Using shader with colors." << endl;
 		            		program = program1;
+							glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		            	}
 		            	
 		            	program->use();
@@ -286,7 +312,15 @@ int main( int argc, char ** argv )
 			program->sendVertexPointer( "a_Vertex", vbo );
 			
 			if( program == program1 )
+			{
 				program->sendColorPointer( "a_Color", cbo );
+			}
+			else
+			{
+				// texture?
+				program->sendUniform( "texture0", 0 );
+				program->sendAttributePointer( "a_TexCoord0", tbo, 2 );
+			}
 			
 			ibo->draw();
 	
@@ -314,10 +348,13 @@ int main( int argc, char ** argv )
 	program = NULL;
 	delete program1;
 	delete program2;
+	
+	delete texture;
 
 	delete ibo;
 	delete cbo;
 	delete vbo;
+	delete tbo;
 	Screen::destroy();
 	
 	Logger::destroy();

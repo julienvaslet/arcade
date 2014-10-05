@@ -7,6 +7,6 @@ out vec4 outColor;
 
 void main(void)
 {
-	outColor = vec4( 1.0, 1.0, 1.0, 1.0 ) * texture( texture0, texCoord0.st );
+	outColor = texture( texture0, texCoord0 );
 }
 
