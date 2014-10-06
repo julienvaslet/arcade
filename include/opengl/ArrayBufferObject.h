@@ -6,7 +6,7 @@
 #include <vector>
 
 #include <opengl/BufferObject.h>
-#include <opengl/Point.h>
+#include <opengl/Point3D.h>
 #include <opengl/Color.h>
 
 using namespace std;
@@ -24,7 +24,7 @@ namespace opengl
 			virtual ~ArrayBufferObject();
 			
 			void setData( const vector<float>& data, Frequency frequency = Static, Access access = Draw );
-			void setData( const vector<Point>& data, Frequency frequency = Static, Access access = Draw );
+			void setData( const vector<Point3D>& data, Frequency frequency = Static, Access access = Draw );
 			void setData( const vector<Color>& data, Frequency frequency = Static, Access access = Draw );
 			
 			void bindColorPointer( unsigned int stride = 0 );

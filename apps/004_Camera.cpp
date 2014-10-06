@@ -8,7 +8,7 @@
 #include <opengl/Camera.h>
 #include <opengl/ArrayBufferObject.h>
 #include <opengl/ElementArrayBufferObject.h>
-#include <opengl/Point.h>
+#include <opengl/Point3D.h>
 #include <opengl/Color.h>
 #include <opengl/Matrix.h>
 
@@ -38,15 +38,15 @@ int main( int argc, char ** argv )
 	bool cameraFrustum = false;
 
 	// Generating points
-	vector<Point> m_points;
-	m_points.push_back( Point( -0.5f, 0.0f, 0.5f ) );
-	m_points.push_back( Point( 0.5f, 0.0f, 0.5f ) );
-	m_points.push_back( Point( 0.5f, 1.0f, 0.5f ) );
-	m_points.push_back( Point( -0.5f, 1.0f, 0.5f ) );
-	m_points.push_back( Point( -0.5f, 1.0f, -0.5f ) );
-	m_points.push_back( Point( -0.5f, 0.0f, -0.5f ) );
-	m_points.push_back( Point( 0.5f, 0.0f, -0.5f ) );
-	m_points.push_back( Point( 0.5f, 1.0f, -0.5f ) );
+	vector<Point3D> m_points;
+	m_points.push_back( Point3D( -0.5f, 0.0f, 0.5f ) );
+	m_points.push_back( Point3D( 0.5f, 0.0f, 0.5f ) );
+	m_points.push_back( Point3D( 0.5f, 1.0f, 0.5f ) );
+	m_points.push_back( Point3D( -0.5f, 1.0f, 0.5f ) );
+	m_points.push_back( Point3D( -0.5f, 1.0f, -0.5f ) );
+	m_points.push_back( Point3D( -0.5f, 0.0f, -0.5f ) );
+	m_points.push_back( Point3D( 0.5f, 0.0f, -0.5f ) );
+	m_points.push_back( Point3D( 0.5f, 1.0f, -0.5f ) );
 	
 	// Generating indexes
 	vector<unsigned int> m_indices;

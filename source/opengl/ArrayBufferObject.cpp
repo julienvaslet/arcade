@@ -21,11 +21,11 @@ namespace opengl
 		glBufferData( GL_ARRAY_BUFFER, sizeof(float) * data.size(), &data[0], BufferObject::getUsage( frequency, access ) );
 	}
 	
-	void ArrayBufferObject::setData( const vector<Point>& data, Frequency frequency, Access access )
+	void ArrayBufferObject::setData( const vector<Point3D>& data, Frequency frequency, Access access )
 	{
 		vector<float> vertices;
 		
-		for( vector<Point>::const_iterator it = data.begin() ; it != data.end() ; it++ )
+		for( vector<Point3D>::const_iterator it = data.begin() ; it != data.end() ; it++ )
 		{
 			vertices.push_back( it->getX() );
 			vertices.push_back( it->getY() );

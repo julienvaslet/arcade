@@ -17,12 +17,12 @@ namespace opengl
 	{
 	}
 	
-	Point& Camera::getEye()
+	Point3D& Camera::getEye()
 	{
 		return this->eye;
 	}
 	
-	Point& Camera::getCenter()
+	Point3D& Camera::getCenter()
 	{
 		return this->center;
 	}

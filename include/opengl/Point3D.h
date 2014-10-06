@@ -1,11 +1,11 @@
-#ifndef __OPENGL_POINT_H
-#define __OPENGL_POINT_H	1
+#ifndef __OPENGL_POINT3D_H
+#define __OPENGL_POINT3D_H	1
 
 using namespace std;
 
 namespace opengl
 {
-	class Point
+	class Point3D
 	{	
 		protected:
 			float x;
@@ -13,9 +13,9 @@ namespace opengl
 			float z;
 			
 		public:
-			Point( float x = 0.0f, float y = 0.0f, float z = 0.0f );
-			Point( const Point& point );
-			virtual ~Point();
+			Point3D( float x = 0.0f, float y = 0.0f, float z = 0.0f );
+			Point3D( const Point3D& point );
+			virtual ~Point3D();
 			
 			void setX( float x );
 			void setY( float y );

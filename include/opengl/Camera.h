@@ -1,7 +1,7 @@
 #ifndef __OPENGL_CAMERA_H
 #define __OPENGL_CAMERA_H	1
 
-#include <opengl/Point.h>
+#include <opengl/Point3D.h>
 #include <opengl/Vector.h>
 
 using namespace std;
@@ -11,16 +11,16 @@ namespace opengl
 	class Camera
 	{	
 		protected:
-			Point eye;
-			Point center;
+			Point3D eye;
+			Point3D center;
 			Vector up;
 			
 		public:
 			Camera();
 			virtual ~Camera();
 			
-			Point& getEye();
-			Point& getCenter();
+			Point3D& getEye();
+			Point3D& getCenter();
 			Vector& getUp();
 			
 			void look() const;
