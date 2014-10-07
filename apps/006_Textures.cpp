@@ -13,6 +13,7 @@
 #include <opengl/ArrayBufferObject.h>
 #include <opengl/ElementArrayBufferObject.h>
 #include <opengl/Point3D.h>
+#include <opengl/Point2D.h>
 #include <opengl/Color.h>
 #include <opengl/Matrix.h>
 #include <opengl/Program.h>
@@ -80,15 +81,15 @@ int main( int argc, char ** argv )
 	texture->bind();
 	texture->setData( textureData, 2, 2, GL_RGBA );
 
-	vector<float> m_texcoords;
-	m_texcoords.push_back( 0.0f ); m_texcoords.push_back( 0.0f );
-	m_texcoords.push_back( 0.0f ); m_texcoords.push_back( 1.0f );
-	m_texcoords.push_back( 1.0f ); m_texcoords.push_back( 1.0f );
-	m_texcoords.push_back( 1.0f ); m_texcoords.push_back( 0.0f );
-	m_texcoords.push_back( 1.0f ); m_texcoords.push_back( 1.0f );
-	m_texcoords.push_back( 0.0f ); m_texcoords.push_back( 1.0f );
-	m_texcoords.push_back( 0.0f ); m_texcoords.push_back( 0.0f );
-	m_texcoords.push_back( 1.0f ); m_texcoords.push_back( 0.0f );
+	vector<Point2D> m_texcoords;
+	m_texcoords.push_back( Point2D( 0.0f, 0.0f ) );
+	m_texcoords.push_back( Point2D( 0.0f, 1.0f ) );
+	m_texcoords.push_back( Point2D( 1.0f, 1.0f ) );
+	m_texcoords.push_back( Point2D( 1.0f, 0.0f ) );
+	m_texcoords.push_back( Point2D( 1.0f, 1.0f ) );
+	m_texcoords.push_back( Point2D( 0.0f, 1.0f ) );
+	m_texcoords.push_back( Point2D( 0.0f, 0.0f ) );
+	m_texcoords.push_back( Point2D( 1.0f, 0.0f ) );
 
 	// Generating points
 	vector<Point3D> m_points;
