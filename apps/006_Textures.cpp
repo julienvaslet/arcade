@@ -318,9 +318,8 @@ int main( int argc, char ** argv )
 			}
 			else
 			{
-				// texture?
-				program->sendUniform( "texture0", 0 );
-				program->sendAttributePointer( "a_TexCoord0", tbo, 2 );
+				program->sendUniform( "texture0", *texture, 0 );
+				program->sendTextureCoordinatesPointer( "a_TexCoord0", tbo );
 			}
 			
 			ibo->draw();

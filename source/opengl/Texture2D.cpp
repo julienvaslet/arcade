@@ -16,7 +16,7 @@ namespace opengl
 	{
 	}
 	
-	void Texture2D::bind( unsigned int unit )
+	void Texture2D::bind( unsigned int unit ) const
 	{
 		glActiveTexture( GL_TEXTURE0 + unit );
 		glBindTexture( GL_TEXTURE_2D, this->id );

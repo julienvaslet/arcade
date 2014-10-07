@@ -18,7 +18,7 @@ namespace opengl
 			virtual ~Texture();
 		
 			unsigned int getId() const;
-			virtual void bind( unsigned int unit ) = 0;
+			virtual void bind( unsigned int unit ) const = 0;
 			virtual void setWrapMode( GLenum mode ) = 0;
 			virtual void setFiltering( GLenum minification, GLenum magnification ) = 0;
 	};

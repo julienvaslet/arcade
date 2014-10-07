@@ -7,6 +7,7 @@
 #include <opengl/VertexShader.h>
 #include <opengl/FragmentShader.h>
 #include <opengl/Matrix.h>
+#include <opengl/Texture.h>
 #include <opengl/ArrayBufferObject.h>
 
 #include <string>
@@ -68,6 +69,7 @@ namespace opengl
 			void sendUniform( const string& uniform, unsigned int v0, unsigned int v1, unsigned int v2, unsigned int v3 );
 			void sendUniform( const string& uniform, unsigned int * values, unsigned int size, unsigned int count = 1 );
 			void sendUniform( const string& uniform, const Matrix& matrix, bool transpose = false );
+			void sendUniform( const string& uniform, const Texture& texture, unsigned int unit = 0 );
 			
 			void sendModelviewMatrix( const string& uniform );
 			void sendProjectionMatrix( const string& uniform );
@@ -75,6 +77,7 @@ namespace opengl
 			void sendAttributePointer( const string& name, ArrayBufferObject * buffer, unsigned int size, unsigned int stride = 0 );
 			void sendVertexPointer( const string& name, ArrayBufferObject * vbo, unsigned int stride = 0 );
 			void sendColorPointer( const string& name, ArrayBufferObject * cbo, unsigned int stride = 0 );
+			void sendTextureCoordinatesPointer( const string& name, ArrayBufferObject * tbo, unsigned int stride = 0 );
 			
 			void use( bool enableAttributes = false );
 	};

@@ -461,6 +461,12 @@ namespace opengl
 		glUniformMatrix4fv( this->getUniformLocation( uniform ), 1, GL_FALSE, matrix );
 	}
 		
+	void Program::sendUniform( const string& uniform, const Texture& texture, unsigned int unit )
+	{
+		texture.bind( unit );
+		this->sendUniform( uniform, unit );
+	}
+		
 	void Program::sendAttributePointer( const string& name, ArrayBufferObject * buffer, unsigned int size, unsigned int stride )
 	{
 		glBindBuffer( GL_ARRAY_BUFFER, buffer->getBuffer() );
@@ -475,6 +481,11 @@ namespace opengl
 	void Program::sendColorPointer( const string& name, ArrayBufferObject * cbo, unsigned int stride )
 	{
 		this->sendAttributePointer( name, cbo, 4, stride );
+	}
+	
+	void Program::sendTextureCoordinatesPointer( const string& name, ArrayBufferObject * tbo, unsigned int stride )
+	{
+		this->sendAttributePointer( name, tbo, 2, stride );
 	}
 }
 
