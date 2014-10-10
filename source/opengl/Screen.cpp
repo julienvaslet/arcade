@@ -1,5 +1,6 @@
 #include <opengl/Screen.h>
 #include <SDL2/SDL_image.h>
+#include <opengl/OpenGL.h>
 
 #ifdef DEBUG0
 #include <iostream>
@@ -35,7 +36,7 @@ namespace opengl
 		}
 	}
 		
-	bool Screen::initialize( const char * title, int width, int height, bool resizable )
+	bool Screen::initialize( const char * title, int width, int height, bool resizable, int majorVersion, int minorVersion )
 	{
 		bool success = true;
 		int imageFlags = IMG_INIT_PNG;
@@ -49,6 +50,11 @@ namespace opengl
 			cout << "[Screen] Unable to init SDL_image library: " << IMG_GetError() << endl;
 			#endif
 		}
+		
+		// Set the OpenGL version
+		SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, majorVersion );
+		SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, minorVersion );
+		SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
 	
 		Screen * screen = new Screen();
 
@@ -100,6 +106,8 @@ namespace opengl
 				screen->render();
 			
 				Screen::instance = screen;
+				
+				OpenGL::initialize();
 			}
 		}
 	

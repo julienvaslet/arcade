@@ -3,12 +3,17 @@
 
 #include <opengl/Screen.h>
 #include <opengl/OpenGL.h>
+#include <tools/logger/Stdout.h>
 
 using namespace opengl;
 using namespace std;
+using namespace tools::logger;
 
 int main( int argc, char ** argv )
 {
+	// Initialize standard-output logger
+	new Stdout( "stdout", true );
+	
 	if( !Screen::initialize( "002 - Opengl" ) )
 	{
 		cout << "Unable to initialize screen. Exiting." << endl;

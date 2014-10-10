@@ -1,7 +1,6 @@
 #ifndef __OPENGL_ARRAYBUFFEROBJECT_H
 #define __OPENGL_ARRAYBUFFEROBJECT_H	1
 
-#define GL_GLEXT_PROTOTYPES
 #include <SDL2/SDL_opengl.h>
 #include <vector>
 

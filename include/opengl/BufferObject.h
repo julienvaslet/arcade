@@ -1,8 +1,7 @@
 #ifndef __OPENGL_BUFFEROBJECT_H
 #define __OPENGL_BUFFEROBJECT_H	1
 
-#define GL_GLEXT_PROTOTYPES
-#include <SDL2/SDL_opengl.h>
+#include <opengl/OpenGL.h>
 
 using namespace std;
 

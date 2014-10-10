@@ -6,7 +6,6 @@
 
 #include <tools/logger/Stdout.h>
 
-#define GL_GLEXT_PROTOTYPES
 #include <opengl/Screen.h>
 #include <opengl/OpenGL.h>
 #include <opengl/Camera.h>

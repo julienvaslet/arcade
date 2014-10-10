@@ -1,9 +1,11 @@
 #include <opengl/OpenGL.h>
-#include <SDL2/SDL_opengl.h>
+#include <SDL2/SDL.h>
+#include <tools/logger/Logger.h>
 
 #include <sstream>
 
 using namespace std;
+using namespace tools::logger;
 
 namespace opengl
 {
@@ -80,4 +82,134 @@ namespace opengl
 	{
 		return glGetError();
 	}
+
+	void OpenGL::initialize()
+	{
+		#ifdef DEBUG0
+		Logger::get() << "[OpenGL] Initialization..." << Logger::endl;
+		#endif
+		
+		// Buffers functions
+		LoadOpenGLFunction(glGenBuffers);
+		LoadOpenGLFunction(glIsBuffer);
+		LoadOpenGLFunction(glDeleteBuffers);
+		LoadOpenGLFunction(glBindBuffer);
+		LoadOpenGLFunction(glBufferData);
+		
+		// Shaders functions
+		LoadOpenGLFunction(glCreateShader);
+		LoadOpenGLFunction(glDeleteShader);
+		LoadOpenGLFunction(glGetShaderiv);
+		LoadOpenGLFunction(glGetShaderInfoLog);
+		LoadOpenGLFunction(glShaderSource);
+		LoadOpenGLFunction(glCompileShader);
+		
+		// Program functions
+		LoadOpenGLFunction(glCreateProgram);
+		LoadOpenGLFunction(glDeleteProgram);
+		LoadOpenGLFunction(glGetProgramiv);
+		LoadOpenGLFunction(glGetProgramInfoLog);
+		LoadOpenGLFunction(glAttachShader);
+		LoadOpenGLFunction(glLinkProgram);
+		LoadOpenGLFunction(glUseProgram);
+		LoadOpenGLFunction(glGetActiveAttrib);
+		LoadOpenGLFunction(glGetActiveUniform);
+		LoadOpenGLFunction(glBindAttribLocation);
+		LoadOpenGLFunction(glEnableVertexAttribArray);
+		LoadOpenGLFunction(glDisableVertexAttribArray);
+		LoadOpenGLFunction(glVertexAttribPointer);
+		LoadOpenGLFunction(glGetAttribLocation);
+		LoadOpenGLFunction(glGetUniformLocation);
+		
+		// Uniforms functions
+		LoadOpenGLFunction(glUniform1f);
+		LoadOpenGLFunction(glUniform2f);
+		LoadOpenGLFunction(glUniform3f);
+		LoadOpenGLFunction(glUniform4f);
+		LoadOpenGLFunction(glUniform1fv);
+		LoadOpenGLFunction(glUniform2fv);
+		LoadOpenGLFunction(glUniform3fv);
+		LoadOpenGLFunction(glUniform4fv);
+		LoadOpenGLFunction(glUniform1i);
+		LoadOpenGLFunction(glUniform2i);
+		LoadOpenGLFunction(glUniform3i);
+		LoadOpenGLFunction(glUniform4i);
+		LoadOpenGLFunction(glUniform1iv);
+		LoadOpenGLFunction(glUniform2iv);
+		LoadOpenGLFunction(glUniform3iv);
+		LoadOpenGLFunction(glUniform4iv);
+		LoadOpenGLFunction(glUniform1ui);
+		LoadOpenGLFunction(glUniform2ui);
+		LoadOpenGLFunction(glUniform3ui);
+		LoadOpenGLFunction(glUniform4ui);
+		LoadOpenGLFunction(glUniform1uiv);
+		LoadOpenGLFunction(glUniform2uiv);
+		LoadOpenGLFunction(glUniform3uiv);
+		LoadOpenGLFunction(glUniform4uiv);
+		LoadOpenGLFunction(glUniformMatrix4fv);
+		
+		#ifdef DEBUG1
+		Logger::get() << "[OpenGL] Initialized." << Logger::endl;
+		#endif
+	}
 }
+
+// Buffers functions
+InitializeOpenGLFunction(glGenBuffers);
+InitializeOpenGLFunction(glIsBuffer);
+InitializeOpenGLFunction(glDeleteBuffers);
+InitializeOpenGLFunction(glBindBuffer);
+InitializeOpenGLFunction(glBufferData);
+
+// Shaders functions
+InitializeOpenGLFunction(glCreateShader);
+InitializeOpenGLFunction(glDeleteShader);
+InitializeOpenGLFunction(glGetShaderiv);
+InitializeOpenGLFunction(glGetShaderInfoLog);
+InitializeOpenGLFunction(glShaderSource);
+InitializeOpenGLFunction(glCompileShader);
+
+// Programs functions
+InitializeOpenGLFunction(glCreateProgram);
+InitializeOpenGLFunction(glDeleteProgram);
+InitializeOpenGLFunction(glGetProgramiv);
+InitializeOpenGLFunction(glGetProgramInfoLog);
+InitializeOpenGLFunction(glAttachShader);
+InitializeOpenGLFunction(glLinkProgram);
+InitializeOpenGLFunction(glUseProgram);
+InitializeOpenGLFunction(glGetActiveAttrib);
+InitializeOpenGLFunction(glGetActiveUniform);
+InitializeOpenGLFunction(glBindAttribLocation);
+InitializeOpenGLFunction(glEnableVertexAttribArray);
+InitializeOpenGLFunction(glDisableVertexAttribArray);
+InitializeOpenGLFunction(glVertexAttribPointer);
+InitializeOpenGLFunction(glGetAttribLocation);
+InitializeOpenGLFunction(glGetUniformLocation);
+
+// Uniforms functions
+InitializeOpenGLFunction(glUniform1f);
+InitializeOpenGLFunction(glUniform2f);
+InitializeOpenGLFunction(glUniform3f);
+InitializeOpenGLFunction(glUniform4f);
+InitializeOpenGLFunction(glUniform1fv);
+InitializeOpenGLFunction(glUniform2fv);
+InitializeOpenGLFunction(glUniform3fv);
+InitializeOpenGLFunction(glUniform4fv);
+InitializeOpenGLFunction(glUniform1i);
+InitializeOpenGLFunction(glUniform2i);
+InitializeOpenGLFunction(glUniform3i);
+InitializeOpenGLFunction(glUniform4i);
+InitializeOpenGLFunction(glUniform1iv);
+InitializeOpenGLFunction(glUniform2iv);
+InitializeOpenGLFunction(glUniform3iv);
+InitializeOpenGLFunction(glUniform4iv);
+InitializeOpenGLFunction(glUniform1ui);
+InitializeOpenGLFunction(glUniform2ui);
+InitializeOpenGLFunction(glUniform3ui);
+InitializeOpenGLFunction(glUniform4ui);
+InitializeOpenGLFunction(glUniform1uiv);
+InitializeOpenGLFunction(glUniform2uiv);
+InitializeOpenGLFunction(glUniform3uiv);
+InitializeOpenGLFunction(glUniform4uiv);
+InitializeOpenGLFunction(glUniformMatrix4fv);
+

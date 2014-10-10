@@ -2,7 +2,6 @@
 #define	__OPENGL_SCREEN_H	1
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
 #include <opengl/Color.h>
 
 namespace opengl
@@ -19,7 +18,7 @@ namespace opengl
 			~Screen();
 		
 		public:
-			static bool initialize( const char * title, int width = 800, int height = 600, bool resizable = false );
+			static bool initialize( const char * title, int width = 800, int height = 600, bool resizable = false, int majorVersion = 2, int minorVersion = 1);
 			static Screen * get();
 			static void destroy();
 		

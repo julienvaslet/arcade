@@ -2,12 +2,17 @@
 #include <iostream>
 
 #include <opengl/Screen.h>
+#include <tools/logger/Stdout.h>
 
 using namespace opengl;
 using namespace std;
+using namespace tools::logger;
 
 int main( int argc, char ** argv )
 {
+	// Initialize standard-output logger
+	new Stdout( "stdout", true );
+	
 	if( !Screen::initialize( "001 - Blackscreen" ) )
 	{
 		cout << "Unable to initialize screen. Exiting." << endl;

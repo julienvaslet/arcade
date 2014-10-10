@@ -3,7 +3,6 @@
 
 #include <opengl/Shader.h>
 
-#define GL_GLEXT_PROTOTYPES
 #include <SDL2/SDL_opengl.h>
 
 using namespace std;

@@ -2,18 +2,22 @@
 #include <iostream>
 #include <vector>
 
-#define GL_GLEXT_PROTOTYPES
 #include <opengl/Screen.h>
 #include <opengl/OpenGL.h>
 #include <opengl/ArrayBufferObject.h>
+#include <tools/logger/Stdout.h>
 
 #include <GL/glu.h>
 
 using namespace opengl;
 using namespace std;
+using namespace tools::logger;
 
 int main( int argc, char ** argv )
 {
+	// Initialize standard-output logger
+	new Stdout( "stdout", true );
+	
 	if( !Screen::initialize( "003 - Vertex Buffer Object" ) )
 	{
 		cout << "Unable to initialize screen. Exiting." << endl;
