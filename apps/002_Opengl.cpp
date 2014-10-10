@@ -64,5 +64,7 @@ int main( int argc, char ** argv )
 
 	Screen::destroy();
 	
+	Logger::destroy();
+	
 	return 0;
 }

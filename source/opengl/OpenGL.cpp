@@ -89,6 +89,12 @@ namespace opengl
 		Logger::get() << "[OpenGL] Initialization..." << Logger::endl;
 		#endif
 		
+		// Draw functions
+		LoadOpenGLFunction_Windows(glDrawRangeElements);
+		
+		// Textures functions
+		LoadOpenGLFunction_Windows(glActiveTexture);
+		
 		// Buffers functions
 		LoadOpenGLFunction(glGenBuffers);
 		LoadOpenGLFunction(glIsBuffer);
@@ -153,6 +159,12 @@ namespace opengl
 		#endif
 	}
 }
+
+// Draw functions
+InitializeOpenGLFunction_Windows(glDrawRangeElements);
+
+// Textures functions
+InitializeOpenGLFunction_Windows(glActiveTexture);
 
 // Buffers functions
 InitializeOpenGLFunction(glGenBuffers);

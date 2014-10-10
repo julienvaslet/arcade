@@ -1,9 +1,8 @@
+#include <SDL2/SDL.h>
+#include <GL/glu.h>
+
 #include <opengl/Camera.h>
 #include <opengl/Matrix.h>
-
-#include <SDL2/SDL.h>
-#include <iostream>
-#include <GL/glu.h>
 
 using namespace std;
 

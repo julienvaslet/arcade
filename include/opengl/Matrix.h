@@ -3,6 +3,11 @@
 
 using namespace std;
 
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#undef far
+#undef near
+#endif
+
 namespace opengl
 {
 	class Matrix

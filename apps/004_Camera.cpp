@@ -317,5 +317,7 @@ int main( int argc, char ** argv )
 	delete vbo;
 	Screen::destroy();
 	
+	Logger::destroy();
+	
 	return 0;
 }

@@ -4,6 +4,11 @@
 #include <opengl/Point3D.h>
 #include <opengl/Vector.h>
 
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#undef far
+#undef near
+#endif
+
 using namespace std;
 
 namespace opengl

@@ -14,6 +14,17 @@
 #define LoadOpenGLFunction(func)			func = (PFN_##func) SDL_GL_GetProcAddress( #func )
 #endif
 
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#define DefineOpenGLFunction_Windows(type,func,...)	DefineOpenGLFunction(type,func,__VA_ARGS__)
+#define InitializeOpenGLFunction_Windows(func)		InitializeOpenGLFunction(func)
+#define LoadOpenGLFunction_Windows(func)			LoadOpenGLFunction(func)
+#else
+#define DefineOpenGLFunction_Windows(type,func,...) 
+#define InitializeOpenGLFunction_Windows(func)				
+#define LoadOpenGLFunction_Windows(func)			
+#endif
+
+#include <SDL2/SDL_opengl.h>
 #include <GL/gl.h>
 
 #include <string>
@@ -43,6 +54,12 @@ namespace opengl
 			static GLenum getError();
 	};
 }
+
+// Draw functions
+DefineOpenGLFunction_Windows( void, glDrawRangeElements, GLenum, GLuint, GLuint, GLsizei, GLenum, const GLvoid * );
+
+// Texture functions
+DefineOpenGLFunction_Windows( void, glActiveTexture, GLenum );
 
 // Buffer functions
 DefineOpenGLFunction( void, glGenBuffers, GLsizei, GLuint * );
