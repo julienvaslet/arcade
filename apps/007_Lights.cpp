@@ -49,19 +49,19 @@ int main( int argc, char ** argv )
 	// Shaders initialization
 	Program * program = NULL;
 	
-	Program * program1 = new Program();
-	program1->loadVertexShaderFile( "data/shaders/vertex.vs" );
-	program1->loadFragmentShaderFile( "data/shaders/fragment.fs" );
-	program1->link( true );
-	program1->use( true );
-	
 	Program * program2 = new Program();
 	program2->loadVertexShaderFile( "data/shaders/vertex_texture.vs" );
 	program2->loadFragmentShaderFile( "data/shaders/fragment_texture.fs" );
 	program2->link( true );
 	program2->use( true );
+	
+	Program * program1 = new Program();
+	program1->loadVertexShaderFile( "data/shaders/vertex_lights.vs" );
+	program1->loadFragmentShaderFile( "data/shaders/fragment_lights.fs" );
+	program1->link( true );
+	program1->use( true );
 
-	program = program2;
+	program = program1;
 	
 	// Texture initialization
 	GLubyte textureData[16] = {
@@ -201,13 +201,13 @@ int main( int argc, char ** argv )
 		            {
 		            	if( program == program1 )
 		            	{
-		            		cout << "Using shader with texturing." << endl;
+		            		cout << "Using shader without lights." << endl;
 		            		program = program2;	
 							glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 		            	}
 		            	else
 		            	{
-		            		cout << "Using shader with colors." << endl;
+		            		cout << "Using shader with lights." << endl;
 		            		program = program1;
 							glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		            	}

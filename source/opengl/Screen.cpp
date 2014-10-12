@@ -102,12 +102,12 @@ namespace opengl
 				cout << "[Screen] Context created." << endl;
 				#endif
 			
-				screen->clear();
-				screen->render();
-			
 				Screen::instance = screen;
 				
 				OpenGL::initialize();
+			
+				screen->clear();
+				screen->render();
 			}
 		}
 	
