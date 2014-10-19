@@ -62,6 +62,14 @@ namespace opengl
 		this->parseHexString( hexstring );
 	}
 	
+	void Color::setColor( const Color& color )
+	{
+		this->red = color.red;
+		this->green = color.green;
+		this->blue = color.blue;
+		this->alpha = color.alpha;
+	}
+	
 	float Color::getRed() const
 	{
 		return this->red;

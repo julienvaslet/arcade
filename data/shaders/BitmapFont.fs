@@ -1,12 +1,12 @@
 #version 130
 
-uniform sampler2D texture0;
+uniform sampler2D texture;
 
-in vec2 texCoord0;
+in vec2 texCoord;
 out vec4 outColor;
 
 void main(void)
 {
-	outColor = texture( texture0, texCoord0 );
+	outColor = texture2D( texture, texCoord );
 }
 

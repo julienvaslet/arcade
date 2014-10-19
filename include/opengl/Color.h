@@ -27,6 +27,7 @@ namespace opengl
 			void setBlue( float blue );
 			void setAlpha( float alpha );
 			void setColor( const string& hexstring );
+			void setColor( const Color& color );
 			
 			float getRed() const;
 			float getGreen() const;

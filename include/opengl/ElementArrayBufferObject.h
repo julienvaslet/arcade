@@ -24,6 +24,7 @@ namespace opengl
 			void setData( const vector<unsigned int>& data, Frequency frequency = Static, Access access = Draw );
 
 			void draw( unsigned int start = 0, unsigned int end = 0 );
+			void draw( OpenGL::DrawMode mode, unsigned int start = 0, unsigned int end = 0 );
 	};
 }
 

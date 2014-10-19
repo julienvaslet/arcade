@@ -1,6 +1,7 @@
 #include <opengl/BitmapFont.h>
 #include <opengl/ArrayBufferObject.h>
 #include <opengl/ElementArrayBufferObject.h>
+#include <opengl/Screen.h>
 #include <SDL2/SDL_image.h>
 
 #include <tools/logger/Logger.h>
@@ -11,7 +12,7 @@ namespace opengl
 	Program * BitmapFont::program = NULL;
 	unsigned int BitmapFont::instances = 0;
 	
-	BitmapFont::BitmapFont( const string& filename, unsigned int characterWidth, unsigned int characterHeight ) : Font(filename), texture(NULL), characterWidth(characterWidth), characterHeight(characterHeight), textureWidth(0), textureHeight(0)
+	BitmapFont::BitmapFont( const string& filename, unsigned int characterWidth, unsigned int characterHeight ) : Font(filename), texture(NULL), charactersByLine(0), characterWidth(characterWidth), characterHeight(characterHeight), relativeCharacterWidth(0.0f), relativeCharacterHeight(0.0f)
 	{
 		BitmapFont::instances++;
 		
@@ -34,10 +35,29 @@ namespace opengl
 	
 		if( surface != NULL )
 		{
-			this->textureWidth = surface->w;
-			this->textureHeight = surface->h;
+			int pitch = surface->pitch / surface->w;
 			
-			this->texture->setData( static_cast<unsigned char *>( surface->pixels ), surface->w, surface->h, GL_RGB );
+			this->charactersByLine = surface->w / this->characterWidth;
+			this->relativeCharacterWidth = static_cast<float>( this->characterWidth ) / static_cast<float>( surface->w );
+			this->relativeCharacterHeight = static_cast<float>( this->characterHeight ) / static_cast<float>( surface->h );
+			
+			// Texture should be rotated because of SDL loading functions
+			vector<unsigned char> pixels( surface->h * surface->w * pitch, '\0' );
+			
+			for( int j = 0 ; j < surface->h ; j++ )
+			{
+				for( int i = 0 ; i < surface->w ; i++ )
+				{
+					for( int p = 0 ; p < pitch ; p++ )
+					{
+						pixels[ j * surface->w * pitch + i * pitch + p ] = ( *( static_cast<unsigned char *>(surface->pixels) + (surface->h - j) * surface->w * pitch + i * pitch + p ) );
+					}
+				}
+
+			}
+						
+			this->texture->setData( &(pixels[0]), surface->w, surface->h, GL_RGB );
+
 			SDL_FreeSurface( surface );
 		}
 		#ifdef DEBUG1
@@ -62,24 +82,27 @@ namespace opengl
 	void BitmapFont::render( const Point2D& origin, const string& text ) const
 	{
 		BitmapFont::program->use( true );
+
+		vector<Point2D> m_points;
+		m_points.push_back( Point2D( 200.0f, 150.0f ) );
+		m_points.push_back( Point2D( 600.0f, 150.0f ) );
+		m_points.push_back( Point2D( 600.0f, 550.0f ) );
+		m_points.push_back( Point2D( 200.0f, 550.0f ) );
+		
+		char c = 'P';
+		
+		float x = static_cast<float>( c % this->charactersByLine );
+		float y = static_cast<float>( c / this->charactersByLine );
 		
 		vector<Point2D> m_texcoords;
-		m_texcoords.push_back( Point2D( 1.0f, 1.0f ) );
-		m_texcoords.push_back( Point2D( 0.0f, 1.0f ) );
-		m_texcoords.push_back( Point2D( 0.0f, 0.0f ) );
-		m_texcoords.push_back( Point2D( 1.0f, 0.0f ) );
-
-		vector<Point3D> m_points;
-		m_points.push_back( Point3D( -1.0f, -1.0f, 0.5f ) );
-		m_points.push_back( Point3D( 1.0f, -1.0f, 0.5f ) );
-		m_points.push_back( Point3D( 1.0f, 1.0f, 0.5f ) );
-		m_points.push_back( Point3D( -1.0f, 1.0f, 0.5f ) );
+		m_texcoords.push_back( Point2D( x * this->relativeCharacterWidth, 1.0f - ((y + 1) * this->relativeCharacterHeight) ) );
+		m_texcoords.push_back( Point2D( (x + 1.0f) * this->relativeCharacterWidth, 1.0f - ((y + 1) * this->relativeCharacterHeight) ) );
+		m_texcoords.push_back( Point2D( (x + 1.0f) * this->relativeCharacterWidth, 1.0f - (y * this->relativeCharacterHeight) ) );
+		m_texcoords.push_back( Point2D( x * this->relativeCharacterWidth, 1.0f - (y * this->relativeCharacterHeight) ) );
 	
 		vector<unsigned int> m_indices;
 		m_indices.push_back( 0 );
 		m_indices.push_back( 1 );
-		m_indices.push_back( 2 );
-		m_indices.push_back( 0 );
 		m_indices.push_back( 2 );
 		m_indices.push_back( 3 );
 	
@@ -92,15 +115,12 @@ namespace opengl
 		ElementArrayBufferObject * ibo = new ElementArrayBufferObject();
 		ibo->setData( m_indices );
 		
-		BitmapFont::program->sendProjectionMatrix( "projection_matrix" );
-		BitmapFont::program->sendModelviewMatrix( "modelview_matrix" );
-		
-		BitmapFont::program->sendVertexPointer( "a_Vertex", vbo );
-		//BitmapFont::program->sendColorPointer( "a_Color", cbo );
-		BitmapFont::program->sendUniform( "texture0", *(this->texture), 0 );
-		BitmapFont::program->sendTextureCoordinatesPointer( "a_TexCoord0", tbo );
+		BitmapFont::program->sendUniform( "window", static_cast<float>( Screen::get()->getWidth() ), static_cast<float>( Screen::get()->getHeight() ) );
+		BitmapFont::program->sendAttributePointer( "a_Vertex", vbo, 2 );
+		BitmapFont::program->sendAttributePointer( "a_TexCoord", tbo, 2 );
+		BitmapFont::program->sendUniform( "texture", *(this->texture), 0 );
 
-		ibo->draw();
+		ibo->draw( OpenGL::Quads );
 		
 		delete vbo;
 		delete tbo;

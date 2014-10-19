@@ -38,6 +38,8 @@ int main( int argc, char ** argv )
 	camera.getCenter().moveTo( 0.0f, 0.0f, 0.0f );
 	
 	glEnable( GL_DEPTH_TEST );
+	
+	Screen::get()->setClearColor( Color( 0.2f, 0.2f, 0.2f, 1.0f ) );
 
 	while( running )
 	{

@@ -35,6 +35,20 @@ namespace opengl
 {
 	class OpenGL
 	{
+		public:
+			enum DrawMode
+			{
+				Points = GL_POINTS,
+				Lines = GL_LINES,
+				LineStrip = GL_LINE_STRIP,
+				LineLoop = GL_LINE_LOOP,
+				Triangles = GL_TRIANGLES,
+				TriangleStrip = GL_TRIANGLE_STRIP,
+				Quads = GL_QUADS,
+				QuadStrip = GL_QUAD_STRIP,
+				Polygon = GL_POLYGON
+			};
+		
 		protected:
 			static string vendor;
 			static string renderer;

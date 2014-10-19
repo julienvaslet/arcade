@@ -16,6 +16,11 @@ namespace opengl
 		
 			Screen();
 			~Screen();
+			
+			int width;
+			int height;
+			
+			Color clearColor;
 		
 		public:
 			static bool initialize( const char * title, int width = 800, int height = 600, bool resizable = false, int majorVersion = 2, int minorVersion = 1);
@@ -23,8 +28,7 @@ namespace opengl
 			static void destroy();
 		
 			SDL_GLContext getContext();
-			void resetRenderColor();
-			void setRenderColor( const Color& color );
+			void setClearColor( const Color& color );
 			void render();
 			void clear();
 			int getWidth();

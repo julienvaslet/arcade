@@ -3,15 +3,17 @@
 #include <opengl/OpenGL.h>
 
 #ifdef DEBUG0
+#include <tools/logger/Logger.h>
 #include <iostream>
 using namespace std;
+using namespace tools::logger;
 #endif
 
 namespace opengl
 {
 	Screen * Screen::instance = NULL;
 
-	Screen::Screen() : window(NULL), context(NULL)
+	Screen::Screen() : window(NULL), context(NULL), width(0), height(0), clearColor(0.0,0.0,0.0,1.0)
 	{
 	}
 
@@ -22,7 +24,7 @@ namespace opengl
 			SDL_GL_DeleteContext( this->context );
 		
 			#ifdef DEBUG0
-			cout << "[Screen] Context destroyed." << endl;
+			Logger::get() << "[Screen] Context destroyed." << Logger::endl;
 			#endif
 		}
 		
@@ -31,7 +33,7 @@ namespace opengl
 			SDL_DestroyWindow( this->window );
 		
 			#ifdef DEBUG0
-			cout << "[Screen] Window destroyed." << endl;
+			Logger::get() << "[Screen] Window destroyed." << Logger::endl;
 			#endif
 		}
 	}
@@ -47,7 +49,7 @@ namespace opengl
 		if( (initFlags & imageFlags) != imageFlags )
 		{
 			#ifdef DEBUG0
-			cout << "[Screen] Unable to init SDL_image library: " << IMG_GetError() << endl;
+			Logger::get() << "[Screen] Unable to init SDL_image library: " << IMG_GetError() << Logger::endl;
 			#endif
 		}
 		
@@ -66,14 +68,11 @@ namespace opengl
 			height,
 			( width == 0 || height == 0 ) ? SDL_WINDOW_FULLSCREEN : ( resizable ? SDL_WINDOW_RESIZABLE : 0 ) | SDL_WINDOW_OPENGL
 		);
-	
-		// do no specify width & height and put in fullscreen
-		// then => SDL_RenderSetLogicalSize( renderer, 800, 600 ); ?
 
 		if( screen->window == NULL )
 		{
 			#ifdef DEBUG0
-			cout << "[Screen] Unable to create window: " << SDL_GetError() << endl;
+			Logger::get() << "[Screen] Unable to create window: " << SDL_GetError() << Logger::endl;
 			#endif
 		
 			success = false;
@@ -81,8 +80,13 @@ namespace opengl
 		}
 		else
 		{
+			// TODO: See the fullscreen case
+			// Theses values may be called by Font subclasses in order to render 2D overlay fonts
+			screen->width = width;
+			screen->height = height;
+			
 			#ifdef DEBUG0
-			cout << "[Screen] Window created." << endl;
+			Logger::get() << "[Screen] Window created." << Logger::endl;
 			#endif
 		
 			screen->context = SDL_GL_CreateContext( screen->window );
@@ -90,7 +94,7 @@ namespace opengl
 			if( screen->context == NULL )
 			{
 				#ifdef DEBUG0
-				cout << "[Screen] Unable to create the context: " << SDL_GetError() << endl;
+				Logger::get() << "[Screen] Unable to create the context: " << SDL_GetError() << Logger::endl;
 				#endif
 		
 				success = false;
@@ -99,7 +103,7 @@ namespace opengl
 			else
 			{
 				#ifdef DEBUG0
-				cout << "[Screen] Context created." << endl;
+				Logger::get() << "[Screen] Context created." << Logger::endl;
 				#endif
 			
 				Screen::instance = screen;
@@ -136,8 +140,7 @@ namespace opengl
 
 	void Screen::clear()
 	{
-		//this->resetRenderColor();
-		glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+		glClearColor( this->clearColor.getRed(), this->clearColor.getGreen(), this->clearColor.getBlue(), this->clearColor.getAlpha() );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 		glLoadIdentity();
 	}
@@ -147,45 +150,18 @@ namespace opengl
 		SDL_GL_SwapWindow( this->window );
 	}
 	
-	void Screen::resetRenderColor()
+	void Screen::setClearColor( const Color& color )
 	{
-		//SDL_SetRenderDrawColor( this->renderer, 0, 0, 0, 255 );
-	}
-	
-	void Screen::setRenderColor( const Color& color )
-	{
-		//SDL_SetRenderDrawColor( this->renderer, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
+		this->clearColor.setColor( color );
 	}
 	
 	int Screen::getWidth()
-	{
-		int width = 0;
-		//int height = 0;
-		
-		/*if( SDL_GetRendererOutputSize( this->renderer, &width, &height ) != 0 )
-		{
-			width = 0;
-			#ifdef DEBUG0
-			cout << "[Screen] An error has occured when output size was requested: " << SDL_GetError() << endl;
-			#endif
-		}*/
-		
-		return width;
+	{		
+		return this->width;
 	}
 	
 	int Screen::getHeight()
 	{
-		//int width = 0;
-		int height = 0;
-		/*
-		if( SDL_GetRendererOutputSize( this->renderer, &width, &height ) != 0 )
-		{
-			height = 0;
-			#ifdef DEBUG0
-			cout << "[Screen] An error has occured when output size was requested: " << SDL_GetError() << endl;
-			#endif
-		}*/
-		
-		return height;
+		return this->height;
 	}
 }

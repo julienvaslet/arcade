@@ -16,10 +16,11 @@ namespace opengl
 			static Program * program;
 		
 			Texture2D * texture;
+			unsigned int charactersByLine;
 			unsigned int characterWidth;
 			unsigned int characterHeight;
-			unsigned int textureWidth;
-			unsigned int textureHeight;
+			float relativeCharacterWidth;
+			float relativeCharacterHeight;
 			
 		public:
 			BitmapFont( const string& filename, unsigned int characterWidth, unsigned int characterHeight );
