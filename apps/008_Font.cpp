@@ -31,7 +31,7 @@ int main( int argc, char ** argv )
 	SDL_Event lastEvent;
 	unsigned int lastDrawTicks = 0;
 	
-	new BitmapFont( "data/fonts/bitmap.bmp", 16, 16 );
+	new BitmapFont( "data/fonts/bitmap.bmp", 16, 16, 4, 1 );
 
 	Camera camera;
 	camera.getEye().moveTo( 0.0f, 1.25f, 4.0f );
@@ -40,7 +40,24 @@ int main( int argc, char ** argv )
 	glEnable( GL_DEPTH_TEST );
 	
 	Screen::get()->setClearColor( Color( 0.2f, 0.2f, 0.2f, 1.0f ) );
-
+	
+	stringstream text;
+	
+	for( int j = 2 ; j < 8 ; j++ )
+	{
+		for( int i = 0 ; i < 16 ; i++ )
+		{
+			char c = static_cast<char>( 16 * j + i );
+			if( c == '\n' ) c = ' ';
+			text << c;
+		}
+		
+		text << '\n';
+	}
+	
+	cout << endl << "Font must be shown as :" << endl;
+	cout << text.str() << endl;
+	
 	while( running )
 	{
 		while( SDL_PollEvent( &lastEvent ) )
@@ -73,7 +90,7 @@ int main( int argc, char ** argv )
 			glMatrixMode( GL_MODELVIEW );
 			camera.look();
 			
-			Font::get("data/fonts/bitmap.bmp")->render( Point2D( 10, 10 ), "Hello !" );
+			Font::get("data/fonts/bitmap.bmp")->render( Point2D( 20, Screen::get()->getHeight() - 40 ), text.str(), 2.0f );
 			
 			Screen::get()->render();
 			

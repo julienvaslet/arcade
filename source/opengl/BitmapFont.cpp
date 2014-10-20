@@ -1,6 +1,4 @@
 #include <opengl/BitmapFont.h>
-#include <opengl/ArrayBufferObject.h>
-#include <opengl/ElementArrayBufferObject.h>
 #include <opengl/Screen.h>
 #include <SDL2/SDL_image.h>
 
@@ -12,7 +10,7 @@ namespace opengl
 	Program * BitmapFont::program = NULL;
 	unsigned int BitmapFont::instances = 0;
 	
-	BitmapFont::BitmapFont( const string& filename, unsigned int characterWidth, unsigned int characterHeight ) : Font(filename), texture(NULL), charactersByLine(0), characterWidth(characterWidth), characterHeight(characterHeight), relativeCharacterWidth(0.0f), relativeCharacterHeight(0.0f)
+	BitmapFont::BitmapFont( const string& filename, unsigned int characterWidth, unsigned int characterHeight, unsigned int marginWidth, unsigned marginHeight ) : Font(filename), vertices(NULL), textureCoordinates(NULL), indices(NULL), texture(NULL), charactersByLine(0), characterWidth(characterWidth), characterHeight(characterHeight), marginWidth(marginWidth), marginHeight(marginHeight), relativeCharacterWidth(0.0f), relativeCharacterHeight(0.0f)
 	{
 		BitmapFont::instances++;
 		
@@ -23,6 +21,10 @@ namespace opengl
 			BitmapFont::program->loadFragmentShaderFile( "data/shaders/BitmapFont.fs" );
 			BitmapFont::program->link( true );
 		}
+		
+		this->vertices = new ArrayBufferObject();
+		this->textureCoordinates = new ArrayBufferObject();
+		this->indices = new ElementArrayBufferObject();
 		
 		this->texture = new Texture2D();
 		this->texture->bind();
@@ -70,6 +72,15 @@ namespace opengl
 	
 	BitmapFont::~BitmapFont()
 	{
+		if( this->vertices != NULL )
+			delete this->vertices;
+			
+		if( this->textureCoordinates != NULL )
+			delete this->textureCoordinates;
+			
+		if( this->indices != NULL )
+			delete this->indices;
+			
 		if( this->texture != NULL )
 			delete this->texture;
 		
@@ -79,78 +90,98 @@ namespace opengl
 			delete BitmapFont::program;
 	}
 	
-	void BitmapFont::render( const Point2D& origin, const string& text ) const
+	void BitmapFont::render( const Point2D& origin, const string& text, float size ) const
 	{
-		BitmapFont::program->use( true );
-
+		if( size == 0.0f ) size = 1.0f;
+		
 		vector<Point2D> m_points;
-		m_points.push_back( Point2D( 200.0f, 150.0f ) );
-		m_points.push_back( Point2D( 600.0f, 150.0f ) );
-		m_points.push_back( Point2D( 600.0f, 550.0f ) );
-		m_points.push_back( Point2D( 200.0f, 550.0f ) );
-		
-		char c = 'P';
-		
-		float x = static_cast<float>( c % this->charactersByLine );
-		float y = static_cast<float>( c / this->charactersByLine );
-		
 		vector<Point2D> m_texcoords;
-		m_texcoords.push_back( Point2D( x * this->relativeCharacterWidth, 1.0f - ((y + 1) * this->relativeCharacterHeight) ) );
-		m_texcoords.push_back( Point2D( (x + 1.0f) * this->relativeCharacterWidth, 1.0f - ((y + 1) * this->relativeCharacterHeight) ) );
-		m_texcoords.push_back( Point2D( (x + 1.0f) * this->relativeCharacterWidth, 1.0f - (y * this->relativeCharacterHeight) ) );
-		m_texcoords.push_back( Point2D( x * this->relativeCharacterWidth, 1.0f - (y * this->relativeCharacterHeight) ) );
-	
 		vector<unsigned int> m_indices;
-		m_indices.push_back( 0 );
-		m_indices.push_back( 1 );
-		m_indices.push_back( 2 );
-		m_indices.push_back( 3 );
-	
-		ArrayBufferObject * vbo = new ArrayBufferObject();
-		vbo->setData( m_points );
-	
-		ArrayBufferObject * tbo = new ArrayBufferObject();
-		tbo->setData( m_texcoords );
-	
-		ElementArrayBufferObject * ibo = new ElementArrayBufferObject();
-		ibo->setData( m_indices );
-		
-		BitmapFont::program->sendUniform( "window", static_cast<float>( Screen::get()->getWidth() ), static_cast<float>( Screen::get()->getHeight() ) );
-		BitmapFont::program->sendAttributePointer( "a_Vertex", vbo, 2 );
-		BitmapFont::program->sendAttributePointer( "a_TexCoord", tbo, 2 );
-		BitmapFont::program->sendUniform( "texture", *(this->texture), 0 );
 
-		ibo->draw( OpenGL::Quads );
+		Point2D point(origin);
 		
-		delete vbo;
-		delete tbo;
-		delete ibo;
+		if( text.length() > 0 )
+		{
+			BitmapFont::program->use( true );
+
+			for( unsigned int i = 0, j = 0 ; i < text.length() ; i++, j+=4 )
+			{
+				if( text[i] == '\n' )
+				{
+					point.moveTo( origin.getX(), point.getY() - (this->characterHeight - this->marginHeight) * size );
+					j -= 4;
+					continue;
+				}
+				
+				float x = static_cast<float>( text[i] % this->charactersByLine );
+				float y = static_cast<float>( text[i] / this->charactersByLine );
+				float dx = static_cast<float>( this->characterWidth - this->marginWidth ) / static_cast<float>( this->characterWidth );
+				float dy = static_cast<float>( this->characterHeight - this->marginHeight ) / static_cast<float>( this->characterHeight );
+
+				// Points
+				m_points.push_back( point );
+				point.moveBy( (this->characterWidth - this->marginWidth) * size, 0 );
+				m_points.push_back( point );
+				point.moveBy( 0, (this->characterHeight - this->marginHeight) * size );
+				m_points.push_back( point );
+				point.moveBy( -1.0f * (this->characterWidth - this->marginWidth) * size, 0 );
+				m_points.push_back( point );
+				
+				// Move to the next character position
+				point.moveBy( (this->characterWidth - this->marginWidth) * size, -1.0f * (this->characterHeight - this->marginHeight) * size );
+		
+				// Texture Coordinates
+				m_texcoords.push_back( Point2D( x * this->relativeCharacterWidth, 1.0f - ((y + dy) * this->relativeCharacterHeight) ) );
+				m_texcoords.push_back( Point2D( (x + dx) * this->relativeCharacterWidth, 1.0f - ((y + dy) * this->relativeCharacterHeight) ) );
+				m_texcoords.push_back( Point2D( (x + dx) * this->relativeCharacterWidth, 1.0f - (y * this->relativeCharacterHeight) ) );
+				m_texcoords.push_back( Point2D( x * this->relativeCharacterWidth, 1.0f - (y * this->relativeCharacterHeight) ) );
+	
+				// Indices
+				m_indices.push_back( j );
+				m_indices.push_back( j + 1 );
+				m_indices.push_back( j + 2 );
+				m_indices.push_back( j );
+				m_indices.push_back( j + 2 );
+				m_indices.push_back( j + 3 );
+			}
+
+			this->vertices->setData( m_points );
+			this->textureCoordinates->setData( m_texcoords );
+			this->indices->setData( m_indices );
+	
+			BitmapFont::program->sendUniform( "window", static_cast<float>( Screen::get()->getWidth() ), static_cast<float>( Screen::get()->getHeight() ) );
+			BitmapFont::program->sendAttributePointer( "a_Vertex", this->vertices, 2 );
+			BitmapFont::program->sendAttributePointer( "a_TexCoord", this->textureCoordinates, 2 );
+			BitmapFont::program->sendUniform( "texture", *(this->texture), 0 );
+
+			this->indices->draw( OpenGL::Triangles );
+		}
 	}
 	
-	void BitmapFont::renderSize( Point2D& origin, const string& text ) const
+	void BitmapFont::renderSize( Point2D& origin, const string& text, float size ) const
 	{
-		origin.moveBy( 0, this->characterHeight );
+		origin.moveBy( 0, (this->characterHeight - this->marginHeight) * size );
 		
 		for( unsigned int i = 0 ; i < text.length() ; i++ )
 		{
 			if( text[i] == '\n' )
-				origin.moveBy( 0, this->characterHeight );
+				origin.moveBy( 0, (this->characterHeight - this->marginHeight) * size );
 			else
-				origin.moveBy( this->characterWidth, 0 );
+				origin.moveBy( (this->characterWidth - this->marginWidth) * size, 0 );
 		}
 	}
 	
-	unsigned int BitmapFont::renderWidth( const string& text ) const
+	unsigned int BitmapFont::renderWidth( const string& text, float size ) const
 	{
 		Point2D origin( 0, 0 );
-		this->renderSize( origin, text );
+		this->renderSize( origin, text, size );
 		return origin.getX();
 	}
 	
-	unsigned int BitmapFont::renderHeight( const string& text ) const
+	unsigned int BitmapFont::renderHeight( const string& text, float size ) const
 	{
 		Point2D origin( 0, 0 );
-		this->renderSize( origin, text );
+		this->renderSize( origin, text, size );
 		return origin.getY();
 	}
 }

@@ -19,10 +19,10 @@ namespace opengl
 			virtual ~Font();
 			
 		public:
-			virtual void render( const Point2D& origin, const string& text ) const = 0;
-			virtual void renderSize( Point2D& origin, const string& text ) const = 0;
-			virtual unsigned int renderWidth( const string& text ) const = 0;
-			virtual unsigned int renderHeight( const string& text ) const = 0;
+			virtual void render( const Point2D& origin, const string& text, float size = 0.0f ) const = 0;
+			virtual void renderSize( Point2D& origin, const string& text, float size = 0.0f ) const = 0;
+			virtual unsigned int renderWidth( const string& text, float size = 0.0f ) const = 0;
+			virtual unsigned int renderHeight( const string& text, float size = 0.0f ) const = 0;
 			
 			static Font * get( const string& name );
 			static void destroy( const string& name );
