@@ -90,7 +90,7 @@ int main( int argc, char ** argv )
 			glMatrixMode( GL_MODELVIEW );
 			camera.look();
 			
-			Font::get("data/fonts/bitmap.bmp")->render( Point2D( 20, Screen::get()->getHeight() - 40 ), text.str(), 2.0f );
+			Font::get("bitmap")->render( Point2D( 20, Screen::get()->getHeight() - 40 ), text.str(), 2.0f );
 			
 			Screen::get()->render();
 			

@@ -37,6 +37,8 @@ namespace opengl
 			virtual void renderSize( Point2D& origin, const string& text, float size = 0.0f ) const;
 			virtual unsigned int renderWidth( const string& text, float size = 0.0f ) const;
 			virtual unsigned int renderHeight( const string& text, float size = 0.0f ) const;
+			
+			static string getFontNameFromPath( const string& filename );
 	};
 }
 

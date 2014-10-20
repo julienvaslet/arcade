@@ -10,7 +10,7 @@ namespace opengl
 	Program * BitmapFont::program = NULL;
 	unsigned int BitmapFont::instances = 0;
 	
-	BitmapFont::BitmapFont( const string& filename, unsigned int characterWidth, unsigned int characterHeight, unsigned int marginWidth, unsigned marginHeight ) : Font(filename), vertices(NULL), textureCoordinates(NULL), indices(NULL), texture(NULL), charactersByLine(0), characterWidth(characterWidth), characterHeight(characterHeight), marginWidth(marginWidth), marginHeight(marginHeight), relativeCharacterWidth(0.0f), relativeCharacterHeight(0.0f)
+	BitmapFont::BitmapFont( const string& filename, unsigned int characterWidth, unsigned int characterHeight, unsigned int marginWidth, unsigned marginHeight ) : Font(BitmapFont::getFontNameFromPath(filename)), vertices(NULL), textureCoordinates(NULL), indices(NULL), texture(NULL), charactersByLine(0), characterWidth(characterWidth), characterHeight(characterHeight), marginWidth(marginWidth), marginHeight(marginHeight), relativeCharacterWidth(0.0f), relativeCharacterHeight(0.0f)
 	{
 		BitmapFont::instances++;
 		
@@ -30,7 +30,7 @@ namespace opengl
 		this->texture->bind();
 		
 		#ifdef DEBUG0
-		Logger::get() << "[BitmapFont] Loading file \"" << filename << "\"..." << Logger::endl;
+		Logger::get() << "[BitmapFont#" << BitmapFont::getFontNameFromPath( filename ) << "] Loading file \"" << filename << "\"..." << Logger::endl;
 		#endif
 		
 		SDL_Surface * surface = IMG_Load( filename.c_str() );
@@ -65,7 +65,7 @@ namespace opengl
 		#ifdef DEBUG1
 		else
 		{
-			Logger::get() << "[BitmapFont] Unable to load texture file \"" << filename << "\": " << IMG_GetError() << Logger::endl;
+			Logger::get() << "[BitmapFont#" << BitmapFont::getFontNameFromPath( filename ) << "] Unable to load texture file \"" << filename << "\": " << IMG_GetError() << Logger::endl;
 		}
 		#endif
 	}
@@ -183,6 +183,17 @@ namespace opengl
 		Point2D origin( 0, 0 );
 		this->renderSize( origin, text, size );
 		return origin.getY();
+	}
+	
+	string BitmapFont::getFontNameFromPath( const string& filename )
+	{
+		unsigned int lastSlash = filename.find_last_of("/");
+		if( lastSlash == string::npos ) lastSlash = 0;
+		
+		unsigned int lastDot = filename.find_last_of(".");
+		if( lastDot == string::npos ) lastDot = filename.length();
+		
+		return filename.substr( lastSlash + 1, lastDot - lastSlash - 1);
 	}
 }
 
