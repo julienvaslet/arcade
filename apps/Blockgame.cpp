@@ -10,7 +10,6 @@
 #include <opengl/OpenGL.h>
 #include <opengl/Camera.h>
 #include <opengl/BitmapFont.h>
-#include <opengl/Program.h>
 
 using namespace opengl;
 using namespace std;
@@ -21,7 +20,7 @@ int main( int argc, char ** argv )
 	// Initialize standard-output logger
 	new Stdout( "stdout", true );
 	
-	if( !Screen::initialize( "008 - Font" ) )
+	if( !Screen::initialize( "Blockgame" ) )
 	{
 		Logger::get() << "Unable to initialize screen. Exiting.\n";
 		return 1;
@@ -34,29 +33,10 @@ int main( int argc, char ** argv )
 	new BitmapFont( "data/fonts/bitmap.bmp", 32, 32, 7, 1 );
 
 	Camera camera;
-	camera.getEye().moveTo( 0.0f, 1.25f, 4.0f );
+	camera.getEye().moveTo( 0.0f, 0.0f, 0.0f );
 	camera.getCenter().moveTo( 0.0f, 0.0f, 0.0f );
 	
-	glEnable( GL_DEPTH_TEST );
-	
-	Screen::get()->setClearColor( Color( 0.2f, 0.2f, 0.2f, 1.0f ) );
-	
-	stringstream text;
-	
-	for( int j = 2 ; j < 8 ; j++ )
-	{
-		for( int i = 0 ; i < 16 ; i++ )
-		{
-			char c = static_cast<char>( 16 * j + i );
-			if( c == '\n' ) c = ' ';
-			text << c;
-		}
-		
-		text << '\n';
-	}
-	
-	cout << endl << "Font must be shown as :" << endl;
-	cout << text.str() << endl;
+	Screen::get()->setClearColor( Color( 0.5f, 0.5f, 0.5f, 1.0f ) );
 	
 	while( running )
 	{
@@ -85,12 +65,17 @@ int main( int argc, char ** argv )
 		if( ticks - lastDrawTicks > 15 )
 		{
 			Screen::get()->clear();
-			camera.setPerspective( 45.0f, 800.0f / 600.0f, 1.0f, 100.0f );
+			camera.setPerspective( 45.0f, static_cast<float>( Screen::get()->getWidth() ) / static_cast<float>( Screen::get()->getHeight() ), 1.0f, 100.0f );
 			
 			glMatrixMode( GL_MODELVIEW );
 			camera.look();
 			
-			Font::get("bitmap")->render( Point2D( 20, Screen::get()->getHeight() - 60 ), text.str(), 1.0f );
+			// User Interface			
+			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 80 ), "Score", 1.0f );
+			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 111 ), "104903", 1.0f );
+			
+			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 160 ), "Lines", 1.0f );
+			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 191 ), "10", 1.0f );
 			
 			Screen::get()->render();
 			
@@ -104,3 +89,4 @@ int main( int argc, char ** argv )
 	
 	return 0;
 }
+

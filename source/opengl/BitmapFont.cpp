@@ -59,6 +59,7 @@ namespace opengl
 			}
 						
 			this->texture->setData( &(pixels[0]), surface->w, surface->h, GL_RGB );
+			this->texture->setFiltering( GL_LINEAR, GL_LINEAR );
 
 			SDL_FreeSurface( surface );
 		}
@@ -108,33 +109,33 @@ namespace opengl
 			{
 				if( text[i] == '\n' )
 				{
-					point.moveTo( origin.getX(), point.getY() - (this->characterHeight - this->marginHeight) * size );
+					point.moveTo( origin.getX(), point.getY() - (this->characterHeight - (2.0f * this->marginHeight)) * size );
 					j -= 4;
 					continue;
 				}
 				
 				float x = static_cast<float>( text[i] % this->charactersByLine );
 				float y = static_cast<float>( text[i] / this->charactersByLine );
-				float dx = static_cast<float>( this->characterWidth - this->marginWidth ) / static_cast<float>( this->characterWidth );
-				float dy = static_cast<float>( this->characterHeight - this->marginHeight ) / static_cast<float>( this->characterHeight );
+				float dx = static_cast<float>( this->marginWidth ) / static_cast<float>( this->characterWidth );
+				float dy = static_cast<float>( this->marginHeight ) / static_cast<float>( this->characterHeight );
 
 				// Points
 				m_points.push_back( point );
-				point.moveBy( (this->characterWidth - this->marginWidth) * size, 0 );
+				point.moveBy( (this->characterWidth - (2.0f * this->marginWidth)) * size, 0 );
 				m_points.push_back( point );
-				point.moveBy( 0, (this->characterHeight - this->marginHeight) * size );
+				point.moveBy( 0, (this->characterHeight - (2.0f * this->marginHeight)) * size );
 				m_points.push_back( point );
-				point.moveBy( -1.0f * (this->characterWidth - this->marginWidth) * size, 0 );
+				point.moveBy( -1.0f * (this->characterWidth - (2.0f * this->marginWidth)) * size, 0 );
 				m_points.push_back( point );
 				
 				// Move to the next character position
-				point.moveBy( (this->characterWidth - this->marginWidth) * size, -1.0f * (this->characterHeight - this->marginHeight) * size );
+				point.moveBy( (this->characterWidth - (2.0f * this->marginWidth)) * size, -1.0f * (this->characterHeight - (2.0f * this->marginHeight)) * size );
 		
 				// Texture Coordinates
-				m_texcoords.push_back( Point2D( x * this->relativeCharacterWidth, 1.0f - ((y + dy) * this->relativeCharacterHeight) ) );
+				m_texcoords.push_back( Point2D( (x + dx) * this->relativeCharacterWidth, 1.0f - ((y + 1.0f - dy) * this->relativeCharacterHeight) ) );
+				m_texcoords.push_back( Point2D( (x + (1.0f - dx)) * this->relativeCharacterWidth, 1.0f - ((y + 1.0f - dy) * this->relativeCharacterHeight) ) );
+				m_texcoords.push_back( Point2D( (x + (1.0f - dx)) * this->relativeCharacterWidth, 1.0f - ((y + dy) * this->relativeCharacterHeight) ) );
 				m_texcoords.push_back( Point2D( (x + dx) * this->relativeCharacterWidth, 1.0f - ((y + dy) * this->relativeCharacterHeight) ) );
-				m_texcoords.push_back( Point2D( (x + dx) * this->relativeCharacterWidth, 1.0f - (y * this->relativeCharacterHeight) ) );
-				m_texcoords.push_back( Point2D( x * this->relativeCharacterWidth, 1.0f - (y * this->relativeCharacterHeight) ) );
 	
 				// Indices
 				m_indices.push_back( j );
@@ -160,14 +161,14 @@ namespace opengl
 	
 	void BitmapFont::renderSize( Point2D& origin, const string& text, float size ) const
 	{
-		origin.moveBy( 0, (this->characterHeight - this->marginHeight) * size );
+		origin.moveBy( 0, (this->characterHeight - (2.0f * this->marginHeight)) * size );
 		
 		for( unsigned int i = 0 ; i < text.length() ; i++ )
 		{
 			if( text[i] == '\n' )
-				origin.moveBy( 0, (this->characterHeight - this->marginHeight) * size );
+				origin.moveBy( 0, (this->characterHeight - (2.0f * this->marginHeight)) * size );
 			else
-				origin.moveBy( (this->characterWidth - this->marginWidth) * size, 0 );
+				origin.moveBy( (this->characterWidth - (2.0f * this->marginWidth)) * size, 0 );
 		}
 	}
 	
