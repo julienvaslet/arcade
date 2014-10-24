@@ -33,7 +33,7 @@ namespace opengl
 			BitmapFont( const string& filename, unsigned int characterWidth, unsigned int characterHeight, unsigned int marginWidth = 0, unsigned int marginHeight = 0 );
 			virtual ~BitmapFont();
 		
-			virtual void render( const Point2D& origin, const string& text, float size = 0.0f ) const;
+			virtual void render( const Point2D& origin, const string& text, const Color& color, float size = 0.0f ) const;
 			virtual void renderSize( Point2D& origin, const string& text, float size = 0.0f ) const;
 			virtual unsigned int renderWidth( const string& text, float size = 0.0f ) const;
 			virtual unsigned int renderHeight( const string& text, float size = 0.0f ) const;

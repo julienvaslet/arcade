@@ -38,6 +38,9 @@ int main( int argc, char ** argv )
 	
 	Screen::get()->setClearColor( Color( 0.5f, 0.5f, 0.5f, 1.0f ) );
 	
+	glEnable( GL_BLEND );
+	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+	
 	while( running )
 	{
 		while( SDL_PollEvent( &lastEvent ) )

@@ -37,6 +37,8 @@ namespace opengl
 	
 		if( surface != NULL )
 		{
+			// TODO : Handle alpha channel... from PNG file for instance
+			
 			int pitch = surface->pitch / surface->w;
 			
 			this->charactersByLine = surface->w / this->characterWidth;
@@ -91,7 +93,7 @@ namespace opengl
 			delete BitmapFont::program;
 	}
 	
-	void BitmapFont::render( const Point2D& origin, const string& text, float size ) const
+	void BitmapFont::render( const Point2D& origin, const string& text, const Color& color, float size ) const
 	{
 		if( size == 0.0f ) size = 1.0f;
 		
@@ -151,9 +153,10 @@ namespace opengl
 			this->indices->setData( m_indices );
 	
 			BitmapFont::program->sendUniform( "window", static_cast<float>( Screen::get()->getWidth() ), static_cast<float>( Screen::get()->getHeight() ) );
+			BitmapFont::program->sendUniform( "color", color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
+			BitmapFont::program->sendUniform( "texture", *(this->texture), 0 );
 			BitmapFont::program->sendAttributePointer( "a_Vertex", this->vertices, 2 );
 			BitmapFont::program->sendAttributePointer( "a_TexCoord", this->textureCoordinates, 2 );
-			BitmapFont::program->sendUniform( "texture", *(this->texture), 0 );
 
 			this->indices->draw( OpenGL::Triangles );
 		}
