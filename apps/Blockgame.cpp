@@ -12,6 +12,7 @@
 #include <opengl/BitmapFont.h>
 
 #include <blockgame/Block.h>
+#include <blockgame/Piece.h>
 
 using namespace opengl;
 using namespace std;
@@ -32,26 +33,46 @@ int main( int argc, char ** argv )
 	bool running = true;
 	SDL_Event lastEvent;
 	unsigned int lastDrawTicks = 0;
+	unsigned int lastBlockMove = 0;
+	unsigned int level = 1;
+	unsigned int lines = 0;
+	unsigned int score = 0;
 	
+	// Integer string variables
+	stringstream levelStr( "1" );
+	stringstream linesStr( "0" );
+	stringstream scoreStr( "0" );
+	
+	// Blocks' vectors
+	Piece * blocks = new Piece( 200 );
+	Piece * background = new Piece( 200 );
+	Piece * fallingBlock = Piece::generate();
+	Piece * nextBlock = Piece::generate();
+	
+	Screen::get()->setClearColor( Color( 0.0f, 0.0f, 0.0f, 0.0f ) );
 	new BitmapFont( "data/fonts/bitmap.bmp", 32, 32, 7, 1 );
 
 	Camera camera;
 	camera.getEye().moveTo( 0.0f, 0.0f, 70.0f );
 	camera.getCenter().moveTo( 0.0f, 0.0f, 0.0f );
 	
-	Screen::get()->setClearColor( Color( 0.0f, 0.0f, 0.0f, 1.0f ) );
-	
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 	
+	// Fill background vector
 	Point2D position( 0.0f, 0.0f );
-	Color blue( 0.0f, 0.0f, 1.0f );
-	Block * block = new Block( blue );
+	Color backgroundColor( 0.0f, 0.1f, 0.1f );
 	
-	vector<Point3D> vPoints;
-	vector<Point2D> vTexCoords;
-	vector<Color> vColors;
-	vector<unsigned int> vIndices;
+	for( unsigned int y = 0 ; y < 20 ; y++ )
+	{
+		for( unsigned int x = 0 ; x < 10 ; x++ )
+		{
+			position.moveTo( x, y );
+			background->insert( new Block( position, backgroundColor ) );
+		}
+	}
+	
+	lastBlockMove = SDL_GetTicks();
 	
 	while( running )
 	{
@@ -69,6 +90,52 @@ int main( int argc, char ** argv )
 				{
 		            if( lastEvent.key.keysym.sym == SDLK_ESCAPE )
 						running = false;
+						
+					else if( lastEvent.key.keysym.sym == SDLK_LEFT )
+					{
+						// Move the falling block on the left
+						if( fallingBlock != NULL )
+						{
+							fallingBlock->moveBy( -1.0f, 0.0f );
+							
+							if( fallingBlock->isInCollision( blocks ) )
+								fallingBlock->moveBy( 1.0f, 0.0f );
+							else
+								fallingBlock->correctPosition( 10.0f, 20.0f );
+						}
+					}
+					else if( lastEvent.key.keysym.sym == SDLK_RIGHT )
+					{
+						// Move the falling block on the right
+						if( fallingBlock != NULL )
+						{
+							fallingBlock->moveBy( 1.0f, 0.0f );
+							
+							if( fallingBlock->isInCollision( blocks ) )
+								fallingBlock->moveBy( -1.0f, 0.0f );
+							else
+								fallingBlock->correctPosition( 10.0f, 20.0f );
+						}
+					}
+					else if( lastEvent.key.keysym.sym == SDLK_UP )
+					{
+						// Rotate the falling block
+						fallingBlock->rotate();
+						// TODO: Should test blocks collision
+						fallingBlock->correctPosition( 10.0f, 20.0f );
+					}
+					else if( lastEvent.key.keysym.sym == SDLK_DOWN )
+					{
+						// Drop the falling block
+						while( !fallingBlock->isAtGround() && !fallingBlock->isInCollision( blocks ) )
+							fallingBlock->moveBy( 0.0f, -1.0f );
+						
+						fallingBlock->moveBy( 0.0f, 1.0f );
+						blocks->insert( fallingBlock );
+						delete fallingBlock;
+						fallingBlock = nextBlock;
+						nextBlock = Piece::generate();
+					}
 
 					break;
 				}
@@ -76,6 +143,26 @@ int main( int argc, char ** argv )
 		}
 		
 		unsigned int ticks = SDL_GetTicks();
+		
+		if( fallingBlock != NULL )
+		{
+			if( ticks - lastBlockMove > static_cast<unsigned int>( 500.0f - ((static_cast<float>( level ) - 1.0f) * 50.0f)) )
+			{
+				// Free-fall action
+				fallingBlock->moveBy( 0.0f, -1.0f );
+				
+				if( fallingBlock->isAtGround() || fallingBlock->isInCollision( blocks ) )
+				{
+					fallingBlock->moveBy( 0.0f, 1.0f );
+					blocks->insert( fallingBlock );
+					delete fallingBlock;
+					fallingBlock = nextBlock;
+					nextBlock = Piece::generate();
+				}
+				
+				lastBlockMove = ticks;
+			}
+		}
 		
 		if( ticks - lastDrawTicks > 15 )
 		{
@@ -89,32 +176,21 @@ int main( int argc, char ** argv )
 			camera.look();
 			
 			glMultMatrixf( Matrix::translation( -28.0f, -30.0f, 0.0f ).get() );
+			background->render();
+			blocks->render();
 			
-			vPoints.clear();
-			vTexCoords.clear();
-			vColors.clear();
-			vIndices.clear();
-			
-			for( unsigned int y = 0 ; y < 20 ; y++ )
-			{
-				for( unsigned int x = 0 ; x < 10 ; x++ )
-				{
-					position.moveTo( x, y );
-					block->prepareRendering( position, vPoints, vTexCoords, vColors, vIndices );
-				}
-			}
-			
-			Block::renderBlocks( vPoints, vTexCoords, vColors, vIndices );
+			if( fallingBlock != NULL )
+				fallingBlock->render();
 			
 			// User Interface
 			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 80 ), "Score", 1.0f );
-			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 112 ), "104903", 1.0f );
+			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 112 ), scoreStr.str(), 1.0f );
 			
 			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 160 ), "Lines", 1.0f );
-			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 192 ), "10", 1.0f );
+			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 192 ), linesStr.str(), 1.0f );
 			
 			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 240 ), "Level", 1.0f );
-			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 272 ), "2", 1.0f );
+			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 272 ), levelStr.str(), 1.0f );
 			
 			Screen::get()->render();
 			
@@ -122,7 +198,13 @@ int main( int argc, char ** argv )
 		}
 	}
 	
-	delete block;
+	delete blocks;
+	
+	if( fallingBlock != NULL )
+		delete fallingBlock;
+		
+	if( nextBlock != NULL )
+		delete nextBlock;
 
 	Font::destroy();
 	Screen::destroy();

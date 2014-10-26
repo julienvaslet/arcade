@@ -19,7 +19,7 @@ namespace blockgame
 	ArrayBufferObject * Block::colors = NULL;
 	ElementArrayBufferObject * Block::indices = NULL;
 	
-	Block::Block( const Color& color ) : color(color)
+	Block::Block( const Point2D& position, const Color& color ) : position(position), color(color)
 	{
 		Block::instances++;
 		
@@ -131,15 +131,20 @@ namespace blockgame
 		}
 	}
 	
-	void Block::prepareRendering( Point2D& position, vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned int>& vIndices ) const
+	Point2D& Block::getPosition()
+	{
+		return this->position;
+	}
+	
+	void Block::prepareRendering( vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned int>& vIndices ) const
 	{
 		unsigned int j = vPoints.size();
 		
 		// Points
-		vPoints.push_back( Point3D( 3.0f * position.getX(), 3.0f * position.getY(), 0.0f ) );
-		vPoints.push_back( Point3D( 3.0f * position.getX(), 3.0f * (position.getY() + 1.0f), 0.0f ) );
-		vPoints.push_back( Point3D( 3.0f * (position.getX() + 1.0f), 3.0f * (position.getY() + 1.0f), 0.0f ) );
-		vPoints.push_back( Point3D( 3.0f * (position.getX() + 1.0f), 3.0f * position.getY(), 0.0f ) );
+		vPoints.push_back( Point3D( 3.0f * this->position.getX(), 3.0f * this->position.getY(), 0.0f ) );
+		vPoints.push_back( Point3D( 3.0f * this->position.getX(), 3.0f * (this->position.getY() + 1.0f), 0.0f ) );
+		vPoints.push_back( Point3D( 3.0f * (this->position.getX() + 1.0f), 3.0f * (this->position.getY() + 1.0f), 0.0f ) );
+		vPoints.push_back( Point3D( 3.0f * (this->position.getX() + 1.0f), 3.0f * this->position.getY(), 0.0f ) );
 		
 		// Texture Coordinates
 		vTexCoords.push_back( Point2D( 0.0f, 0.0f ) );

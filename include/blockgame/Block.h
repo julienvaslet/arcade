@@ -23,13 +23,16 @@ namespace blockgame
 			static ArrayBufferObject * colors;
 			static ElementArrayBufferObject * indices;
 		
+			Point2D position;
 			Color color;
 			
 		public:
-			Block( const Color& color );
+			Block( const Point2D& position, const Color& color );
 			~Block();
 			
-			void prepareRendering( Point2D& position, vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned int>& vIndices ) const;
+			Point2D& getPosition();
+			
+			void prepareRendering( vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned int>& vIndices ) const;
 			static void renderBlocks( vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned int>& vIndices );
 	};
 }
