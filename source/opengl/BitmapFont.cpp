@@ -90,7 +90,10 @@ namespace opengl
 		BitmapFont::instances--;
 		
 		if( BitmapFont::instances == 0 )
+		{
 			delete BitmapFont::program;
+			BitmapFont::program = NULL;
+		}
 	}
 	
 	void BitmapFont::render( const Point2D& origin, const string& text, const Color& color, float size ) const
