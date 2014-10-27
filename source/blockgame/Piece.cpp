@@ -1,6 +1,9 @@
 #include <blockgame/Piece.h>
 #include <tools/logger/Logger.h>
 
+#include <cstdlib>
+#include <ctime>
+
 using namespace opengl;
 using namespace tools::logger;
 using namespace std;
@@ -109,16 +112,119 @@ namespace blockgame
 	{
 		Piece * piece = new Piece();
 		Point2D position( 5.0f, 19.0f );
-		Color color( 1.0f, 0.0f, 0.0f );
+		Color color( 0.0f, 0.0f, 0.0f );
 		
-		// Square (O)
-		piece->insert( new Block( position, color ) );
-		position.moveBy( -1.0f, 0.0f );
-		piece->insert( new Block( position, color ) );
-		position.moveBy( 0.0f, -1.0f );
-		piece->insert( new Block( position, color ) );
-		position.moveBy( 1.0f, 0.0f );
-		piece->insert( new Block( position, color ) );
+		srand( time(NULL) );
+		int index = rand() % 7;
+		
+		switch( index )
+		{
+			default:
+			case 0:
+			{
+				// O
+				color.setColor( "ff0000" );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( -1.0f, 0.0f );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( 0.0f, -1.0f );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( 1.0f, 0.0f );
+				piece->insert( new Block( position, color ) );
+				
+				break;
+			}
+		
+			case 1:
+			{
+				// I
+				color.setColor( "00ff00" );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( 1.0f, 0.0f );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( -2.0f, 0.0f );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( -1.0f, 0.0f );
+				piece->insert( new Block( position, color ) );
+				
+				break;
+			}
+			
+			case 2:
+			{
+				// T
+				color.setColor( "0000ff" );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( -1.0f, 0.0f );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( 2.0f, 0.0f );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( -1.0f, -1.0f );
+				piece->insert( new Block( position, color ) );
+				
+				break;
+			}
+		
+			case 3:
+			{
+				// J
+				color.setColor( "ffff00" );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( -1.0f, 0.0f );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( 2.0f, 0.0f );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( 0.0f, -1.0f );
+				piece->insert( new Block( position, color ) );
+				
+				break;
+			}
+		
+			case 4:
+			{
+				// L
+				color.setColor( "ff00ff" );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( 1.0f, 0.0f );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( -2.0f, 0.0f );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( 0.0f, -1.0f );
+				piece->insert( new Block( position, color ) );
+				
+				break;
+			}
+			
+			case 5:
+			{
+				// S
+				color.setColor( "00ffff" );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( 1.0f, 0.0f );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( -1.0f, -1.0f );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( -1.0f, 0.0f );
+				piece->insert( new Block( position, color ) );
+				
+				break;
+			}
+			
+			case 6:
+			{
+				// Z
+				color.setColor( "f0f0ff" );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( -1.0f, 0.0f );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( 1.0f, -1.0f );
+				piece->insert( new Block( position, color ) );
+				position.moveBy( 1.0f, 0.0f );
+				piece->insert( new Block( position, color ) );
+				
+				break;
+			}
+		}
 		
 		return piece;
 	}

@@ -127,6 +127,8 @@ int main( int argc, char ** argv )
 					else if( lastEvent.key.keysym.sym == SDLK_DOWN )
 					{
 						// Drop the falling block
+						score += ( 21 + ( 3 * level ) - ( blocks->getHeight() - fallingBlock->getY() ) );
+						
 						while( !fallingBlock->isAtGround() && !fallingBlock->isInCollision( blocks ) )
 							fallingBlock->moveBy( 0.0f, -1.0f );
 						
@@ -147,6 +149,9 @@ int main( int argc, char ** argv )
 						
 						scoreStr.str("");
 						scoreStr << score;
+					
+						if( fallingBlock->isInCollision( blocks ) )
+							running = false;
 					}
 
 					break;
@@ -164,8 +169,10 @@ int main( int argc, char ** argv )
 				fallingBlock->moveBy( 0.0f, -1.0f );
 				
 				if( fallingBlock->isAtGround() || fallingBlock->isInCollision( blocks ) )
-				{
+				{					
 					fallingBlock->moveBy( 0.0f, 1.0f );
+					score += ( 21 + ( 3 * level ) - ( blocks->getHeight() - fallingBlock->getY() ) );
+					
 					blocks->insert( fallingBlock );
 					delete fallingBlock;
 					fallingBlock = nextBlock;
@@ -182,6 +189,9 @@ int main( int argc, char ** argv )
 					
 					scoreStr.str("");
 					scoreStr << score;
+			
+					if( fallingBlock->isInCollision( blocks ) )
+						running = false;
 				}
 				
 				lastBlockMove = ticks;
