@@ -11,7 +11,7 @@
 #include <opengl/Camera.h>
 #include <opengl/BitmapFont.h>
 
-#include <blockgame/Block.h>
+#include <blockgame/Grid.h>
 #include <blockgame/Piece.h>
 
 using namespace opengl;
@@ -44,8 +44,8 @@ int main( int argc, char ** argv )
 	stringstream scoreStr( "0" );
 	
 	// Blocks' vectors
-	Piece * blocks = new Piece( 200 );
-	Piece * background = new Piece( 200 );
+	Grid * blocks = new Grid( 10.0f, 20.0f );
+	Grid * background = new Grid( 10.0f, 20.0f );
 	Piece * fallingBlock = Piece::generate();
 	Piece * nextBlock = Piece::generate();
 	
@@ -101,7 +101,7 @@ int main( int argc, char ** argv )
 							if( fallingBlock->isInCollision( blocks ) )
 								fallingBlock->moveBy( 1.0f, 0.0f );
 							else
-								fallingBlock->correctPosition( 10.0f, 20.0f );
+								fallingBlock->correctPosition( blocks->getWidth(), blocks->getHeight() );
 						}
 					}
 					else if( lastEvent.key.keysym.sym == SDLK_RIGHT )
@@ -114,7 +114,7 @@ int main( int argc, char ** argv )
 							if( fallingBlock->isInCollision( blocks ) )
 								fallingBlock->moveBy( -1.0f, 0.0f );
 							else
-								fallingBlock->correctPosition( 10.0f, 20.0f );
+								fallingBlock->correctPosition( blocks->getWidth(), blocks->getHeight() );
 						}
 					}
 					else if( lastEvent.key.keysym.sym == SDLK_UP )
@@ -122,7 +122,7 @@ int main( int argc, char ** argv )
 						// Rotate the falling block
 						fallingBlock->rotate();
 						// TODO: Should test blocks collision
-						fallingBlock->correctPosition( 10.0f, 20.0f );
+						fallingBlock->correctPosition( blocks->getWidth(), blocks->getHeight() );
 					}
 					else if( lastEvent.key.keysym.sym == SDLK_DOWN )
 					{
@@ -135,6 +135,18 @@ int main( int argc, char ** argv )
 						delete fallingBlock;
 						fallingBlock = nextBlock;
 						nextBlock = Piece::generate();
+					
+						lines += blocks->deleteFullLines();
+						level = ( lines / 10 ) + 1;
+						
+						linesStr.str("");
+						linesStr << lines;
+						
+						levelStr.str("");
+						levelStr << level;
+						
+						scoreStr.str("");
+						scoreStr << score;
 					}
 
 					break;
@@ -158,6 +170,18 @@ int main( int argc, char ** argv )
 					delete fallingBlock;
 					fallingBlock = nextBlock;
 					nextBlock = Piece::generate();
+					
+					lines += blocks->deleteFullLines();
+					level = ( lines / 10 ) + 1;
+					
+					linesStr.str("");
+					linesStr << lines;
+					
+					levelStr.str("");
+					levelStr << level;
+					
+					scoreStr.str("");
+					scoreStr << score;
 				}
 				
 				lastBlockMove = ticks;
@@ -199,6 +223,7 @@ int main( int argc, char ** argv )
 	}
 	
 	delete blocks;
+	delete background;
 	
 	if( fallingBlock != NULL )
 		delete fallingBlock;
