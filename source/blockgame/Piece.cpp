@@ -1,5 +1,6 @@
 #include <blockgame/Piece.h>
 #include <tools/logger/Logger.h>
+#include <opengl/Vector.h>
 
 #include <cstdlib>
 #include <ctime>
@@ -80,8 +81,25 @@ namespace blockgame
 		}
 	}
 	
-	void Piece::rotate()
+	void Piece::rotate( bool clockwise )
 	{
+		// A cross product is done to get the rotation
+		if( this->blocks.size() > 0 )
+		{
+			vector<Block *>::iterator it = this->blocks.begin();
+			
+			float baseX = (*it)->getPosition().getX();
+			float baseY =  (*it)->getPosition().getY();
+			
+			Vector v1( 0.0f, 0.0f, clockwise ? -1.0f : 1.0f );
+			
+			for( it++ ; it != this->blocks.end(); it++ )
+			{
+				Vector v2( baseX - (*it)->getPosition().getX(), baseY - (*it)->getPosition().getY(), 0.0f );
+				v2 *= v1;
+				(*it)->getPosition().moveTo( baseX + v2.getX(), baseY + v2.getY() );
+			}
+		}
 	}
 	
 	bool Piece::isAtGround()

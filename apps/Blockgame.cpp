@@ -121,7 +121,11 @@ int main( int argc, char ** argv )
 					{
 						// Rotate the falling block
 						fallingBlock->rotate();
-						// TODO: Should test blocks collision
+						
+						// Impossible rotation
+						if( fallingBlock->isInCollision( blocks ) )
+							fallingBlock->rotate( true );
+						
 						fallingBlock->correctPosition( blocks->getWidth(), blocks->getHeight() );
 					}
 					else if( lastEvent.key.keysym.sym == SDLK_DOWN )

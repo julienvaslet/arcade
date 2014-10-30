@@ -19,7 +19,7 @@ namespace blockgame
 			void moveTo( float x, float y );
 			void moveBy( float dx, float dy );
 			void correctPosition( float width, float height );
-			void rotate();
+			void rotate( bool clockwise = false );
 			
 			float getX() const;
 			float getY() const;
