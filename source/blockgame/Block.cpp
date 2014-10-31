@@ -73,7 +73,7 @@ namespace blockgame
 
 				}
 						
-				Block::texture->setData( &(pixels[0]), surface->w, surface->h, GL_RGBA );
+				Block::texture->setData( &(pixels[0]), surface->w, surface->h, GL_RGB );
 				Block::texture->setFiltering( GL_LINEAR, GL_LINEAR );
 
 				SDL_FreeSurface( surface );

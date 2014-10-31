@@ -5,7 +5,7 @@
 #include <opengl/OpenGL.h>
 #include <opengl/BitmapFont.h>
 
-#include <blockgame/PlayScene.h>
+#include <blockgame/IntroScene.h>
 
 using namespace opengl;
 using namespace tools::logger;
@@ -31,22 +31,26 @@ int main( int argc, char ** argv )
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 	
-	currentScene = new PlayScene();
+	currentScene = new IntroScene();
 
-	while( currentScene->isRunning() )
+	while( currentScene != NULL )
 	{
-		while( SDL_PollEvent( &lastEvent ) )
-			currentScene->handleEvent( &lastEvent );
+		while( currentScene->isRunning() )
+		{
+			while( SDL_PollEvent( &lastEvent ) )
+				currentScene->handleEvent( &lastEvent );
 	
-		unsigned int ticks = SDL_GetTicks();
+			unsigned int ticks = SDL_GetTicks();
 	
-		currentScene->live( ticks );
-		currentScene->render( ticks );
+			currentScene->live( ticks );
+			currentScene->render( ticks );
+		}
+	
+		Scene * nextScene = currentScene->getNextScene();
+	
+		delete currentScene;
+		currentScene = nextScene;
 	}
-	
-	delete currentScene;
-
-	// TODO : is scene has a next scene... handle it!
 
 	Font::destroy();
 	Screen::destroy();

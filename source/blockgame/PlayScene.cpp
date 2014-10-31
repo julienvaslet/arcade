@@ -1,4 +1,5 @@
 #include <blockgame/PlayScene.h>
+#include <blockgame/ScoreScene.h>
 
 #include <opengl/OpenGL.h>
 #include <opengl/Font.h>
@@ -28,7 +29,8 @@ namespace blockgame
 	
 		// Fill background vector
 		Point2D position( 0.0f, 0.0f );
-		Color backgroundColor( 0.0f, 0.1f, 0.1f );
+		Color backgroundColor( 1.0f, 1.0f, 1.0f );
+		backgroundColor.setAlpha( 0.2f );
 	
 		for( unsigned int y = 0 ; y < 20 ; y++ )
 		{
@@ -63,7 +65,7 @@ namespace blockgame
 	
 	void PlayScene::updateScore()
 	{
-		this->score += ( 21 + ( 3 * this->level ) - ( this->blocks->getHeight() - this->fallingBlock->getY() ) );
+		this->score += ( 21 + ( 3 * this->level ) - ( this->blocks->getHeight() - this->fallingBlock->getY() - 1 ) );
 	}
 	
 	void PlayScene::updateLabels()
@@ -87,6 +89,12 @@ namespace blockgame
 		this->level = ( this->lines / 10 ) + 1;
 		
 		this->updateLabels();
+		
+		if( this->fallingBlock->isInCollision( this->blocks ) )
+		{
+			this->running = false;
+			this->nextScene = new ScoreScene( this->score );
+		}
 	}
 	
 	void PlayScene::handleEvent( SDL_Event * event )
@@ -151,9 +159,6 @@ namespace blockgame
 					
 					this->fallingBlock->moveBy( 0.0f, 1.0f );
 					this->switchBlocks();
-				
-					if( this->fallingBlock->isInCollision( this->blocks ) )
-						this->running = false;
 				}
 
 				break;
@@ -176,9 +181,6 @@ namespace blockgame
 					this->updateScore();
 					
 					this->switchBlocks();
-			
-					if( this->fallingBlock->isInCollision( this->blocks ) )
-						running = false;
 				}
 				
 				this->lastBlockMove = ticks;
@@ -203,8 +205,14 @@ namespace blockgame
 			this->background->render();
 			this->blocks->render();
 			
+			// Falling block
 			if( this->fallingBlock != NULL )
 				this->fallingBlock->render();
+				
+			// Next block
+			glMultMatrixf( Matrix::translation( 35.0f, -42.0f, 0.0f ).get() );
+			if( this->nextBlock != NULL )
+				this->nextBlock->render();
 			
 			// User Interface
 			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 80 ), "Score", 1.0f );
@@ -215,6 +223,8 @@ namespace blockgame
 			
 			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 240 ), "Level", 1.0f );
 			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 272 ), this->levelStr.str(), 1.0f );
+			
+			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 380 ), "Next", 1.0f );
 			
 			Screen::get()->render();
 			this->lastDrawTicks = ticks;
