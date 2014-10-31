@@ -3,7 +3,6 @@
 #include <opengl/Vector.h>
 
 #include <cstdlib>
-#include <ctime>
 
 using namespace opengl;
 using namespace tools::logger;
@@ -132,7 +131,6 @@ namespace blockgame
 		Point2D position( 5.0f, 19.0f );
 		Color color( 0.0f, 0.0f, 0.0f );
 		
-		srand( time(NULL) );
 		int index = rand() % 7;
 		
 		switch( index )
