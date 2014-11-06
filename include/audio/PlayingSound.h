@@ -16,6 +16,8 @@ namespace audio
 			bool repeated;
 			unsigned int repeatedTimes;
 			bool playing;
+			//volume
+			//balance
 			
 		public:
 			PlayingSound( Sound * sound, unsigned int frequency, unsigned short int channels );
@@ -33,10 +35,11 @@ namespace audio
 			void play( unsigned int ticks = 0 );
 			//void pause();
 			
-			void setPosition( unsigned int position );
+			void setPosition( unsigned int position, bool relative = false );
 			void setPitch( double pitch = 1.0 );
 			void setRepeat( bool repeat, unsigned int times = 0 );
-			
+		
+			//unused: float getTransitionVolume( unsigned int position );	
 	};
 }
 

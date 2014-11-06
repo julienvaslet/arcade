@@ -24,10 +24,14 @@ namespace audio
 			unsigned int getFrequency() const;
 			unsigned short int getChannels() const;
 			
+			Sound * getData( unsigned int startPosition, unsigned int length );
 			int getData( unsigned int position ) const;
 			const vector<int>& getData() const;
 			void setData( unsigned int position, int value );
 			void setData( const vector<int>& data );
+			
+			void mix( const Sound * sound, unsigned int startMs = 0, float volume = 1.0f, unsigned int fromMs = 0, unsigned int toMs = 0 );
+			void rawMix( const Sound * sound, unsigned int startPosition = 0, float volume = 1.0f, unsigned int fromPosition = 0, unsigned toPosition = 0 );
 	};
 }
 

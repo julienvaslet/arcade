@@ -15,8 +15,12 @@ namespace audio
 	{	
 		protected:
 			static Mixer * instance;
-			static void callback( void * unused, Uint8 * stream, int len );
+			static void convertStream( const vector<int>& inStream, Uint8 * outStream, SDL_AudioFormat format );
+			static unsigned int getRealSamples( unsigned int samples, SDL_AudioFormat format );
+			static void callback( void * userdata, Uint8 * stream, int len );
 			
+			SDL_AudioDeviceID device;
+			SDL_AudioFormat format;
 			unsigned int samplingFrequency;
 			unsigned short int channels;
 			unsigned int samples;
@@ -28,6 +32,7 @@ namespace audio
 			virtual ~Mixer();
 			
 			unsigned int getSamplingFrequency() const;
+			SDL_AudioFormat getAudioFormat() const;
 			unsigned short int getChannels() const;
 			
 			// TODO: handle deletion on end for one-time sounds

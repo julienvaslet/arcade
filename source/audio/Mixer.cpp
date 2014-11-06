@@ -1,4 +1,5 @@
 #include <audio/Mixer.h>
+#include <climits>
 
 #ifdef DEBUG0
 #include <tools/logger/Logger.h>
@@ -9,7 +10,7 @@ namespace audio
 {
 	Mixer * Mixer::instance = NULL;
 	
-	Mixer::Mixer( unsigned int samplingFrequency, unsigned short int channels, unsigned int samples ) : samplingFrequency(samplingFrequency), channels(channels), samples(samples)
+	Mixer::Mixer( unsigned int samplingFrequency, unsigned short int channels, unsigned int samples ) : device(0), format(0), samplingFrequency(samplingFrequency), channels(channels), samples(samples)
 	{
 		Mixer::destroy();
 		
@@ -18,40 +19,45 @@ namespace audio
 		#endif
 		
 		SDL_AudioSpec desiredFormat;
-		SDL_AudioSpec format;
+		SDL_AudioSpec obtainedFormat;
 	
-		desiredFormat.format = AUDIO_S16SYS;
+		desiredFormat.format = AUDIO_S32SYS;
 		desiredFormat.freq = this->samplingFrequency;
 		desiredFormat.channels = this->channels;
 		desiredFormat.samples = this->samples;
 		desiredFormat.callback = Mixer::callback;
-		desiredFormat.userdata = NULL;
+		desiredFormat.userdata = this;
+		
+		this->device = SDL_OpenAudioDevice( NULL, 0, &desiredFormat, &obtainedFormat, 0 );
 
-		if( SDL_OpenAudio( &desiredFormat, &format ) < 0 )
+		if( this->device > 0 )
 		{
-			#ifdef DEBUG0
-		    Logger::get() << "[Mixer] Unable to open audio device: " << SDL_GetError() << Logger::endl;
-		    Logger::get() << "[Mixer] This mixer should be destroyed." << Logger::endl;
-		    #endif
-		}
-		else
-		{
-			this->samplingFrequency = format.freq;
-			this->channels = format.channels;
-			this->samples = format.samples;
+			this->samplingFrequency = obtainedFormat.freq;
+			this->channels = obtainedFormat.channels;
+			this->samples = obtainedFormat.samples;
+			this->format = obtainedFormat.format;
 			
 			#ifdef DEBUG0
 			Logger::get() << "[Mixer] Initialized (" << static_cast<int>( this->channels ) << " channels, " << this->samplingFrequency << " Hz, " << this->samples << " samples)." << Logger::endl;
 			#endif
 			
 			Mixer::instance = this;
-			SDL_PauseAudio( 0 );
+			SDL_PauseAudioDevice( this->device, 0 );
 		}
+		#ifdef DEBUG0
+		else
+		{
+			const char * error = SDL_GetError();
+		    Logger::get() << "[Mixer] Unable to open audio device: " << error << Logger::endl;
+		    Logger::get() << "[Mixer] This mixer should be destroyed." << Logger::endl;
+		}
+	    #endif
 	}
 	
 	Mixer::~Mixer()
 	{
-		SDL_PauseAudio( 0 );
+		if( this->device > 0 )
+			SDL_PauseAudioDevice( this->device, 1 );
 		
 		for( map<string, PlayingSound *>::iterator it = this->sounds.begin() ; it != this->sounds.end() ; it++ )
 		{
@@ -63,16 +69,19 @@ namespace audio
 		}
 		
 		this->sounds.clear();
+
+		if( this->device > 0 )
+		{		
+			#ifdef DEBUG0
+			Logger::get() << "[Mixer] Closing..." << Logger::endl;
+			#endif
 		
-		#ifdef DEBUG0
-		Logger::get() << "[Mixer] Closing..." << Logger::endl;
-		#endif
+			SDL_CloseAudioDevice( this->device );
 		
-		SDL_CloseAudio();
-		
-		#ifdef DEBUG0
-		Logger::get() << "[Mixer] Destroyed." << Logger::endl;
-		#endif
+			#ifdef DEBUG0
+			Logger::get() << "[Mixer] Destroyed." << Logger::endl;
+			#endif
+		}
 	}
 
 	unsigned int Mixer::getSamplingFrequency() const
@@ -84,83 +93,133 @@ namespace audio
 	{
 		return this->channels;
 	}
+	
+	SDL_AudioFormat Mixer::getAudioFormat() const
+	{
+		return this->format;
+	}
 
 	void Mixer::add( const string& name, Sound * sound )
 	{
-		map<string, PlayingSound *>::iterator it = this->sounds.find( name );
+		if( this->device > 0 )
+		{
+			SDL_LockAudioDevice( this->device );
 		
-		if( it != this->sounds.end() )
-			delete it->second;
+			map<string, PlayingSound *>::iterator it = this->sounds.find( name );
 		
-		this->sounds[name] = new PlayingSound( sound, this->samplingFrequency, this->channels );
+			if( it != this->sounds.end() )
+				delete it->second;
 		
-		#ifdef DEBUG0
-		Logger::get() << "[Mixer] Added sound \"" << name << "\" (" << sound->getDuration() << "s)." << Logger::endl;
-		#endif
+			this->sounds[name] = new PlayingSound( sound, this->samplingFrequency, this->channels );
+		
+			#ifdef DEBUG0
+			Logger::get() << "[Mixer] Added sound \"" << name << "\" (" << sound->getDuration() << "s)." << Logger::endl;
+			#endif
+		
+			SDL_UnlockAudioDevice( this->device );
+		}
 	}
 	
 	void Mixer::play( const string& name, unsigned int ticks )
 	{
-		map<string, PlayingSound *>::iterator it = this->sounds.find( name );
+		if( this->device > 0 )
+		{
+			SDL_LockAudioDevice( this->device );
 		
-		if( it != this->sounds.end() )
-		{
-			#ifdef DEBUG0
-			Logger::get() << "[Mixer] Playing sound \"" << name << "\"." << Logger::endl;
-			#endif
+			map<string, PlayingSound *>::iterator it = this->sounds.find( name );
+		
+			if( it != this->sounds.end() )
+			{
+				#ifdef DEBUG0
+				Logger::get() << "[Mixer] Playing sound \"" << name << "\"." << Logger::endl;
+				#endif
 			
-			it->second->play( ticks );
+				it->second->play( ticks );
+			}
+			#ifdef DEBUG0
+			else
+			{
+				Logger::get() << "[Mixer] Can not find sound \"" << name << "\" ; sound will not be played." << Logger::endl;
+			}
+			#endif
+		
+			SDL_UnlockAudioDevice( this->device );
 		}
-		#ifdef DEBUG0
-		else
-		{
-			Logger::get() << "[Mixer] Can not find sound \"" << name << "\" ; sound will not be played." << Logger::endl;
-		}
-		#endif
 	}
 	
 	bool Mixer::isPlaying()
 	{
 		bool playing = false;
 		
-		for( map<string, PlayingSound *>::iterator it = this->sounds.begin() ; it != this->sounds.end() ; it++ )
+		if( this->device > 0 )
 		{
-			if( it->second->isPlaying() )
+			SDL_LockAudioDevice( this->device );
+		
+			for( map<string, PlayingSound *>::iterator it = this->sounds.begin() ; it != this->sounds.end() ; it++ )
 			{
-				playing = true;
-				break;
+				if( it->second->isPlaying() )
+				{
+					playing = true;
+					break;
+				}
 			}
+		
+			SDL_UnlockAudioDevice( this->device );
 		}
 
 		return playing;
 	}
 	
-	void Mixer::callback( void * unused, Uint8 * stream, int len )
+	void Mixer::callback( void * userdata, Uint8 * stream, int len )
 	{
-		Mixer * mixer = Mixer::get();
-		vector<int> waves( len, 0 );
+		Mixer * mixer = static_cast<Mixer *>( userdata );
+		unsigned int realLength = Mixer::getRealSamples( len, mixer->getAudioFormat() );
+		bool firstSound = true;
+		vector<int> waves( realLength, 0.0 );
+		
+		Sound sound( mixer->samplingFrequency, mixer->channels );
+		sound.setData( waves );
 
 		if( mixer != NULL )
 		{
-			// Development case, only one sound
 			for( map<string, PlayingSound *>::iterator it = mixer->sounds.begin() ; it != mixer->sounds.end() ; it++ )
 			{
 				if( it->second->isPlaying() )
 				{
 					unsigned int position = it->second->getPosition();
-					unsigned int tocopy = it->second->getSound()->getDataLength() - position > static_cast<unsigned int>( len ) ? static_cast<unsigned int>( len ) : it->second->getSound()->getDataLength() - position;
+					unsigned int tocopy = ( position + realLength > it->second->getSound()->getDataLength() ) ? it->second->getSound()->getDataLength() - position : realLength;
 
-					for( unsigned int i = 0 ; i < tocopy ; i++ )
-						waves[i] += it->second->getSound()->getData( position + i );
-
-					it->second->setPosition( position + tocopy );
+					if( firstSound )
+					{
+						sound.rawMix( it->second->getSound(), 0, 2.0f, position, position + tocopy );
+						firstSound = false;
+					}
+					else
+						sound.rawMix( it->second->getSound(), 0, 1.0f, position, position + tocopy );
+						
+					it->second->setPosition( tocopy, true );
 				}
 			}
-			
-			// SDL Sound format
-			for( unsigned int i = 0 ; i < static_cast<unsigned int>( len ) ; i++ )
-				stream[i] = (Uint8) ( waves[i] >= 0 ) ? waves[i] : 255 + waves[i];
+
+			vector<int> waves = sound.getData();
+			Mixer::convertStream( waves, stream, mixer->getAudioFormat() );			
 		}
+	}
+	
+	unsigned int Mixer::getRealSamples( unsigned int samples, SDL_AudioFormat format )
+	{
+		// Base audio format size is 8 for Uint8
+		return 8.0f / static_cast<float>( SDL_AUDIO_BITSIZE( format ) ) * samples;
+	}
+		
+	void Mixer::convertStream( const vector<int>& inStream, Uint8 * outStream, SDL_AudioFormat format )
+	{
+		// Convert format (format is ignored)
+		// See https://wiki.libsdl.org/SDL_AudioFormat
+		Uint32 * stream = (Uint32 *) outStream;
+		
+		for( unsigned int i = 0 ; i < inStream.size() ; i++ )
+			stream[i] = inStream[i];
 	}
 	
 	Mixer * Mixer::get()

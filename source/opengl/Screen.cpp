@@ -43,7 +43,7 @@ namespace opengl
 		bool success = true;
 		int imageFlags = IMG_INIT_PNG;
 		
-		SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK );
+		SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO );
 		int initFlags = IMG_Init( imageFlags );
 		
 		if( (initFlags & imageFlags) != imageFlags )
