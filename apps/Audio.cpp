@@ -1,9 +1,9 @@
 #include <tools/logger/Stdout.h>
+
 #include <audio/Mixer.h>
+#include <audio/instrument/Sine.h>
 
 #include <vector>
-#include <cmath>
-#include <climits>
 
 using namespace tools::logger;
 using namespace audio;
@@ -20,20 +20,39 @@ int main( int argc, char ** argv )
 	
 	new Mixer( 44100, 1, 512 );
 	
-	Sound * note1 = new Sound( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
-	fillSound( note1, 262, 2 );
+	vector<float> notes;
+	notes.push_back( NOTE_C4 );
+	notes.push_back( NOTE_C4 );
+	notes.push_back( NOTE_C4 );
+	notes.push_back( NOTE_D4 );
+	notes.push_back( NOTE_E4 );
+	notes.push_back( NOTE_D4 );
+	notes.push_back( NOTE_C4 );
+	notes.push_back( NOTE_E4 );
+	notes.push_back( NOTE_D4 );
+	notes.push_back( NOTE_D4 );
+	notes.push_back( NOTE_C4 );
 	
-	Sound * note2 = new Sound( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
-	fillSound( note2, 330, 1 );
+	Sound * song = new Sound( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 	
-	note1->mix( note2, 400, 1.0f );
-	Mixer::get()->add( "note1", note1 );
+	instrument::Sine * sine = new instrument::Sine( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
+	unsigned int time = 0;
+	unsigned int noteDuration = 500;
 	
-	delete note1;
-	delete note2;
-
+	for( vector<float>::iterator it = notes.begin() ; it != notes.end() ; it++ )
+	{
+		Sound * note = sine->generate( *it, noteDuration, 0.9f );
+		song->mix( note, time, 1.0f );
+		time += noteDuration;
+		delete note;
+	}
 	
-	Mixer::get()->play( "note1" );
+	delete sine;
+	
+	Mixer::get()->add( "song", song );
+	delete song;
+	
+	Mixer::get()->play( "song" );
 	while( Mixer::get()->isPlaying() );
 	
 	Mixer::destroy();

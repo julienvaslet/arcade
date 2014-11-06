@@ -38,8 +38,6 @@ namespace audio
 			void setPosition( unsigned int position, bool relative = false );
 			void setPitch( double pitch = 1.0 );
 			void setRepeat( bool repeat, unsigned int times = 0 );
-		
-			//unused: float getTransitionVolume( unsigned int position );	
 	};
 }
 

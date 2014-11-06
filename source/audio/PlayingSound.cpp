@@ -88,21 +88,5 @@ namespace audio
 		this->repeated = repeat;
 		this->repeatedTimes = times;
 	}
-	
-	/*float PlayingSound::getTransitionVolume( unsigned int position )
-	{
-		float volume = 1.0;
-		unsigned int deltaPosition = 0.1f * this->sound->getFrequency() * this->sound->getChannels();
-		
-		if( position < deltaPosition )
-			volume = static_cast<double>( position ) / static_cast<double>( deltaPosition );
-			
-		else if( position >= this->sound->getDataLength() - deltaPosition )
-			volume = static_cast<double>( this->sound->getDataLength() - position ) / static_cast<double>( deltaPosition );
-		
-		volume = (sin((volume * M_PI) - (M_PI/2.0f)) + 1.0f) / 2.0f;
-		
-		return volume;
-	}*/
 }
 
