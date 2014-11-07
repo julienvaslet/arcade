@@ -9,8 +9,6 @@ using namespace tools::logger;
 using namespace audio;
 using namespace std;
 
-void fillSound( Sound * sound, unsigned int frequency, unsigned int duration );
-
 int main( int argc, char ** argv )
 {
 	// Initialize standard-output logger
@@ -21,17 +19,17 @@ int main( int argc, char ** argv )
 	new Mixer( 44100, 1, 512 );
 	
 	vector<float> notes;
-	notes.push_back( NOTE_C4 );
-	notes.push_back( NOTE_C4 );
-	notes.push_back( NOTE_C4 );
-	notes.push_back( NOTE_D4 );
-	notes.push_back( NOTE_E4 );
-	notes.push_back( NOTE_D4 );
-	notes.push_back( NOTE_C4 );
-	notes.push_back( NOTE_E4 );
-	notes.push_back( NOTE_D4 );
-	notes.push_back( NOTE_D4 );
-	notes.push_back( NOTE_C4 );
+	notes.push_back( instrument::Note::getFrequency( 'C', false, 4 ) );
+	notes.push_back( instrument::Note::getFrequency( 'C', false, 4 ) );
+	notes.push_back( instrument::Note::getFrequency( 'C', false, 4 ) );
+	notes.push_back( instrument::Note::getFrequency( 'D', false, 4 ) );
+	notes.push_back( instrument::Note::getFrequency( 'E', false, 4 ) );
+	notes.push_back( instrument::Note::getFrequency( 'D', false, 4 ) );
+	notes.push_back( instrument::Note::getFrequency( 'C', false, 4 ) );
+	notes.push_back( instrument::Note::getFrequency( 'E', false, 4 ) );
+	notes.push_back( instrument::Note::getFrequency( 'D', false, 4 ) );
+	notes.push_back( instrument::Note::getFrequency( 'D', false, 4 ) );
+	notes.push_back( instrument::Note::getFrequency( 'C', false, 4 ) );
 	
 	Sound * song = new Sound( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 	
@@ -62,26 +60,5 @@ int main( int argc, char ** argv )
 	Logger::destroy();
 	
 	return 0;
-}
-
-void fillSound( Sound * sound, unsigned int frequency, unsigned int duration )
-{
-	vector<int> noteData;
-	double period = static_cast<double>( sound->getFrequency() ) / static_cast<double>( frequency );
-	
-	unsigned int i = 0;
-
-	for( i = 0 ; i < sound->getFrequency() * duration ; i++ )
-	{
-		unsigned iDegrees = 360.0 * ((i % static_cast<int>(period)) / period);
-		int value = sin( ((iDegrees % 360) / 360.0) * 2.0 * M_PI ) * INT_MAX * 0.9;
-		
-		for( unsigned short int c = 0 ; c < sound->getChannels() ; c++ )
-			noteData.push_back( value );
-	}
-	
-	sound->setData( noteData );
-	
-	Logger::get() << "[Audio] Sound is initialized (" << frequency << " Hz, " << sound->getDuration() << "s)." << Logger::endl;
 }
 
