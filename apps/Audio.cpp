@@ -2,8 +2,7 @@
 
 #include <audio/Mixer.h>
 #include <audio/Song.h>
-#include <audio/instrument/Sine.h>
-#include <audio/instrument/SawTooth.h>
+#include <audio/instrument/Square.h>
 
 #include <vector>
 
@@ -22,7 +21,7 @@ int main( int argc, char ** argv )
 	new Mixer( 44100, 1, 512 );
 	
 	Song * song = new Song( 160, Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
-	SawTooth sine( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
+	Square sine( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 	
 	song->mixNote( sine, Note::getFrequency( 'C', false, 4 ), Note::Noire );
 	song->mixNote( sine, Note::getFrequency( 'C', false, 4 ), Note::Noire );
