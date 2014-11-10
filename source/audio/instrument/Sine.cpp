@@ -40,7 +40,7 @@ namespace audio
 				if( transitionVolume < 1.0f )
 					transitionVolume = (sin( (transitionVolume * M_PI) - (M_PI / 2.0f) ) + 1.0f) / 2.0f;
 				
-				unsigned iDegrees = 360.0 * ((i % static_cast<int>(period)) / period);
+				unsigned int iDegrees = 360.0 * ((i % static_cast<int>(period)) / period);
 				int value = sin( ((iDegrees % 360) / 360.0) * 2.0 * M_PI ) * INT_MAX * volume * transitionVolume;
 		
 				for( unsigned short int c = 0 ; c < this->channels ; c++ )

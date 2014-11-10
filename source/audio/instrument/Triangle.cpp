@@ -1,19 +1,19 @@
-#include <audio/instrument/Square.h>
+#include <audio/instrument/Triangle.h>
 #include <cmath>
 
 namespace audio
 {
 	namespace instrument
 	{
-		Square::Square( unsigned int samplingFrequency, unsigned short int channels ) : Instrument(samplingFrequency, channels)
+		Triangle::Triangle( unsigned int samplingFrequency, unsigned short int channels ) : Instrument(samplingFrequency, channels)
 		{
 		}
 	
-		Square::~Square()
+		Triangle::~Triangle()
 		{
 		}
 		
-		Sound * Square::generate( float note, unsigned int duration, float volume )
+		Sound * Triangle::generate( float note, unsigned int duration, float volume )
 		{
 			Sound * sound = new Sound( this->samplingFrequency, this->channels );
 			
@@ -41,7 +41,7 @@ namespace audio
 					transitionVolume = (sin( (transitionVolume * M_PI) - (M_PI / 2.0f) ) + 1.0f) / 2.0f;
 				
 				unsigned int iDegrees = 360.0 * ((i % static_cast<int>(period)) / period);
-				int value = ( iDegrees < 180 ? INT_MAX : INT_MIN ) * volume * transitionVolume;
+				int value = ( iDegrees < 180.0 ? (iDegrees / 360.0) * INT_MAX - (INT_MAX / 2.0) : (iDegrees / 360.0) * INT_MIN + (INT_MAX / 2.0) ) * volume * transitionVolume;
 		
 				for( unsigned short int c = 0 ; c < this->channels ; c++ )
 					noteData.push_back( value );
