@@ -2,7 +2,7 @@
 #define __AUDIO_INSTRUMENT_INSTRUMENT_H	1
 
 #include <SDL2/SDL.h>
-#include <audio/instrument/Note.h>
+#include <audio/Note.h>
 #include <audio/Sound.h>
 #include <climits>
 

@@ -1,12 +1,14 @@
 #include <tools/logger/Stdout.h>
 
 #include <audio/Mixer.h>
+#include <audio/Song.h>
 #include <audio/instrument/Sine.h>
 
 #include <vector>
 
 using namespace tools::logger;
 using namespace audio;
+using namespace audio::instrument;
 using namespace std;
 
 int main( int argc, char ** argv )
@@ -18,34 +20,20 @@ int main( int argc, char ** argv )
 	
 	new Mixer( 44100, 1, 512 );
 	
-	vector<float> notes;
-	notes.push_back( instrument::Note::getFrequency( 'C', false, 4 ) );
-	notes.push_back( instrument::Note::getFrequency( 'C', false, 4 ) );
-	notes.push_back( instrument::Note::getFrequency( 'C', false, 4 ) );
-	notes.push_back( instrument::Note::getFrequency( 'D', false, 4 ) );
-	notes.push_back( instrument::Note::getFrequency( 'E', false, 4 ) );
-	notes.push_back( instrument::Note::getFrequency( 'D', false, 4 ) );
-	notes.push_back( instrument::Note::getFrequency( 'C', false, 4 ) );
-	notes.push_back( instrument::Note::getFrequency( 'E', false, 4 ) );
-	notes.push_back( instrument::Note::getFrequency( 'D', false, 4 ) );
-	notes.push_back( instrument::Note::getFrequency( 'D', false, 4 ) );
-	notes.push_back( instrument::Note::getFrequency( 'C', false, 4 ) );
+	Song * song = new Song( 120, Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
+	Sine sine( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 	
-	Sound * song = new Sound( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
-	
-	instrument::Sine * sine = new instrument::Sine( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
-	unsigned int time = 0;
-	unsigned int noteDuration = 500;
-	
-	for( vector<float>::iterator it = notes.begin() ; it != notes.end() ; it++ )
-	{
-		Sound * note = sine->generate( *it, noteDuration, 0.9f );
-		song->mix( note, time, 1.0f );
-		time += noteDuration;
-		delete note;
-	}
-	
-	delete sine;
+	song->mixNote( sine, Note::getFrequency( 'C', false, 4 ), Note::Noire );
+	song->mixNote( sine, Note::getFrequency( 'C', false, 4 ), Note::Noire );
+	song->mixNote( sine, Note::getFrequency( 'C', false, 4 ), Note::Noire );
+	song->mixNote( sine, Note::getFrequency( 'D', false, 4 ), Note::Noire );
+	song->mixNote( sine, Note::getFrequency( 'E', false, 4 ), Note::Blanche );
+	song->mixNote( sine, Note::getFrequency( 'D', false, 4 ), Note::Blanche );
+	song->mixNote( sine, Note::getFrequency( 'C', false, 4 ), Note::Noire );
+	song->mixNote( sine, Note::getFrequency( 'E', false, 4 ), Note::Noire );
+	song->mixNote( sine, Note::getFrequency( 'D', false, 4 ), Note::Noire );
+	song->mixNote( sine, Note::getFrequency( 'D', false, 4 ), Note::Noire );
+	song->mixNote( sine, Note::getFrequency( 'C', false, 4 ), Note::Blanche );
 	
 	Mixer::get()->add( "song", song );
 	delete song;

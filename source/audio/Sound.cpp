@@ -19,7 +19,7 @@ namespace audio
 	
 	unsigned int Sound::getDuration() const
 	{
-		return static_cast<unsigned int>( ( static_cast<double>( this->getDataLength() ) / static_cast<double>( this->frequency ) ) / static_cast<double>( this->channels ) );
+		return static_cast<unsigned int>( ( static_cast<double>( this->getDataLength() ) * 1000.0 / static_cast<double>( this->frequency ) ) / static_cast<double>( this->channels ) );
 	}
 	
 	unsigned int Sound::getDataLength() const
@@ -88,6 +88,8 @@ namespace audio
 	void Sound::rawMix( const Sound * sound, unsigned int startPosition, float volume, unsigned int fromPosition, unsigned toPosition )
 	{
 		// Dev test: considering that sound have the same format
+		if( toPosition == 0 )
+			toPosition = sound->getDataLength();
 		
 		// Reserve sound data vector if it will be too small
 		if( startPosition + (toPosition - fromPosition) > this->getDataLength() )

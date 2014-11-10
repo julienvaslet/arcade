@@ -113,7 +113,7 @@ namespace audio
 			this->sounds[name] = new PlayingSound( sound, this->samplingFrequency, this->channels );
 		
 			#ifdef DEBUG0
-			Logger::get() << "[Mixer] Added sound \"" << name << "\" (" << sound->getDuration() << "s)." << Logger::endl;
+			Logger::get() << "[Mixer] Added sound \"" << name << "\" (" << (sound->getDuration() / 1000.0f ) << "s)." << Logger::endl;
 			#endif
 		
 			SDL_UnlockAudioDevice( this->device );
