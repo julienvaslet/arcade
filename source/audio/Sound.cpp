@@ -104,7 +104,7 @@ namespace audio
 	
 	void Sound::rawMix( const Sound * sound, unsigned int startPosition, float volume, unsigned int fromPosition, unsigned int toPosition, double pitch )
 	{
-		// Dev test: considering that sound have the same format
+		// TODO: Convert input sound format
 		
 		if( toPosition == 0 )
 			toPosition = sound->getDataLength();
@@ -121,24 +121,7 @@ namespace audio
 		
 		// Mixing values
 		for( unsigned int i = 0 ; i < mixedLength ; i++ )
-		{
-			/*int value = 0.0;
-			
-			// If step is not an integer, linear-interpolation is done
-			if( i * pitch != round( i * pitch ) )
-			{
-				double iFloat = i * pitch;
-				unsigned int iNext = ceil( i * pitch );
-				unsigned int iPrev = floor( i * pitch );
-				int delta = sound->data[ startPosition + iNext ] - sound->data[ startPosition + iPrev ];
-				
-				value = static_cast<int>( sound->data[ startPosition + iPrev ] + delta * (iFloat - iPrev) );
-			}
-			else
-				value = sound->data[fromPosition+static_cast<unsigned int>( i * pitch )];*/
-			
 			this->data[startPosition+i] = static_cast<unsigned int>( static_cast<double>( this->data[startPosition+i] ) / 2.0 + static_cast<double>( sound->getData( static_cast<double>( fromPosition + (i * pitch) ) ) ) / 2.0 * volume );
-		}
 	}
 	
 	void Sound::mix( const Sound * sound, unsigned int startMs, float volume, unsigned int fromMs, unsigned int toMs, double pitch )

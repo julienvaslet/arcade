@@ -45,6 +45,10 @@ int main( int argc, char ** argv )
 	Mixer::get()->play( "song" );
 	while( Mixer::get()->isPlaying() );
 	
+	Mixer::get()->setPitch( "song", 1.4 );
+	Mixer::get()->play( "song" );
+	while( Mixer::get()->isPlaying() );
+	
 	Mixer::destroy();
 	
 	SDL_Quit();

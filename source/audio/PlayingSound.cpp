@@ -13,8 +13,7 @@ namespace audio
 	PlayingSound::PlayingSound( Sound * sound, unsigned int frequency, unsigned short int channels ) : sound(NULL), startDate(0), position(0), pitch(1.0), repeated(false), repeatedTimes(0), playing(false), oneTimePlaying(false), oneTimePlayed(false)
 	{
 		this->sound = new Sound( frequency, channels );
-		//TODO: conversion
-		this->sound->setData( sound->getData() );
+		this->sound->rawMix( sound, 0, 2.0f );
 	}
 	
 	PlayingSound::~PlayingSound()
