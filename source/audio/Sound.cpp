@@ -1,6 +1,7 @@
 #include <audio/Sound.h>
 
 #include <climits>
+#include <cmath>
 
 #ifdef DEBUG0
 #include <tools/logger/Logger.h>
@@ -47,6 +48,22 @@ namespace audio
 		return value;
 	}
 	
+	int Sound::getData( double position ) const
+	{
+		int value = 0;
+		
+		if( position < this->getDataLength() )
+		{
+			// Linear interpolation
+			unsigned int iNext = ceil( position );
+			unsigned int iPrev = floor( position );
+			
+			value = static_cast<int>( this->data[ iPrev ] + (this->data[ iNext ] - this->data[ iPrev ]) * (position - iNext) );
+		}
+		
+		return value;
+	}
+	
 	const vector<int>& Sound::getData() const
 	{
 		return this->data;
@@ -85,29 +102,52 @@ namespace audio
 			this->data.push_back( *it );
 	}
 	
-	void Sound::rawMix( const Sound * sound, unsigned int startPosition, float volume, unsigned int fromPosition, unsigned toPosition )
+	void Sound::rawMix( const Sound * sound, unsigned int startPosition, float volume, unsigned int fromPosition, unsigned int toPosition, double pitch )
 	{
 		// Dev test: considering that sound have the same format
+		
 		if( toPosition == 0 )
 			toPosition = sound->getDataLength();
 		
+		// Prevents from negative and null values
+		if( pitch <= 0.0 )
+			pitch = 1.0;
+			
+		unsigned int mixedLength = static_cast<unsigned int>( round( (toPosition - fromPosition) / pitch ) );
+		
 		// Reserve sound data vector if it will be too small
-		if( startPosition + (toPosition - fromPosition) > this->getDataLength() )
-			this->data.resize( startPosition + (toPosition - fromPosition) );
+		if( startPosition + mixedLength > this->getDataLength() )
+			this->data.resize( startPosition + mixedLength );
 		
 		// Mixing values
-		for( unsigned int i = 0 ; i < (toPosition - fromPosition) ; i++ )
-			this->data[startPosition+i] = static_cast<unsigned int>( static_cast<double>( this->data[startPosition+i] ) / 2.0 + static_cast<double>( sound->data[fromPosition+i] ) / 2.0 * volume );
+		for( unsigned int i = 0 ; i < mixedLength ; i++ )
+		{
+			/*int value = 0.0;
+			
+			// If step is not an integer, linear-interpolation is done
+			if( i * pitch != round( i * pitch ) )
+			{
+				double iFloat = i * pitch;
+				unsigned int iNext = ceil( i * pitch );
+				unsigned int iPrev = floor( i * pitch );
+				int delta = sound->data[ startPosition + iNext ] - sound->data[ startPosition + iPrev ];
+				
+				value = static_cast<int>( sound->data[ startPosition + iPrev ] + delta * (iFloat - iPrev) );
+			}
+			else
+				value = sound->data[fromPosition+static_cast<unsigned int>( i * pitch )];*/
+			
+			this->data[startPosition+i] = static_cast<unsigned int>( static_cast<double>( this->data[startPosition+i] ) / 2.0 + static_cast<double>( sound->getData( static_cast<double>( fromPosition + (i * pitch) ) ) ) / 2.0 * volume );
+		}
 	}
 	
-	void Sound::mix( const Sound * sound, unsigned int startMs, float volume, unsigned int fromMs, unsigned int toMs )
+	void Sound::mix( const Sound * sound, unsigned int startMs, float volume, unsigned int fromMs, unsigned int toMs, double pitch )
 	{
-		// Dev test: considering that sound have the same format
 		unsigned int start = static_cast<unsigned int>( static_cast<double>( this->frequency * this->channels * startMs ) / 1000.0 );
 		unsigned int from = static_cast<unsigned int>( static_cast<double>( this->frequency * this->channels * fromMs ) / 1000.0 );
 		unsigned int to = (toMs == 0) ? sound->getDataLength() : static_cast<unsigned int>( static_cast<double>( this->frequency * this->channels * toMs ) / 1000.0 );
 
-		this->rawMix( sound, start, volume, from, to );
+		this->rawMix( sound, start, volume, from, to, pitch );
 	}
 }
 

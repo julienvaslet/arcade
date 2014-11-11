@@ -10,7 +10,7 @@ using namespace tools::logger;
 
 namespace audio
 {
-	PlayingSound::PlayingSound( Sound * sound, unsigned int frequency, unsigned short int channels ) : sound(NULL), startDate(0), position(0), pitch(1.0), repeated(false), repeatedTimes(0), playing(false)
+	PlayingSound::PlayingSound( Sound * sound, unsigned int frequency, unsigned short int channels ) : sound(NULL), startDate(0), position(0), pitch(1.0), repeated(false), repeatedTimes(0), playing(false), oneTimePlaying(false), oneTimePlayed(false)
 	{
 		this->sound = new Sound( frequency, channels );
 		//TODO: conversion
@@ -62,6 +62,7 @@ namespace audio
 	{
 		this->startDate = ( ticks == 0 ) ? Mixer::getTicks() : ticks;
 		this->playing = true;
+		this->timesToRepeat = this->getRepeatedTimes() - 1;
 	}
 
 	void PlayingSound::setPosition( unsigned int position, bool relative )
@@ -73,9 +74,37 @@ namespace audio
 		
 		if( this->position >= this->sound->getDataLength() )
 		{
-			// TODO: handle repeat times
-			this->playing = false;
+			this->position = 0;
+			
+			if( this->repeated )
+			{
+				if( this->repeatedTimes > 0 )
+				{
+					if( this->timesToRepeat == 0 )
+					{
+						this->playing = false;
+						this->oneTimePlayed = true;
+					}
+					else
+						timesToRepeat--;
+				}	
+			}
+			else
+			{
+				this->playing = false;
+				this->oneTimePlayed = true;
+			}
 		}
+	}
+		
+	void PlayingSound::setOneTimePlaying( bool oneTimePlaying )
+	{
+		this->oneTimePlaying = oneTimePlaying;
+	}
+	
+	bool PlayingSound::hasPlayedOneTime() const
+	{
+		return this->oneTimePlaying && this->oneTimePlayed;
 	}
 	
 	void PlayingSound::setPitch( double pitch )
@@ -87,6 +116,9 @@ namespace audio
 	{
 		this->repeated = repeat;
 		this->repeatedTimes = times;
+		
+		if( this->isPlaying() )
+			this->timesToRepeat = this->repeatedTimes;
 	}
 }
 

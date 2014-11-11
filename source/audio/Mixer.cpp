@@ -99,7 +99,7 @@ namespace audio
 		return this->format;
 	}
 
-	void Mixer::add( const string& name, Sound * sound )
+	void Mixer::add( const string& name, Sound * sound, bool oneTimePlaying )
 	{
 		if( this->device > 0 )
 		{
@@ -109,8 +109,11 @@ namespace audio
 		
 			if( it != this->sounds.end() )
 				delete it->second;
+				
+			PlayingSound * playingSound = new PlayingSound( sound, this->samplingFrequency, this->channels );
+			playingSound->setOneTimePlaying( oneTimePlaying );
 		
-			this->sounds[name] = new PlayingSound( sound, this->samplingFrequency, this->channels );
+			this->sounds[name] = playingSound;
 		
 			#ifdef DEBUG0
 			Logger::get() << "[Mixer] Added sound \"" << name << "\" (" << (sound->getDuration() / 1000.0f ) << "s)." << Logger::endl;
@@ -147,6 +150,56 @@ namespace audio
 		}
 	}
 	
+	void Mixer::setRepeat( const string& name, bool repeat, unsigned int times )
+	{
+		if( this->device > 0 )
+		{
+			SDL_LockAudioDevice( this->device );
+		
+			map<string, PlayingSound *>::iterator it = this->sounds.find( name );
+		
+			if( it != this->sounds.end() )
+			{
+				it->second->setRepeat( repeat, times );
+				
+				#ifdef DEBUG0
+				if( repeat )
+				{
+					if( times > 0 )
+						Logger::get() << "[Mixer] Enabled repeat for sound \"" << name << "\" for " << times << " times." << Logger::endl;
+					else
+						Logger::get() << "[Mixer] Enabled unlimited repeat for sound \"" << name << "\"." << Logger::endl;
+				}
+				else
+					Logger::get() << "[Mixer] Repeat disabled for sound \"" << name << "\"." << Logger::endl;
+				#endif
+			}
+			
+			SDL_UnlockAudioDevice( this->device );
+		}
+	}
+	
+	void Mixer::setPitch( const string& name, double pitch )
+	{
+		if( this->device > 0 )
+		{
+			SDL_LockAudioDevice( this->device );
+		
+			map<string, PlayingSound *>::iterator it = this->sounds.find( name );
+		
+			if( it != this->sounds.end() )
+			{
+				it->second->setPitch( pitch );
+				
+				#ifdef DEBUG0
+				Logger::get() << "[Mixer] Pitch set at " << pitch << " for sound \"" << name << "\"." << Logger::endl;
+				#endif
+			}
+			
+			SDL_UnlockAudioDevice( this->device );
+		}
+	}
+	
 	bool Mixer::isPlaying()
 	{
 		bool playing = false;
@@ -170,6 +223,30 @@ namespace audio
 		return playing;
 	}
 	
+	void Mixer::clean()
+	{
+		if( this->device > 0 )
+		{
+			SDL_LockAudioDevice( this->device );
+		
+			vector<string> soundsToErase;
+		
+			for( map<string, PlayingSound *>::iterator it = this->sounds.begin() ; it != this->sounds.end() ; it++ )
+			{
+				if( it->second->hasPlayedOneTime() )
+					soundsToErase.push_back( it->first );
+			}
+			
+			for( vector<string>::iterator it = soundsToErase.begin() ; it != soundsToErase.end(); it++ )
+			{
+				delete (this->sounds[*it]);
+				this->sounds.erase( *it );
+			}
+		
+			SDL_UnlockAudioDevice( this->device );
+		}
+	}
+	
 	void Mixer::callback( void * userdata, Uint8 * stream, int len )
 	{
 		Mixer * mixer = static_cast<Mixer *>( userdata );
@@ -187,15 +264,16 @@ namespace audio
 				if( it->second->isPlaying() )
 				{
 					unsigned int position = it->second->getPosition();
-					unsigned int tocopy = ( position + realLength > it->second->getSound()->getDataLength() ) ? it->second->getSound()->getDataLength() - position : realLength;
+					unsigned int pitchedLength = realLength * it->second->getPitch();
+					unsigned int tocopy = ( position + pitchedLength > it->second->getSound()->getDataLength() ) ? it->second->getSound()->getDataLength() - position : pitchedLength;
 
 					if( firstSound )
 					{
-						sound.rawMix( it->second->getSound(), 0, 2.0f, position, position + tocopy );
+						sound.rawMix( it->second->getSound(), 0, 2.0f, position, position + tocopy, it->second->getPitch() );
 						firstSound = false;
 					}
 					else
-						sound.rawMix( it->second->getSound(), 0, 1.0f, position, position + tocopy );
+						sound.rawMix( it->second->getSound(), 0, 1.0f, position, position + tocopy, it->second->getPitch() );
 						
 					it->second->setPosition( tocopy, true );
 				}

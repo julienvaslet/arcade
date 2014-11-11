@@ -15,9 +15,13 @@ namespace audio
 			double pitch;
 			bool repeated;
 			unsigned int repeatedTimes;
+			unsigned int timesToRepeat;
 			bool playing;
 			//volume
 			//balance
+			
+			bool oneTimePlaying;
+			bool oneTimePlayed;
 			
 		public:
 			PlayingSound( Sound * sound, unsigned int frequency, unsigned short int channels );
@@ -34,6 +38,9 @@ namespace audio
 			
 			void play( unsigned int ticks = 0 );
 			//void pause();
+			
+			void setOneTimePlaying( bool oneTimePlaying );
+			bool hasPlayedOneTime() const;
 			
 			void setPosition( unsigned int position, bool relative = false );
 			void setPitch( double pitch = 1.0 );

@@ -35,10 +35,13 @@ namespace audio
 			SDL_AudioFormat getAudioFormat() const;
 			unsigned short int getChannels() const;
 			
-			// TODO: handle deletion on end for one-time sounds
-			void add( const string& name, Sound * sound );
+			void add( const string& name, Sound * sound, bool oneTimePlaying = false );
 			void play( const string& name, unsigned int ticks = 0 );
+			void setRepeat( const string& name, bool repeat, unsigned int times = 0 );
+			void setPitch( const string& name, double pitch = 1.0 );
 			bool isPlaying();
+			
+			void clean();
 			
 			static Mixer * get();
 			static void destroy();
