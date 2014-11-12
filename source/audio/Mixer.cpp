@@ -150,6 +150,33 @@ namespace audio
 		}
 	}
 	
+	void Mixer::stop( const string& name )
+	{
+		if( this->device > 0 )
+		{
+			SDL_LockAudioDevice( this->device );
+		
+			map<string, PlayingSound *>::iterator it = this->sounds.find( name );
+		
+			if( it != this->sounds.end() )
+			{
+				#ifdef DEBUG0
+				Logger::get() << "[Mixer] Stopping sound \"" << name << "\"." << Logger::endl;
+				#endif
+			
+				it->second->stop();
+			}
+			#ifdef DEBUG0
+			else
+			{
+				Logger::get() << "[Mixer] Can not find sound \"" << name << "\" ; sound will not be stopped." << Logger::endl;
+			}
+			#endif
+		
+			SDL_UnlockAudioDevice( this->device );
+		}
+	}
+	
 	void Mixer::setRepeat( const string& name, bool repeat, unsigned int times )
 	{
 		if( this->device > 0 )

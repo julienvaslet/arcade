@@ -37,6 +37,7 @@ namespace audio
 			
 			void add( const string& name, Sound * sound, bool oneTimePlaying = false );
 			void play( const string& name, unsigned int ticks = 0 );
+			void stop( const string& name );
 			void setRepeat( const string& name, bool repeat, unsigned int times = 0 );
 			void setPitch( const string& name, double pitch = 1.0 );
 			bool isPlaying();

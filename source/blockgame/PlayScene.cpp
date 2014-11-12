@@ -7,10 +7,17 @@
 #include <opengl/Point2D.h>
 #include <opengl/Color.h>
 
+#include <audio/Mixer.h>
+#include <audio/Song.h>
+#include <audio/instrument/Sine.h>
+#include <audio/instrument/Silence.h>
+
 #include <cstdlib>
 #include <ctime>
 
 using namespace opengl;
+using namespace audio;
+using namespace audio::instrument;
 
 namespace blockgame
 {
@@ -18,6 +25,59 @@ namespace blockgame
 	{
 		// Initializing random seed
 		srand( time(NULL) );
+		
+		// Creating game song
+		Sine instrument( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
+		Silence silence( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
+		Song * song = new Song( 120, Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
+	
+		song->mixNote( instrument, Note::getFrequency( 'E', false, 5 ), Note::Noire );
+		song->mixNote( instrument, Note::getFrequency( 'B', false, 4 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'C', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'D', false, 5 ), Note::Noire );
+		song->mixNote( instrument, Note::getFrequency( 'C', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'B', false, 4 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'A', false, 4 ), Note::Noire );
+		song->mixNote( instrument, Note::getFrequency( 'A', false, 4 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'C', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'E', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'E', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'D', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'C', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'B', false, 4 ), Note::Noire );
+		song->mixNote( instrument, Note::getFrequency( 'B', false, 4 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'C', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'D', false, 5 ), Note::Noire );
+		song->mixNote( instrument, Note::getFrequency( 'E', false, 5 ), Note::Noire );
+		song->mixNote( instrument, Note::getFrequency( 'C', false, 5 ), Note::Noire );
+		song->mixNote( instrument, Note::getFrequency( 'A', false, 4 ), Note::Noire );
+		song->mixNote( instrument, Note::getFrequency( 'A', false, 4 ), Note::Blanche );
+		
+		song->mixNote( instrument, Note::getFrequency( 'D', false, 5 ), Note::Noire );
+		song->mixNote( instrument, Note::getFrequency( 'D', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'F', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'A', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'A', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'G', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'F', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'E', false, 5 ), Note::Noire, true );
+		song->mixNote( instrument, Note::getFrequency( 'C', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'E', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'E', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'D', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'C', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'B', false, 4 ), Note::Noire );
+		song->mixNote( instrument, Note::getFrequency( 'B', false, 4 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'C', false, 5 ), Note::Croche );
+		song->mixNote( instrument, Note::getFrequency( 'D', false, 5 ), Note::Noire );
+		song->mixNote( instrument, Note::getFrequency( 'E', false, 5 ), Note::Noire );
+		song->mixNote( instrument, Note::getFrequency( 'C', false, 5 ), Note::Noire );
+		song->mixNote( instrument, Note::getFrequency( 'A', false, 4 ), Note::Noire );
+		song->mixNote( instrument, Note::getFrequency( 'A', false, 4 ), Note::Blanche );
+		
+		Mixer::get()->add( "BlockgameSong", song );
+		delete song;
+		Mixer::get()->setRepeat( "BlockgameSong", true );
 		
 		// Creating grid
 		this->blocks = new Grid( 10.0f, 20.0f );
@@ -46,10 +106,15 @@ namespace blockgame
 	
 		this->updateLabels();
 		this->lastBlockMove = SDL_GetTicks();
+		
+		Mixer::get()->play( "BlockgameSong" );
 	}
 	
 	PlayScene::~PlayScene()
 	{
+		// Stopping song
+		Mixer::get()->stop( "BlockgameSong" );
+		
 		if( this->fallingBlock != NULL )
 			delete this->fallingBlock;
 		
@@ -87,6 +152,9 @@ namespace blockgame
 	
 		this->lines += this->blocks->deleteFullLines();
 		this->level = ( this->lines / 10 ) + 1;
+		
+		// Increase music pitch
+		Mixer::get()->setPitch( "BlockgameSong", 1.00 + (this->level - 1) * 0.1 );
 		
 		this->updateLabels();
 		

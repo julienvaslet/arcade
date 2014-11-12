@@ -48,6 +48,7 @@ namespace audio
 		return value;
 	}
 	
+	// TODO: should handle channel count !!!
 	int Sound::getData( double position ) const
 	{
 		int value = 0;
@@ -120,6 +121,7 @@ namespace audio
 			this->data.resize( startPosition + mixedLength );
 		
 		// Mixing values
+		// TODO: Should handle channels...
 		for( unsigned int i = 0 ; i < mixedLength ; i++ )
 			this->data[startPosition+i] = static_cast<unsigned int>( static_cast<double>( this->data[startPosition+i] ) / 2.0 + static_cast<double>( sound->getData( static_cast<double>( fromPosition + (i * pitch) ) ) ) / 2.0 * volume );
 	}

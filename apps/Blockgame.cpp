@@ -5,10 +5,13 @@
 #include <opengl/OpenGL.h>
 #include <opengl/BitmapFont.h>
 
+#include <audio/Mixer.h>
+
 #include <blockgame/IntroScene.h>
 
 using namespace opengl;
 using namespace tools::logger;
+using namespace audio;
 using namespace blockgame;
 
 int main( int argc, char ** argv )
@@ -21,6 +24,8 @@ int main( int argc, char ** argv )
 		Logger::get() << "Unable to initialize screen. Exiting.\n";
 		return 1;
 	}
+	
+	new Mixer( 44100, 1, 256 );
 	
 	SDL_Event lastEvent;
 	game::Scene * currentScene = NULL;
@@ -51,9 +56,10 @@ int main( int argc, char ** argv )
 		delete currentScene;
 		currentScene = nextScene;
 	}
-
+	
 	Font::destroy();
 	Screen::destroy();
+	Mixer::destroy();
 	Logger::destroy();
 	
 	return 0;

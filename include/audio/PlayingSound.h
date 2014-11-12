@@ -37,7 +37,7 @@ namespace audio
 			bool isPlaying() const;
 			
 			void play( unsigned int ticks = 0 );
-			//void pause();
+			void stop();
 			
 			void setOneTimePlaying( bool oneTimePlaying );
 			bool hasPlayedOneTime() const;

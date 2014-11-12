@@ -63,6 +63,11 @@ namespace audio
 		this->playing = true;
 		this->timesToRepeat = this->getRepeatedTimes() - 1;
 	}
+	
+	void PlayingSound::stop()
+	{
+		this->playing = false;
+	}
 
 	void PlayingSound::setPosition( unsigned int position, bool relative )
 	{
