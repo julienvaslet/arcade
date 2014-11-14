@@ -180,6 +180,12 @@ namespace tools
 			return (*this << ss.str());
 		}
 		
+		Logger& Logger::operator<<( const char * value )
+		{
+			string str(value);
+			return (*this << str);
+		}
+		
 		Logger& Logger::operator<<( LoggerFunction func )
 		{
 			return func(*this);

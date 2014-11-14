@@ -43,6 +43,7 @@ namespace tools
 				virtual Logger& operator<<( float value );
 				virtual Logger& operator<<( double value );
 				virtual Logger& operator<<( const void * value );
+				virtual Logger& operator<<( const char * value );
 				
 				template<class T> Logger& operator<<( T& value )
 				{
