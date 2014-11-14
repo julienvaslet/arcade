@@ -19,7 +19,7 @@ int main( int argc, char ** argv )
 	// Initialize standard-output logger
 	new Stdout( "stdout", true );
 	
-	if( !Screen::initialize( "Blockgame", 800, 600, true ) )
+	if( !Screen::initialize( "Blockgame" ) )
 	{
 		Logger::get() << "Unable to initialize screen. Exiting.\n";
 		return 1;

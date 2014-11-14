@@ -38,7 +38,7 @@ namespace opengl
 		}
 	}
 		
-	bool Screen::initialize( const char * title, int width, int height, bool fullscreen, int majorVersion, int minorVersion )
+	bool Screen::initialize( const char * title, int width, int height, bool resizable, int majorVersion, int minorVersion )
 	{
 		bool success = true;
 		int imageFlags = IMG_INIT_PNG;
@@ -66,7 +66,7 @@ namespace opengl
 			SDL_WINDOWPOS_CENTERED,
 			width,
 			height,
-			( fullscreen ? SDL_WINDOW_FULLSCREEN : 0 ) | SDL_WINDOW_OPENGL
+			( width == 0 || height == 0 ) ? SDL_WINDOW_FULLSCREEN : ( resizable ? SDL_WINDOW_RESIZABLE : 0 ) | SDL_WINDOW_OPENGL
 		);
 
 		if( screen->window == NULL )
