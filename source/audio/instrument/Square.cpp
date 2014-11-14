@@ -47,7 +47,7 @@ namespace audio
 					noteData.push_back( value );
 			}
 	
-			sound->setData( noteData );
+			sound->setRawData( noteData );
 			return sound;
 		}
 	}

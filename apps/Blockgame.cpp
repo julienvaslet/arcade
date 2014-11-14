@@ -32,7 +32,7 @@ int main( int argc, char ** argv )
 	
 	Screen::get()->setClearColor( Color( 0.0f, 0.0f, 0.0f, 0.0f ) );
 	new BitmapFont( "data/fonts/bitmap.bmp", 32, 32, 7, 1 );
-	
+
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 	

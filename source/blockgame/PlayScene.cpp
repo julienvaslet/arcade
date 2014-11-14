@@ -154,7 +154,8 @@ namespace blockgame
 		this->level = ( this->lines / 10 ) + 1;
 		
 		// Increase music pitch
-		Mixer::get()->setPitch( "BlockgameSong", 1.00 + (this->level - 1) * 0.1 );
+		// NO SOUND PITCH MODIFICATION (audio bug)
+		//Mixer::get()->setPitch( "BlockgameSong", 1.00 + (this->level - 1) * 0.1 );
 		
 		this->updateLabels();
 		

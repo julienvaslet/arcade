@@ -219,7 +219,7 @@ namespace audio
 				it->second->setPitch( pitch );
 				
 				#ifdef DEBUG0
-				Logger::get() << "[Mixer] Pitch set at " << pitch << " for sound \"" << name << "\"." << Logger::endl;
+				Logger::get() << "[Mixer] Pitch set to " << pitch << " for sound \"" << name << "\"." << Logger::endl;
 				#endif
 			}
 			
@@ -282,7 +282,7 @@ namespace audio
 		vector<int> waves( realLength, 0.0 );
 		
 		Sound sound( mixer->samplingFrequency, mixer->channels );
-		sound.setData( waves );
+		sound.setRawData( waves );
 
 		if( mixer != NULL )
 		{
@@ -292,7 +292,7 @@ namespace audio
 				{
 					unsigned int position = it->second->getPosition();
 					unsigned int pitchedLength = realLength * it->second->getPitch();
-					unsigned int tocopy = ( position + pitchedLength > it->second->getSound()->getDataLength() ) ? it->second->getSound()->getDataLength() - position : pitchedLength;
+					unsigned int tocopy = ( position + pitchedLength > it->second->getSound()->getRawLength() ) ? it->second->getSound()->getRawLength() - position : pitchedLength;
 
 					if( firstSound )
 					{
@@ -301,12 +301,12 @@ namespace audio
 					}
 					else
 						sound.rawMix( it->second->getSound(), 0, 1.0f, position, position + tocopy, it->second->getPitch() );
-						
+					
 					it->second->setPosition( tocopy, true );
 				}
 			}
 
-			vector<int> waves = sound.getData();
+			vector<int> waves = sound.getRawData();
 			Mixer::convertStream( waves, stream, mixer->getAudioFormat() );			
 		}
 	}

@@ -57,7 +57,7 @@ namespace audio
 	void Song::mixNote( instrument::Instrument& instrument, float note, Note::Duration duration, bool dotted, bool doubleDotted, bool tripleDotted )
 	{
 		Sound * sound = instrument.generate( note, this->getNoteDuration( duration, dotted, doubleDotted, tripleDotted ), 0.9f );
-		this->rawMix( sound, this->getDataLength() );
+		this->rawMix( sound, this->getRawLength() );
 		delete sound;
 	}
 }

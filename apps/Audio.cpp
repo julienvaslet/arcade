@@ -19,7 +19,7 @@ int main( int argc, char ** argv )
 	SDL_Init( SDL_INIT_AUDIO );
 	
 	new Mixer( 44100, 1, 512 );
-	
+
 	Song * song = new Song( 160, Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 	Sine sine( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 	
@@ -37,18 +37,14 @@ int main( int argc, char ** argv )
 	
 	Mixer::get()->add( "song", song );
 	delete song;
-	
-	Mixer::get()->play( "song" );
-	while( Mixer::get()->isPlaying() );
-	
-	Mixer::get()->setPitch( "song", 1.2 );
-	Mixer::get()->play( "song" );
-	while( Mixer::get()->isPlaying() );
-	
-	Mixer::get()->setPitch( "song", 1.4 );
-	Mixer::get()->play( "song" );
-	while( Mixer::get()->isPlaying() );
-	
+		
+	for( float pitch = 1.00f ; pitch <= 1.20f ; pitch += 0.05f )
+	{
+		Mixer::get()->setPitch( "song", pitch );
+		Mixer::get()->play( "song" );
+		while( Mixer::get()->isPlaying() );
+	}
+		
 	Mixer::destroy();
 	
 	SDL_Quit();

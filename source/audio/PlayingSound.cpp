@@ -76,7 +76,7 @@ namespace audio
 		else
 			this->position = position;
 		
-		if( this->position >= this->sound->getDataLength() )
+		if( this->position >= this->sound->getRawLength() )
 		{
 			this->position = 0;
 			
