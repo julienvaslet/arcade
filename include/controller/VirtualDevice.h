@@ -25,25 +25,23 @@ namespace controller
 			
 			const char * getName() const;
 			
-			bool enableEvents( unsigned short int type );
-			bool enableEvent( unsigned short int type, unsigned short int event );
-			void sendEvent( unsigned short int type, unsigned short int event, int value );
+			bool enableEventType( unsigned int type );
+			bool enableEvent( unsigned int type, unsigned int event );
+			void sendEvent( unsigned int type, unsigned int event, int value, bool sync = true );
 			
-			bool enableSynchronizationEvents();
-			bool enableSynchronizationEvent( unsigned short int syn );
-			void sendSynchronizationEvent( unsigned short int syn, int value );
+			void sendSynchronizationEvent( unsigned int syn, int value );
+			void flush();
 			
-			bool enableKeyboardEvents();
-			bool enableKey( unsigned short int key );
-			void sendKey( unsigned short int key, int value );
+			bool enableKey( unsigned int key );
+			void sendKey( unsigned int key, int value, bool sync = true );
+			void pressKey( unsigned int key, bool sync = true );
+			void releaseKey( unsigned int key, bool sync = true );
 			
-			bool enableRelativeAxisEvents();
-			bool enableRelativeAxis( unsigned short int rel );
-			void sendRelativeAxis( unsigned short int rel, int value );
+			bool enableRelativeAxis( unsigned int rel );
+			void sendRelativeAxis( unsigned int rel, int value, bool sync = true );
 			
-			bool enableAbsoluteAxisEvents();
-			bool enableAbsoluteAxis( unsigned short int abs );
-			void sendAbsoluteAxis( unsigned short int abs, int value );
+			bool enableAbsoluteAxis( unsigned int abs );
+			void sendAbsoluteAxis( unsigned int abs, int value, bool sync = true );
 
 			bool create();
 			

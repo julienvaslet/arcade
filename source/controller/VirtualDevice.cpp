@@ -23,9 +23,9 @@ namespace controller
 		
 		snprintf( this->device.name, UINPUT_MAX_NAME_SIZE, name.c_str() );
 		this->device.id.bustype = BUS_USB;
-		this->device.id.vendor  = 0x1;
-		this->device.id.product = 0x1;
-		this->device.id.version = 2;
+		this->device.id.vendor  = 0x0;
+		this->device.id.product = 0x0;
+		this->device.id.version = 0;
 		
 		this->descriptor = open( UINPUT_DEVICE, O_WRONLY | O_NONBLOCK );
 		
@@ -51,17 +51,17 @@ namespace controller
 	
 	// Global event functions
 	
-	bool VirtualDevice::enableEvents( unsigned short int type )
+	bool VirtualDevice::enableEventType( unsigned int type )
 	{	
 		return ( ioctl( this->descriptor, UI_SET_EVBIT, type ) == 0 );
 	}
 	
-	bool VirtualDevice::enableEvent( unsigned short int type, unsigned short int event )
+	bool VirtualDevice::enableEvent( unsigned int type, unsigned int event )
 	{
 		return ( ioctl( this->descriptor, type, event ) == 0 );
 	}
 		
-	void VirtualDevice::sendEvent( unsigned short int type, unsigned short int event, int value )
+	void VirtualDevice::sendEvent( unsigned int type, unsigned int event, int value, bool sync )
 	{
 		if( this->descriptor > 0 )
 		{
@@ -73,55 +73,42 @@ namespace controller
 			this->event.value = value;
 			
 			write( this->descriptor, &(this->event), sizeof(this->event) );
+			
+			if( sync && type != EV_SYN )
+				this->flush();
 		}
 	}
 	
 	// Synchronization events
-	
-	bool VirtualDevice::enableSynchronizationEvents()
+
+	void VirtualDevice::sendSynchronizationEvent( unsigned int syn, int value )
 	{
-		bool status = true;
-		
-		if( !this->enableEvents( EV_SYN ) )
-		{
-			status = false;
-			
-			#ifdef DEBUG0
-			Logger::get() << "[VirtualDevice#" << this->getName() << "] Unable to enable synchronization events: " << strerror( errno ) << Logger::endl;
-			#endif
-		}
-		
-		return status;
+		this->sendEvent( EV_SYN, syn, value, false );
 	}
 	
-	bool VirtualDevice::enableSynchronizationEvent( unsigned short int syn )
+	void VirtualDevice::flush()
 	{
-		bool status = true;
-		
-		if( !this->enableEvent( UI_SET_EVBIT, syn ) )
-		{
-			status = false;
-			
-			#ifdef DEBUG0
-			Logger::get() << "[VirtualDevice#" << this->getName() << "] Unable to enable the specified synchronization event: " << strerror( errno ) << Logger::endl;
-			#endif
-		}
-		
-		return status;
-	}
-	
-	void VirtualDevice::sendSynchronizationEvent( unsigned short int syn, int value )
-	{
-		this->sendEvent( EV_SYN, syn, value );
+		this->sendSynchronizationEvent( 0, 0 );
 	}
 	
 	// Keyboard events
 	
-	bool VirtualDevice::enableKeyboardEvents()
+	bool VirtualDevice::enableKey( unsigned int key )
 	{
 		bool status = true;
 		
-		if( !this->enableEvents( EV_KEY ) )
+		if( this->enableEventType( EV_KEY ) )
+		{
+			if( !this->enableEvent( UI_SET_KEYBIT, key ) )
+			{
+				status = false;
+		
+				#ifdef DEBUG0
+				Logger::get() << "[VirtualDevice#" << this->getName() << "] Unable to enable the specified keyboard event: " << strerror( errno ) << Logger::endl;
+				#endif
+			}
+		}
+		else
 		{
 			status = false;
 			
@@ -133,34 +120,39 @@ namespace controller
 		return status;
 	}
 	
-	bool VirtualDevice::enableKey( unsigned short int key )
+	void VirtualDevice::sendKey( unsigned int key, int value, bool sync )
 	{
-		bool status = true;
-		
-		if( !this->enableEvent( UI_SET_KEYBIT, key ) )
-		{
-			status = false;
-			
-			#ifdef DEBUG0
-			Logger::get() << "[VirtualDevice#" << this->getName() << "] Unable to enable the specified keyboard event: " << strerror( errno ) << Logger::endl;
-			#endif
-		}
-		
-		return status;
+		this->sendEvent( EV_KEY, key, value, sync );
 	}
 	
-	void VirtualDevice::sendKey( unsigned short int key, int value )
+	void VirtualDevice::pressKey( unsigned int key, bool sync )
 	{
-		this->sendEvent( EV_KEY, key, value );
+		this->sendKey( key, 1, sync );
+	}
+	
+	void VirtualDevice::releaseKey( unsigned int key, bool sync )
+	{
+		this->sendKey( key, 0, sync );
 	}
 	
 	// Relative Axis events
 	
-	bool VirtualDevice::enableRelativeAxisEvents()
+	bool VirtualDevice::enableRelativeAxis( unsigned int rel )
 	{
 		bool status = true;
 		
-		if( !this->enableEvents( EV_REL ) )
+		if( this->enableEventType( EV_REL ) )
+		{
+			if( !this->enableEvent( UI_SET_RELBIT, rel ) )
+			{
+				status = false;
+			
+				#ifdef DEBUG0
+				Logger::get() << "[VirtualDevice#" << this->getName() << "] Unable to enable the specified relative axis event: " << strerror( errno ) << Logger::endl;
+				#endif
+			}
+		}
+		else
 		{
 			status = false;
 			
@@ -172,34 +164,29 @@ namespace controller
 		return status;
 	}
 	
-	bool VirtualDevice::enableRelativeAxis( unsigned short int rel )
+	void VirtualDevice::sendRelativeAxis( unsigned int rel, int value, bool sync )
 	{
-		bool status = true;
-		
-		if( !this->enableEvent( UI_SET_RELBIT, rel ) )
-		{
-			status = false;
-			
-			#ifdef DEBUG0
-			Logger::get() << "[VirtualDevice#" << this->getName() << "] Unable to enable the specified relative axis event: " << strerror( errno ) << Logger::endl;
-			#endif
-		}
-		
-		return status;
-	}
-	
-	void VirtualDevice::sendRelativeAxis( unsigned short int rel, int value )
-	{
-		this->sendEvent( EV_REL, rel, value );
+		this->sendEvent( EV_REL, rel, value, sync );
 	}
 	
 	// Absolute Axis events
 	
-	bool VirtualDevice::enableAbsoluteAxisEvents()
+	bool VirtualDevice::enableAbsoluteAxis( unsigned int abs )
 	{
 		bool status = true;
 		
-		if( !this->enableEvents( EV_ABS ) )
+		if( this->enableEventType( EV_ABS ) )
+		{
+			if( !this->enableEvent( UI_SET_ABSBIT, abs ) )
+			{
+				status = false;
+			
+				#ifdef DEBUG0
+				Logger::get() << "[VirtualDevice#" << this->getName() << "] Unable to enable the specified absolute axis event: " << strerror( errno ) << Logger::endl;
+				#endif
+			}
+		}
+		else
 		{
 			status = false;
 			
@@ -211,25 +198,9 @@ namespace controller
 		return status;
 	}
 	
-	bool VirtualDevice::enableAbsoluteAxis( unsigned short int abs )
+	void VirtualDevice::sendAbsoluteAxis( unsigned int abs, int value, bool sync )
 	{
-		bool status = true;
-		
-		if( !this->enableEvent( UI_SET_ABSBIT, abs ) )
-		{
-			status = false;
-			
-			#ifdef DEBUG0
-			Logger::get() << "[VirtualDevice#" << this->getName() << "] Unable to enable the specified absolute axis event: " << strerror( errno ) << Logger::endl;
-			#endif
-		}
-		
-		return status;
-	}
-	
-	void VirtualDevice::sendAbsoluteAxis( unsigned short int abs, int value )
-	{
-		this->sendEvent( EV_ABS, abs, value );
+		this->sendEvent( EV_ABS, abs, value, sync );
 	}
 	
 	bool VirtualDevice::create()
