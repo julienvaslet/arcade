@@ -1,6 +1,5 @@
 *~
 *.o
 *.d
-linux64/*
-windows32/*
-windows64/*
+bin/
+lib/
