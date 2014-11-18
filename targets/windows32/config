@@ -6,6 +6,6 @@ applicationDirectory := $(shell pwd)/apps
 binariesDirectory := $(shell pwd)/bin/windows32
 sdlconfig = /usr/i686-w64-mingw32/sys-root/mingw/bin/sdl2-config
 compiler = i686-w64-mingw32-g++
-compilerOptions = -static-libgcc -static-libstdc++ -MD -Os -s -Wall -I $(includesDirectory) -c `$(sdlconfig) --cflags` $(debugFlag)
+compilerOptions = -static-libgcc -static-libstdc++ -MD -Os -s -Wall -I$(includesDirectory) -c `$(sdlconfig) --cflags` $(debugFlag)
 linker = i686-w64-mingw32-g++
 linkerOptions = -static-libgcc -static-libstdc++ -MD -Os -s `$(sdlconfig) --libs` -lopengl32 -lglu32 -lSDL2_image

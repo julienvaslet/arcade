@@ -1,11 +1,11 @@
-librariesDirectory := $(shell pwd)/lib/linux64
+librariesDirectory := $(shell pwd)/lib/linux-arm
 includesDirectory := $(shell pwd)/include
 sourcesDirectory := $(shell pwd)/source
 applicationSuffix =
 applicationDirectory := $(shell pwd)/apps
-binariesDirectory := $(shell pwd)/bin/linux64
+binariesDirectory := $(shell pwd)/bin/linux-arm
 sdlconfig = sdl2-config
-compiler = g++
+compiler = arm-linux-gnu-g++
 compilerOptions = -Wall -I$(includesDirectory) -c `$(sdlconfig) --cflags` $(debugFlag)
-linker = g++
+linker = arm-linux-gnu-g++
 linkerOptions = `$(sdlconfig) --libs` -lGL -lGLU -lSDL2_image
