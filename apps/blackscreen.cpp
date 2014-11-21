@@ -1,10 +1,9 @@
 #include <SDL2/SDL.h>
-#include <iostream>
 
-#include <opengl/Screen.h>
+//#include <opengl/Screen.h>
 #include <tools/logger/Stdout.h>
 
-using namespace opengl;
+//using namespace opengl;
 using namespace std;
 using namespace tools::logger;
 
@@ -13,11 +12,11 @@ int main( int argc, char ** argv )
 	// Initialize standard-output logger
 	new Stdout( "stdout", true );
 	
-	if( !Screen::initialize( "001 - Blackscreen" ) )
+	/*if( !Screen::initialize( "001 - Blackscreen" ) )
 	{
 		cout << "Unable to initialize screen. Exiting." << endl;
 		return 1;
-	}
+	}*/
 	
 	bool running = true;
 	SDL_Event lastEvent;
@@ -34,6 +33,14 @@ int main( int argc, char ** argv )
 					running = false;
 					break;
 				}
+				
+				case SDL_KEYDOWN:
+				{
+		            if( lastEvent.key.keysym.sym == SDLK_ESCAPE )
+						running = false;
+						
+					break;
+				}
 			}
 		}
 
@@ -41,15 +48,15 @@ int main( int argc, char ** argv )
 		
 		if( ticks - lastDrawTicks > 15 )
 		{
-			Screen::get()->clear();
+			//Screen::get()->clear();
 			
-			Screen::get()->render();
+			//Screen::get()->render();
 			
 			lastDrawTicks = ticks;
 		}
 	}
 
-	Screen::destroy();
+	//Screen::destroy();
 	
 	Logger::destroy();
 	

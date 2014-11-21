@@ -15,12 +15,13 @@ $(librariesDirectory):
 	mkdir -p $@
 
 .PRECIOUS: $(binariesDirectory)/% $(librariesDirectory)/%.o
-.PHONY: parseLibraries run clean cleanlib all libraries
+.PHONY: run clean cleanlib all libraries
 
-%: parseLibraries_% $(binariesDirectory)/%
+%: $(binariesDirectory)/%
 	$(eval application = $<)
 
-$(binariesDirectory)/%: $(librariesDirectory)/%.o $(binariesDirectory)
+$(binariesDirectory)/%: $(librariesDirectory)/%.o get-dependencies.sh $(binariesDirectory)
+	$(eval libraries := $(shell app=$(shell basename $@) ; ./get-dependencies.sh $(applicationDirectory)/$${app}.cpp | sed 's|^.*$$|$(librariesDirectory)/\0|g'))
 	$(linker) -o $@$(applicationSuffix) $< $(libraries) $(linkerOptions)
 
 $(librariesDirectory)/%.o: $(applicationDirectory)/%.cpp libraries
