@@ -15,26 +15,32 @@ $(librariesDirectory):
 	mkdir -p $@
 
 .PRECIOUS: $(binariesDirectory)/% $(librariesDirectory)/%.o
-.PHONY: run clean cleanlib all libraries
+.PHONY: parseLibraries run clean cleanlib all libraries
 
-%: $(binariesDirectory)/%
+%: parseLibraries_% $(binariesDirectory)/%
 	$(eval application = $<)
 
-$(binariesDirectory)/%: $(binariesDirectory) $(librariesDirectory)/%.o
-	$(linker) -o $@$(applicationSuffix) `find $(librariesDirectory) -name '*.o' -type f` $(linkerOptions)
+$(binariesDirectory)/%: $(librariesDirectory)/%.o $(binariesDirectory)
+	$(linker) -o $@$(applicationSuffix) $< $(libraries) $(linkerOptions)
 
 $(librariesDirectory)/%.o: $(applicationDirectory)/%.cpp libraries
 	$(compiler) $(compilerOptions) $< -o $@
-	
+
+parseLibraries_%: get-dependencies.sh
+	$(eval libraries := $(shell app="$@" ; app="$${app#parseLibraries_}" ; ./get-dependencies.sh $(applicationDirectory)/$${app}.cpp | sed 's|^.*$$|$(librariesDirectory)/\0|g'))
+
 libraries: $(librariesDirectory)
+# $(libraries) is always empty... bug
 	@( for source in `cd $(sourcesDirectory); find . -name '*.cpp' -type f`; \
 	do \
-		mkdir -p $(librariesDirectory)/`dirname $$source` ; \
-		if [ ! -e $(librariesDirectory)/$$source.o -o $(sourcesDirectory)/$$source -nt $(librariesDirectory)/$$source.o ] ; then \
-			echo "$(compiler) $(compilerOptions) $(sourcesDirectory)/$$source -o $(librariesDirectory)/$$source.o" ; \
-			$(compiler) $(compilerOptions) $(sourcesDirectory)/$$source -o $(librariesDirectory)/$$source.o ; \
-			if [ $$? -eq 1 ] ; then \
-				exit 1 ; \
+		if [ -z "$(libraries)" ] ; then \
+			mkdir -p $(librariesDirectory)/`dirname $$source` ; \
+			if [ ! -e $(librariesDirectory)/$${source%.cpp}.o -o $(sourcesDirectory)/$$source -nt $(librariesDirectory)/$${source%.cpp}.o ] ; then \
+				echo "$(compiler) $(compilerOptions) $(sourcesDirectory)/$$source -o $(librariesDirectory)/$${source%.cpp}.o" ; \
+				$(compiler) $(compilerOptions) $(sourcesDirectory)/$$source -o $(librariesDirectory)/$${source%.cpp}.o ; \
+				if [ $$? -eq 1 ] ; then \
+					exit 1 ; \
+				fi ; \
 			fi ; \
 		fi ; \
 	done )

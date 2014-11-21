@@ -8,5 +8,5 @@ binariesDirectory := $(shell pwd)/bin/linux64
 sdlconfig = sdl2-config
 compiler = g++
 compilerOptions = -Wall -I$(includesDirectory) -c `$(sdlconfig) --cflags` $(debugFlag) -D$(target)
-linker = ld
+linker = g++
 linkerOptions = `$(sdlconfig) --libs` -lGL -lGLU -lSDL2_image
