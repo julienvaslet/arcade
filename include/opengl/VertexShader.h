@@ -3,7 +3,11 @@
 
 #include <opengl/Shader.h>
 
+#ifdef __PI__
+#include <SDL2/SDL_opengles2.h>
+#else
 #include <SDL2/SDL_opengl.h>
+#endif
 
 using namespace std;
 

@@ -24,8 +24,12 @@
 #define LoadOpenGLFunction_Windows(func)			
 #endif
 
+#ifdef __PI__
+#include <SDL2/SDL_opengles2.h>
+#else
 #include <SDL2/SDL_opengl.h>
 #include <GL/gl.h>
+#endif
 
 #include <string>
 #include <set>

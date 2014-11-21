@@ -1,3 +1,4 @@
+target=__LINUX__
 librariesDirectory := $(shell pwd)/lib/linux64
 includesDirectory := $(shell pwd)/include
 sourcesDirectory := $(shell pwd)/source
@@ -6,6 +7,6 @@ applicationDirectory := $(shell pwd)/apps
 binariesDirectory := $(shell pwd)/bin/linux64
 sdlconfig = sdl2-config
 compiler = g++
-compilerOptions = -Wall -I$(includesDirectory) -c `$(sdlconfig) --cflags` $(debugFlag)
-linker = g++
+compilerOptions = -Wall -I$(includesDirectory) -c `$(sdlconfig) --cflags` $(debugFlag) -D$(target)
+linker = ld
 linkerOptions = `$(sdlconfig) --libs` -lGL -lGLU -lSDL2_image

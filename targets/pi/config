@@ -1,0 +1,15 @@
+# Get the official Raspberry Pi cross-compiling tools and SDL2
+# by executing tools/initialize-pi-cross-compile.sh
+
+target=__PI__
+librariesDirectory := $(shell pwd)/lib/pi
+includesDirectory := $(shell pwd)/include
+sourcesDirectory := $(shell pwd)/source
+applicationSuffix =
+applicationDirectory := $(shell pwd)/apps
+binariesDirectory := $(shell pwd)/bin/pi
+sdlconfig := $(shell pwd)/tools/arm-pi/arm-bcm2708hardfp-linux-gnueabi/sysroot/usr/bin/sdl2-config
+compiler := $(shell pwd)/tools/arm-pi/bin/arm-bcm2708hardfp-linux-gnueabi-g++
+compilerOptions = -Wall -I$(includesDirectory) -c `$(sdlconfig) --cflags` $(debugFlag) -D$(target)
+linker := $(shell pwd)/tools/arm-pi/bin/arm-bcm2708hardfp-linux-gnueabi-ld
+linkerOptions = `$(sdlconfig) --libs` -lGL -lGLU -lSDL2_image
