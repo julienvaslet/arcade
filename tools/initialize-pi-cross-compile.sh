@@ -38,6 +38,7 @@ check_command make
 check_command rsync
 
 mkdir -p ${basedir}/arm-pi/qemu/{bin,share,lib,libexec,include,etc}
+mkdir -p ${basedir}/arm-pi/images
 
 title "Checking QEMU installation"
 if [ ! -e "${basedir}/arm-pi/qemu/bin/qemu-system-arm" ]

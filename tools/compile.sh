@@ -57,7 +57,7 @@ fi
 
 # Synchronize projects files
 mkdir -p ${mountpoint}/${guestDirectory}
-cp -R ${projectDirectory}/{apps,bin,data,get-dependencies.sh,include,Makefile,source,targets} ${mountpoint}${guestDirectory}/
+rsync --delete -r ${projectDirectory}/{apps,bin,data,get-dependencies.sh,include,Makefile,source,targets} ${mountpoint}${guestDirectory}/
 
 umount_image
 
@@ -68,8 +68,8 @@ mount_image
 
 # Synchronize compiled files
 mkdir -p ${projectDirectory}/{bin,lib}/${target}
-cp -R ${mountpoint}${guestDirectory}/bin/${target}/* ${projectDirectory}/bin/${target}/
-cp -R ${mountpoint}${guestDirectory}/lib/${target}/* ${projectDirectory}/lib/${target}/
+rsync --delete -r ${mountpoint}${guestDirectory}/bin/${target}/* ${projectDirectory}/bin/${target}/
+rsync --delete -r ${mountpoint}${guestDirectory}/lib/${target}/* ${projectDirectory}/lib/${target}/
 
 chown -R ${projectOwner}:${projectGroup} ${projectDirectory}/{bin,lib}/${target}
 
