@@ -6,12 +6,14 @@ debugFlag = -g -DDEBUG0 -DDEBUG1 -DDEBUG2 -DDEBUG3
 
 include targets/$(for)/config
 
+# Are we on a Pidora Raspberry Pi ?
 ifeq ($(for),pi)
 isRaspberryPi := $(shell if [ $(shell grep "^Pidora" /etc/redhat-release | wc -l) = "1" ] ; then echo true ; else echo false; fi)
 else
 isRasberryPi = true
 endif
 
+# If we are on a Raspberry Pi, we launch QEMU
 ifeq ($(isRaspberryPi),false)
 
 all:
@@ -21,7 +23,7 @@ all:
 
 else
 
-all: 
+all:
 
 $(binariesDirectory):
 	mkdir -p $@
@@ -70,6 +72,8 @@ run: $(application)
 		$(application) ; \
 	fi )
 
+endif
+
 cleanlib:
 	rm -rf $(librariesDirectory)/*
 	
@@ -77,4 +81,3 @@ clean:
 	find . -name '*~' | xargs rm -f
 	rm -f $(binariesDirectory)/*
 
-endif
