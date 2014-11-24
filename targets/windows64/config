@@ -8,5 +8,5 @@ binariesDirectory := $(shell pwd)/bin/windows64
 sdlconfig = /usr/x86_64-w64-mingw32/sys-root/mingw/bin/sdl2-config
 compiler = x86_64-w64-mingw32-g++
 compilerOptions = -static-libgcc -static-libstdc++ -MD -Os -s -Wall -I$(includesDirectory) -c `$(sdlconfig) --cflags` $(debugFlag) -D$(target)
-linker = x86_64-w64-mingw32-ld
+linker = x86_64-w64-mingw32-g++
 linkerOptions = -static-libgcc -static-libstdc++ -MD -Os -s `$(sdlconfig) --libs` -lopengl32 -lglu32 -lSDL2_image

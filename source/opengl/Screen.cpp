@@ -20,7 +20,7 @@ namespace opengl
 	Screen::~Screen()
 	{
 		if( this->context != NULL )
-		{	
+		{
 			SDL_GL_DeleteContext( this->context );
 		
 			#ifdef DEBUG0
