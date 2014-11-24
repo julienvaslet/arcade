@@ -3,7 +3,7 @@ basedir=$(cd `dirname $0`; pwd)
 tmpDirectory="/tmp"
 pidoraVersion="20"
 pidoraArch="armv6hl"
-pidoraRepo="http://pidora.ca/pidora/releases/${pidoraVersion}/packages/${pidoraArch}/os/Packages"
+pidoraRepo="http://pidora.ca/pidora/releases/${pidoraVersion}/images/"
 SDL2Version="2.0.3"
 
 function title ()
@@ -58,5 +58,29 @@ then
 	rm -rf qemu
 else
 	echo "QEMU is already installed."
+fi
+
+# TODO: kernel qemu ?
+
+title "Checking Pidora image"
+if [ ! -e "${basedir}/arm-pi/images/pidora.img" ]
+then
+	echo "Pidora image is not installed."
+	
+	title "Downloading latest Pidora image"
+	pidoraFile=$(curl -s ${pidoraRepo} | grep -o "href=\"Pidora-[^\"]\+" | sed 's/href="//g' | sort -r | head -n1)
+	echo "Latest Pidora image is: ${pidoraFile/.zip}"
+	
+	cd ${basedir}/arm-pi/images
+	wget ${pidoraRepo}/${pidoraFile}
+	unzip ${pidoraFile}
+	mv ${pidoraFile/.zip}/${pidoraFile/.zip}.img pidora.img
+	rm -rf ${pidoraFile} ${pidoraFile/.zip}
+	
+	title "Configuring Pidora installation"
+	echo "Todo."
+	
+else
+	echo "Pidora image is already installed."
 fi
 

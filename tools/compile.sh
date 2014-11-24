@@ -1,7 +1,7 @@
 #!/bin/bash
 basedir=$(cd `dirname $0`; pwd)
 projectDirectory=${basedir}/..
-image=${basedir}/arm-pi/images/Pidora-2014-R3.img
+image=${basedir}/arm-pi/images/pidora.img
 kernel=${basedir}/arm-pi/images/kernel-qemu
 mountpoint=${basedir}/arm-pi/mountpoint
 guestDirectory=/root/compile
