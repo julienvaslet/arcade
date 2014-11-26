@@ -16,6 +16,7 @@ int main( int argc, char ** argv )
 	
 	GPIO::initialize();
 	GPIO::get()->open( 21, GPIO::In );
+	GPIO::get()->open( 14, GPIO::Out );
 
 	bool pushed = false;
 
@@ -28,9 +29,15 @@ int main( int argc, char ** argv )
 			pushed = status;
 			
 			if( pushed )
+			{
 				Logger::get() << "Button pushed." << Logger::endl;
+				GPIO::get()->write( 14, true );
+			}
 			else
+			{
 				Logger::get() << "Button released." << Logger::endl;
+				GPIO::get()->write( 14, false );
+			}
 		}
 		
 		// Wait 100 ms

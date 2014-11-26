@@ -5,11 +5,15 @@
 #include <fstream>
 
 #ifdef DEBUG0
+#include <cstring>
+#include <errno.h>
+extern int errno;
+
 #include <tools/logger/Logger.h>
 using namespace tools::logger;
 #endif
 
-#define GPIO_PATH(path)		"/sys/class/gpio/##path"
+#define GPIO_PATH(path)		"/sys/class/gpio/" #path ""
 
 namespace tools
 {
@@ -54,7 +58,7 @@ namespace tools
 				status = false;
 				
 				#ifdef DEBUG0
-				Logger::get() << "[GPIO#" << pin << "] Unable to open export file." << Logger::endl;
+				Logger::get() << "[GPIO#" << pin << "] Unable to open export file (" << GPIO_PATH(export) << "): " << strerror(errno) << "." << Logger::endl;
 				#endif
 			}
 			
@@ -85,7 +89,7 @@ namespace tools
 				status = false;
 				
 				#ifdef DEBUG0
-				Logger::get() << "[GPIO#" << pin << "] Unable to open direction file." << Logger::endl;
+				Logger::get() << "[GPIO#" << pin << "] Unable to open direction file (" << pathStr << "): " << strerror(errno) << "." << Logger::endl;
 				#endif
 			}
 			
@@ -115,7 +119,7 @@ namespace tools
 				}
 				#ifdef DEBUG0
 				else
-					Logger::get() << "[GPIO#" << pin << "] Unable to opend value file." << Logger::endl;
+					Logger::get() << "[GPIO#" << pin << "] Unable to opend value file (" << pathStr << "): " << strerror(errno) << "." << Logger::endl;
 				#endif
 			}
 			#ifdef DEBUG0
@@ -142,7 +146,7 @@ namespace tools
 				}
 				#ifdef DEBUG0
 				else
-					Logger::get() << "[GPIO#" << pin << "] Unable to open value file." << Logger::endl;
+					Logger::get() << "[GPIO#" << pin << "] Unable to open value file (" << pathStr << "): " << strerror(errno) << "." << Logger::endl;
 				#endif
 			}
 			#ifdef DEBUG0
@@ -172,7 +176,7 @@ namespace tools
 				status = false;
 				
 				#ifdef DEBUG0
-				Logger::get() << "[GPIO#" << pin << "] Unable to open unexport file." << Logger::endl;
+				Logger::get() << "[GPIO#" << pin << "] Unable to open unexport file (" << GPIO_PATH(unexport) << "): " << strerror(errno) << "." << Logger::endl;
 				#endif
 			}
 			

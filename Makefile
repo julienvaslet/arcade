@@ -31,7 +31,7 @@ $(binariesDirectory):
 $(librariesDirectory):
 	mkdir -p $@
 
-.PRECIOUS: $(binariesDirectory)/% $(librariesDirectory)/%.o
+.PRECIOUS: $(binariesDirectory)/%
 .PHONY: run clean cleanlib all
 .SECONDEXPANSION:
 
