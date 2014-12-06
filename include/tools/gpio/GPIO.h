@@ -33,6 +33,7 @@ namespace tools
 				void closeAll();
 				
 				bool isOpen( int pin, Direction direction );
+				void logStatus();
 				
 				static GPIO * initialize();
 				static GPIO * get();

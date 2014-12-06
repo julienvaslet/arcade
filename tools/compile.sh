@@ -36,8 +36,27 @@ function mount_image ()
 
 function umount_image ()
 {
-	umount ${mountpoint}
-	rm -rf ${mountpoint}
+	tries=3
+	ret=1
+	while [ ${ret} != "0" ]
+	do
+		umount ${mountpoint}
+		ret=$?
+		tries=$(expr ${tries} - 1)
+		
+		if [ ${tries} -eq 0 ]
+		then
+			echo "Unable to unmount \"${mountpoint}\"."
+			return
+		fi
+		
+		if [ "${ret}" != "0" ]
+		then
+			sleep 1
+		fi
+	done
+	
+	rmdir ${mountpoint}
 }
 
 mount_image
@@ -45,15 +64,9 @@ mount_image
 # Copy auto-compilation script
 cp ${basedir}/init.sh ${mountpoint}/root/init.sh
 chmod 750 ${mountpoint}/root/init.sh
-sed -i "s|^target=|target=${target}|g" ${mountpoint}/root/init.sh
-sed -i "s|^applications=|applications=${applications}|g" ${mountpoint}/root/init.sh
-sed -i "s|^workingDirectory=|workingDirectory=${guestDirectory}|g" ${mountpoint}/root/init.sh
-
-# Setting auto-compilation @ bash login
-if [ $(grep "^/root/init.sh" ${mountpoint}/root/.bashrc | wc -l) = "0" ]
-then
-	echo -e "\n# Auto-compilation\n/root/init.sh" >> ${mountpoint}/root/.bashrc
-fi
+sed -i "s|^target=|target=${target}|g" ${mountpoint}/root/compile.sh
+sed -i "s|^applications=|applications=${applications}|g" ${mountpoint}/root/compile.sh
+sed -i "s|^workingDirectory=|workingDirectory=${guestDirectory}|g" ${mountpoint}/root/compile.sh
 
 # Synchronize projects files
 mkdir -p ${mountpoint}${guestDirectory}

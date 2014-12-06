@@ -201,6 +201,16 @@ namespace tools
 			return status;
 		}
 		
+		void GPIO::logStatus()
+		{
+			#ifdef DEBUG0
+			Logger::get() << "[GPIO] Logging pins' status: " << Logger::endl;
+			
+			for( map<int, Direction>::iterator it = this->pins.begin() ; it != this->pins.end() ; it++ )
+				Logger::get() << "[GPIO#" << it->first << "] Opened for " << ( it->second == Out ? "write" : "read" ) << " operations." << Logger::endl;
+			#endif
+		}
+		
 		GPIO * GPIO::initialize()
 		{
 			if( GPIO::instance != NULL )
