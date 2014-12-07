@@ -1,12 +1,20 @@
 #include <tools/logger/Stdout.h>
 #include <tools/gpio/GPIO.h>
+#include <data/parser/IniParser.h>
 
 #include <cstdlib>
 #include <unistd.h>
 #include <signal.h>
 
+#include <sstream>
+#include <fstream>
+
+#define GPIO_CONFIGURATION_FILE	"data/controllers/gpio.conf"
+
+using namespace std;
 using namespace tools::logger;
 using namespace tools::gpio;
+using namespace data;
 
 bool running = true;
 
@@ -48,6 +56,24 @@ int main( int argc, char ** argv )
 		Logger::destroy();
 		exit( 1 );
 	}
+	
+	ifstream iniFile( GPIO_CONFIGURATION_FILE );
+
+	if( !iniFile.is_open() )
+	{
+		Logger::get() << "Unable to open file " GPIO_CONFIGURATION_FILE "." << Logger::endl;
+		Logger::destroy();
+		exit( 2 );
+	}
+
+	stringstream ss;
+	ss << iniFile.rdbuf();
+	iniFile.close();
+			
+	parser::IniParser * parser = new parser::IniParser( ss.str() );
+	ini::Configuration * conf = parser->parse();
+	delete parser;
+	delete conf;
 	
 	GPIO::initialize();
 	GPIO::get()->open( 21, GPIO::In );
