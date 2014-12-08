@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include <map>
+#include <set>
 #include <sstream>
 #include <fstream>
 
@@ -56,6 +58,9 @@ int main( int argc, char ** argv )
 		Logger::destroy();
 		exit( 1 );
 	}
+	
+	//vector<VirtualDevice *> ...
+	//map<int,pair<int,int>> ... pair<index, value>
 	
 	ifstream iniFile( GPIO_CONFIGURATION_FILE );
 
