@@ -19,6 +19,7 @@ namespace data
 				bool section();
 				bool comment();
 				bool assignation();
+				bool emptyline();
 	
 			public:
 				IniParser( const string& content );
