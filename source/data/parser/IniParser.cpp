@@ -1,10 +1,13 @@
 #include <data/parser/IniParser.h>
 #include <algorithm>
+#include <sstream>
 
 #ifdef DEBUG0
 #include <tools/logger/Logger.h>
 using namespace tools::logger;
 #endif
+
+using namespace std;
 
 namespace data
 {
@@ -15,8 +18,12 @@ namespace data
 			string charSymbols = ";=[]\n";
 			vector<string> parsedSymbols = this->readSymbols( content, charSymbols.c_str(), " \t\r" );
 			
+			this->symbols.push_back( "\n" );
+			for( vector<string>::iterator it = parsedSymbols.begin() ; it != parsedSymbols.end() ; it++ )
+				this->symbols.push_back( *it );
+			
 			#ifdef DEBUG0
-			Logger::get() << "[IniParser] Loaded (" << parsedSymbols.size() << " symbols)." << Logger::endl;
+			Logger::get() << "[IniParser] Loaded (" << this->symbols.size() << " symbols)." << Logger::endl;
 			#endif
 		}
 		
@@ -35,6 +42,7 @@ namespace data
 				if( this->comment() ) {}
 				else if( this->section() ) {}
 				else if( this->assignation() ) {}
+				else if( this->emptyline() ) {}
 				else
 				{
 					#ifdef DEBUG0
@@ -54,21 +62,29 @@ namespace data
 			this->pushPointer();
 			
 			this->eatSpaces();
-	
-			if( this->findSymbol( "<!--" ) )
+			
+			if( this->findSymbol( "\n" ) )
 			{
 				this->nextSymbol();
-				string content;
-
-				while( !this->findSymbol( "-->" ) )
+				
+				if( this->findSymbol( "[" ) )
 				{
-					content += this->read();
 					this->nextSymbol();
+					stringstream name;
+	
+					while( !this->findSymbol( "]" ) )
+					{
+						name << this->read();
+						this->nextSymbol();
+					}
+			
+					this->nextSymbol();
+					string nameStr = name.str();
+					this->currentSection = new ini::Section( nameStr );
+					this->configuration->addSection( this->currentSection );
+					
+					bReturn = true;
 				}
-		
-				this->nextSymbol();
-				//this->currentNode->append( new node::Node( node::Node::Comment, content ) );
-				bReturn = true;
 			}
 			
 			this->popPointer( !bReturn );
@@ -81,7 +97,25 @@ namespace data
 			bool bReturn = false;
 			this->pushPointer();
 			
-			//...
+			this->eatSpaces();
+			
+			if( this->findSymbol( "\n" ) )
+			{
+				this->nextSymbol();
+				
+				if( this->findSymbol( ";" ) )
+				{
+					this->nextSymbol();
+					
+					while( !this->findSymbol( "\n" ) && !this->eop() )
+					{
+						// Ignoring comment
+						this->nextSymbol();
+					}
+					
+					bReturn = true;
+				}
+			}
 			
 			this->popPointer( !bReturn );
 	
@@ -93,34 +127,68 @@ namespace data
 			bool bReturn = false;
 			this->pushPointer();
 			
-			//...
+			this->eatSpaces();
+			
+			if( this->findSymbol( "\n" ) )
+			{
+				stringstream key;
+				stringstream value;
+				
+				while( !this->findSymbol( "=" ) && !this->findSymbol( " " ) && !this->eop() )
+				{
+					key << this->read();
+					this->nextSymbol();
+				}
+				
+				this->eatSpaces();
+				
+				if( this->findSymbol( "=" ) )
+				{
+					this->nextSymbol();
+					this->eatSpaces();
+					
+					while( !this->findSymbol( "\n" ) && !this->eop() )
+					{
+						value << this->read();
+						this->nextSymbol();
+					}
+					
+					bReturn = true;
+					
+					if( this->currentSection == NULL )
+					{
+						this->currentSection = new ini::Section( "" );
+						this->configuration->addSection( this->currentSection );
+					}
+					
+					string keyStr = key.str();
+					string valueStr = value.str();
+					this->currentSection->setValue( keyStr, valueStr );
+				}
+			}
 			
 			this->popPointer( !bReturn );
-	
+			
 			return bReturn;
 		}
 		
-		bool IniParser::key()
+		bool IniParser::emptyline()
 		{
 			bool bReturn = false;
 			this->pushPointer();
 			
-			//...
+			this->eatSpaces();
+			
+			if( this->findSymbol( "\n" ) )
+			{
+				this->nextSymbol();
+				
+				if( this->findSymbol( "\n" ) || this->eop() )
+					bReturn = true;
+			}
 			
 			this->popPointer( !bReturn );
-	
-			return bReturn;
-		}
-		
-		bool IniParser::value()
-		{
-			bool bReturn = false;
-			this->pushPointer();
 			
-			//...
-			
-			this->popPointer( !bReturn );
-	
 			return bReturn;
 		}
 	}
