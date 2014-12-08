@@ -73,6 +73,112 @@ int main( int argc, char ** argv )
 	parser::IniParser * parser = new parser::IniParser( ss.str() );
 	ini::Configuration * conf = parser->parse();
 	delete parser;
+	
+	set<string> sections = conf->getSections();
+	
+	for( set<string>::iterator it = sections.begin() ; it != sections.end() ; it++ )
+	{
+		#ifdef DEBUG0
+		Logger::get() << "Reading configuration for GPIO controller \"" << *it << "\"..." << Logger::endl;
+		#endif
+		
+		// UpButton
+		if( conf->hasKey( "UpButton", *it ) )
+		{
+			#ifdef DEBUG0
+			Logger::get() << "Up Button is GPIO#" << conf->getValue( "UpButton", *it ) << Logger::endl;
+			#endif
+		}
+		#ifdef DEBUG0
+		else
+			Logger::get() << "Up Button is not defined." << Logger::endl;
+		#endif
+		
+		// LeftButton
+		if( conf->hasKey( "LeftButton", *it ) )
+		{
+			#ifdef DEBUG0
+			Logger::get() << "Left Button is GPIO#" << conf->getValue( "LeftButton", *it ) << Logger::endl;
+			#endif
+		}
+		#ifdef DEBUG0
+		else
+			Logger::get() << "Left Button is not defined." << Logger::endl;
+		#endif
+		
+		// RightButton
+		if( conf->hasKey( "RightButton", *it ) )
+		{
+			#ifdef DEBUG0
+			Logger::get() << "Right Button is GPIO#" << conf->getValue( "RightButton", *it ) << Logger::endl;
+			#endif
+		}
+		#ifdef DEBUG0
+		else
+			Logger::get() << "Right Button is not defined." << Logger::endl;
+		#endif
+		
+		// DownButton
+		if( conf->hasKey( "DownButton", *it ) )
+		{
+			#ifdef DEBUG0
+			Logger::get() << "Down Button is GPIO#" << conf->getValue( "DownButton", *it ) << Logger::endl;
+			#endif
+		}
+		#ifdef DEBUG0
+		else
+			Logger::get() << "Down Button is not defined." << Logger::endl;
+		#endif
+		
+		// UpAxis
+		if( conf->hasKey( "UpAxis", *it ) )
+		{
+			#ifdef DEBUG0
+			Logger::get() << "Up Axis is GPIO#" << conf->getValue( "UpAxis", *it ) << Logger::endl;
+			#endif
+		}
+		#ifdef DEBUG0
+		else
+			Logger::get() << "Up Axis is not defined." << Logger::endl;
+		#endif
+		
+		// LeftAxis
+		if( conf->hasKey( "LeftAxis", *it ) )
+		{
+			#ifdef DEBUG0
+			Logger::get() << "Left Axis is GPIO#" << conf->getValue( "LeftAxis", *it ) << Logger::endl;
+			#endif
+		}
+		#ifdef DEBUG0
+		else
+			Logger::get() << "Left Axis is not defined." << Logger::endl;
+		#endif
+		
+		// RightAxis
+		if( conf->hasKey( "RightAxis", *it ) )
+		{
+			#ifdef DEBUG0
+			Logger::get() << "Right Axis is GPIO#" << conf->getValue( "RightAxis", *it ) << Logger::endl;
+			#endif
+		}
+		#ifdef DEBUG0
+		else
+			Logger::get() << "Right Axis is not defined." << Logger::endl;
+		#endif
+		
+		// DownAxis
+		if( conf->hasKey( "DownAxis", *it ) )
+		{
+			#ifdef DEBUG0
+			Logger::get() << "Down Axis is GPIO#" << conf->getValue( "DownAxis", *it ) << Logger::endl;
+			#endif
+		}
+		#ifdef DEBUG0
+		else
+			Logger::get() << "Down Axis is not defined." << Logger::endl;
+		#endif
+	}
+	
 	delete conf;
 	
 	GPIO::initialize();
