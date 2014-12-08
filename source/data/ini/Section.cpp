@@ -27,6 +27,16 @@ namespace data
 		{
 			return this->name;
 		}
+		
+		set<string> Section::getKeys() const
+		{
+			set<string> keys;
+			
+			for( map<string, string>::const_iterator it = this->values.begin() ; it != this->values.end() ; it++ )
+				keys.insert( it->first );
+			
+			return keys;
+		}
 
 		bool Section::hasKey( const string& key ) const
 		{
