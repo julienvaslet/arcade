@@ -1,5 +1,5 @@
-#ifndef _DATA_PARSER_INIPARSER_H
-#define _DATA_PARSER_INIPARSER_H	1
+#ifndef __DATA_PARSER_INIPARSER_H
+#define __DATA_PARSER_INIPARSER_H	1
 
 #include <data/parser/Parser.h>
 #include <data/ini/Configuration.h>
