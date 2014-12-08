@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <set>
 using namespace std;
 
 namespace data
@@ -20,6 +21,8 @@ namespace data
 				~Section();
 				
 				const string& getName() const;
+				set<string> getKeys() const;
+				
 				bool hasKey( const string& key ) const;
 				void setValue( const string& key, const string& value );
 				const string& getValue( const string& key );
