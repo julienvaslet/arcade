@@ -19,8 +19,6 @@ namespace data
 				bool section();
 				bool comment();
 				bool assignation();
-				bool key();
-				bool value();
 	
 			public:
 				IniParser( const string& content );
@@ -32,4 +30,3 @@ namespace data
 }
 
 #endif
-
