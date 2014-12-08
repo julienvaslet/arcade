@@ -39,10 +39,10 @@ namespace data
 
 			while( !this->eop() )
 			{
-				if( this->comment() ) {}
+				if( this->emptyline() ) {}
+				else if( this->comment() ) {}
 				else if( this->section() ) {}
 				else if( this->assignation() ) {}
-				else if( this->emptyline() ) {}
 				else
 				{
 					#ifdef DEBUG0
@@ -131,6 +131,8 @@ namespace data
 			
 			if( this->findSymbol( "\n" ) )
 			{
+				this->nextSymbol();
+				
 				stringstream key;
 				stringstream value;
 				
@@ -182,6 +184,7 @@ namespace data
 			if( this->findSymbol( "\n" ) )
 			{
 				this->nextSymbol();
+				this->eatSpaces();
 				
 				if( this->findSymbol( "\n" ) || this->eop() )
 					bReturn = true;

@@ -1,6 +1,7 @@
 #include <tools/logger/Stdout.h>
 #include <tools/gpio/GPIO.h>
 #include <data/parser/IniParser.h>
+#include <controller/VirtualDevice.h>
 
 #include <cstdlib>
 #include <unistd.h>
@@ -16,9 +17,17 @@
 using namespace std;
 using namespace tools::logger;
 using namespace tools::gpio;
+using namespace controller;
 using namespace data;
 
 bool running = true;
+
+struct GpioAction {
+	VirtualDevice * device;
+	int event;
+	int eventModifier;
+	bool pushed;
+};
 
 void signalHandler( int signo )
 {
@@ -40,6 +49,18 @@ void signalHandler( int signo )
 	}
 }
 
+int toInt( const string& value )
+{
+	int iValue = 0;
+	
+	istringstream iss( value );
+	
+	if( iss )
+		iss >> iValue;
+	
+	return iValue;
+}
+
 int main( int argc, char ** argv )
 {
 	// Initialize standard-output logger
@@ -59,8 +80,8 @@ int main( int argc, char ** argv )
 		exit( 1 );
 	}
 	
-	//vector<VirtualDevice *> ...
-	//map<int,pair<int,int>> ... pair<index, value>
+	vector<VirtualDevice *> devices;
+	map<int, GpioAction> gpioActions;
 	
 	ifstream iniFile( GPIO_CONFIGURATION_FILE );
 
@@ -74,7 +95,7 @@ int main( int argc, char ** argv )
 	stringstream ss;
 	ss << iniFile.rdbuf();
 	iniFile.close();
-			
+	
 	parser::IniParser * parser = new parser::IniParser( ss.str() );
 	ini::Configuration * conf = parser->parse();
 	delete parser;
@@ -83,153 +104,119 @@ int main( int argc, char ** argv )
 	
 	for( set<string>::iterator it = sections.begin() ; it != sections.end() ; it++ )
 	{
-		#ifdef DEBUG0
-		Logger::get() << "Reading configuration for GPIO controller \"" << *it << "\"..." << Logger::endl;
-		#endif
+		VirtualDevice * device = new VirtualDevice( *it );
+		devices.push_back( device );
 		
-		// UpButton
-		if( conf->hasKey( "UpButton", *it ) )
-		{
-			#ifdef DEBUG0
-			Logger::get() << "Up Button is GPIO#" << conf->getValue( "UpButton", *it ) << Logger::endl;
-			#endif
+		// NorthButton
+		if( conf->hasKey( "NorthButton", *it ) )
+		{		
+			if( device->enableKey( BTN_NORTH ) )
+				gpioActions[toInt( conf->getValue( "NorthButton", *it ) )] = { device, BTN_NORTH, 1, false };
 		}
-		#ifdef DEBUG0
-		else
-			Logger::get() << "Up Button is not defined." << Logger::endl;
-		#endif
 		
-		// LeftButton
-		if( conf->hasKey( "LeftButton", *it ) )
+		// WestButton
+		if( conf->hasKey( "WestButton", *it ) )
 		{
-			#ifdef DEBUG0
-			Logger::get() << "Left Button is GPIO#" << conf->getValue( "LeftButton", *it ) << Logger::endl;
-			#endif
+			if( device->enableKey( BTN_WEST ) )
+				gpioActions[toInt( conf->getValue( "WestButton", *it ) )] = { device, BTN_WEST, 1, false };
 		}
-		#ifdef DEBUG0
-		else
-			Logger::get() << "Left Button is not defined." << Logger::endl;
-		#endif
 		
-		// RightButton
-		if( conf->hasKey( "RightButton", *it ) )
+		// EastButton
+		if( conf->hasKey( "EastButton", *it ) )
 		{
-			#ifdef DEBUG0
-			Logger::get() << "Right Button is GPIO#" << conf->getValue( "RightButton", *it ) << Logger::endl;
-			#endif
+			if( device->enableKey( BTN_EAST ) )
+				gpioActions[toInt( conf->getValue( "EastButton", *it ) )] = { device, BTN_EAST, 1, false };
 		}
-		#ifdef DEBUG0
-		else
-			Logger::get() << "Right Button is not defined." << Logger::endl;
-		#endif
 		
-		// DownButton
-		if( conf->hasKey( "DownButton", *it ) )
+		// SouthButton
+		if( conf->hasKey( "SouthButton", *it ) )
 		{
-			#ifdef DEBUG0
-			Logger::get() << "Down Button is GPIO#" << conf->getValue( "DownButton", *it ) << Logger::endl;
-			#endif
+			if( device->enableKey( BTN_SOUTH ) )
+				gpioActions[toInt( conf->getValue( "SouthButton", *it ) )] = { device, BTN_SOUTH, 1, false };
 		}
-		#ifdef DEBUG0
-		else
-			Logger::get() << "Down Button is not defined." << Logger::endl;
-		#endif
 		
 		// UpAxis
 		if( conf->hasKey( "UpAxis", *it ) )
 		{
-			#ifdef DEBUG0
-			Logger::get() << "Up Axis is GPIO#" << conf->getValue( "UpAxis", *it ) << Logger::endl;
-			#endif
+			if( device->enableAbsoluteAxis( ABS_Y ) )
+				gpioActions[toInt( conf->getValue( "UpAxis", *it ) )] = { device, ABS_Y, 1, false };
 		}
-		#ifdef DEBUG0
-		else
-			Logger::get() << "Up Axis is not defined." << Logger::endl;
-		#endif
-		
-		// LeftAxis
-		if( conf->hasKey( "LeftAxis", *it ) )
-		{
-			#ifdef DEBUG0
-			Logger::get() << "Left Axis is GPIO#" << conf->getValue( "LeftAxis", *it ) << Logger::endl;
-			#endif
-		}
-		#ifdef DEBUG0
-		else
-			Logger::get() << "Left Axis is not defined." << Logger::endl;
-		#endif
-		
-		// RightAxis
-		if( conf->hasKey( "RightAxis", *it ) )
-		{
-			#ifdef DEBUG0
-			Logger::get() << "Right Axis is GPIO#" << conf->getValue( "RightAxis", *it ) << Logger::endl;
-			#endif
-		}
-		#ifdef DEBUG0
-		else
-			Logger::get() << "Right Axis is not defined." << Logger::endl;
-		#endif
 		
 		// DownAxis
 		if( conf->hasKey( "DownAxis", *it ) )
 		{
-			#ifdef DEBUG0
-			Logger::get() << "Down Axis is GPIO#" << conf->getValue( "DownAxis", *it ) << Logger::endl;
-			#endif
+			if( device->enableAbsoluteAxis( ABS_Y ) )
+				gpioActions[toInt( conf->getValue( "DownAxis", *it ) )] = { device, ABS_Y, 1, false };
 		}
-		#ifdef DEBUG0
-		else
-			Logger::get() << "Down Axis is not defined." << Logger::endl;
-		#endif
+		
+		// LeftAxis
+		if( conf->hasKey( "LeftAxis", *it ) )
+		{
+			if( device->enableAbsoluteAxis( ABS_X ) )
+				gpioActions[toInt( conf->getValue( "LeftAxis", *it ) )] = { device, ABS_X, 1, false };
+		}
+		
+		// RightAxis
+		if( conf->hasKey( "RightAxis", *it ) )
+		{
+			if( device->enableAbsoluteAxis( ABS_X ) )
+				gpioActions[toInt( conf->getValue( "RightAxis", *it ) )] = { device, ABS_X, 1, false };
+		}
+		
+		device->create();
 	}
 	
 	delete conf;
-	
 	GPIO::initialize();
-	GPIO::get()->open( 21, GPIO::In );
-	GPIO::get()->open( 20, GPIO::In );
-	GPIO::get()->logStatus();
-
-	bool pushed1 = false;
-	bool pushed2 = false;
+	
+	for( map<int, GpioAction>::iterator it = gpioActions.begin() ; it != gpioActions.end() ; it++ )
+		GPIO::get()->open( it->first, GPIO::In );
 
 	while( running )
 	{
-		bool status1 = GPIO::get()->read( 21 );
-		bool status2 = GPIO::get()->read( 20 );
-		
-		if( status1 != pushed1 )
+		for( map<int, GpioAction>::iterator it = gpioActions.begin() ; it != gpioActions.end() ; it++ )
 		{
-			pushed1 = status1;
+			bool status = GPIO::get()->read( it->first );
 			
-			if( !pushed1 )
+			if( status != it->second.pushed )
 			{
-				Logger::get() << "Button1 pushed." << Logger::endl;
-			}
-			else
-			{
-				Logger::get() << "Button1 released." << Logger::endl;
-			}
-		}
-		
-		if( status2 != pushed2 )
-		{
-			pushed2 = status2;
-			
-			if( !pushed2 )
-			{
-				Logger::get() << "Button2 pushed." << Logger::endl;
-			}
-			else
-			{
-				Logger::get() << "Button2 released." << Logger::endl;
+				it->second.pushed = status;
+				
+				if( it->second.pushed )
+				{
+					#ifdef DEBUG0
+					Logger::get() << "GPIO#" << it->first << " pushed." << Logger::endl;
+					#endif
+					
+					// Handle ABS ? Grouped Sync ?
+					it->second.device->pressKey( it->second.event );
+					
+					#ifdef DEBUG0
+					Logger::get() << "Joystick \"" << it->second.device->getName() << " pressed " << it->second.event << " key." << Logger::endl;
+					#endif
+				}
+				else
+				{
+					#ifdef DEBUG0
+					Logger::get() << "GPIO#" << it->first << " released." << Logger::endl;
+					#endif
+					
+					// Handle ABS ? Grouped Sync ?
+					it->second.device->pressKey( it->second.event );
+					
+					#ifdef DEBUG0
+					Logger::get() << "Joystick \"" << it->second.device->getName() << " released " << it->second.event << " key." << Logger::endl;
+					#endif
+				}
 			}
 		}
 		
 		// Wait 100 ms
 		usleep( 100000 );
 	}
+	
+	for( vector<VirtualDevice *>::iterator it = devices.begin() ; it != devices.end() ; it++ )
+		delete *it;
 	
 	GPIO::destroy();
 	Logger::destroy();

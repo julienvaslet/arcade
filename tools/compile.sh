@@ -64,9 +64,9 @@ mount_image
 # Copy auto-compilation script
 cp ${basedir}/init.sh ${mountpoint}/root/init.sh
 chmod 750 ${mountpoint}/root/init.sh
-sed -i "s|^target=|target=${target}|g" ${mountpoint}/root/compile.sh
-sed -i "s|^applications=|applications=${applications}|g" ${mountpoint}/root/compile.sh
-sed -i "s|^workingDirectory=|workingDirectory=${guestDirectory}|g" ${mountpoint}/root/compile.sh
+sed -i "s|^target=.*|target=${target}|g" ${mountpoint}/root/compile.sh
+sed -i "s|^applications=.*|applications=${applications}|g" ${mountpoint}/root/compile.sh
+sed -i "s|^workingDirectory=.*|workingDirectory=${guestDirectory}|g" ${mountpoint}/root/compile.sh
 
 # Synchronize projects files
 mkdir -p ${mountpoint}${guestDirectory}
