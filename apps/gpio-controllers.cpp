@@ -188,12 +188,23 @@ int main( int argc, char ** argv )
 					Logger::get() << "GPIO#" << it->first << " pushed." << Logger::endl;
 					#endif
 					
-					// Handle ABS ? Grouped Sync ?
-					it->second.device->pressKey( it->second.event );
-					
-					#ifdef DEBUG0
-					Logger::get() << "Joystick \"" << it->second.device->getName() << " pressed " << it->second.event << " key." << Logger::endl;
-					#endif
+					// Warning: It may provide two event press & release for axis
+					if( it->second.event != ABS_X && it->second.event != ABS_Y )
+					{
+						it->second.device->pressKey( it->second.event, false );
+						
+						#ifdef DEBUG0
+						Logger::get() << "Joystick \"" << it->second.device->getName() << " pressed " << it->second.event << " button." << Logger::endl;
+						#endif
+					}
+					else
+					{
+						it->second.device->sendAbsoluteAxis( it->second.event, 32767 * it->second.eventModifier, false );
+						
+						#ifdef DEBUG0
+						Logger::get() << "Joystick \"" << it->second.device->getName() << " pressed " << it->second.event << " axis with modifier " << it->second.eventModifier << "." << Logger::endl;
+						#endif
+					}
 				}
 				else
 				{
@@ -201,15 +212,29 @@ int main( int argc, char ** argv )
 					Logger::get() << "GPIO#" << it->first << " released." << Logger::endl;
 					#endif
 					
-					// Handle ABS ? Grouped Sync ?
-					it->second.device->releaseKey( it->second.event );
+					// Warning: It may provide two event press & release for axis
+					if( it->second.event != ABS_X && it->second.event != ABS_Y )
+					{
+						it->second.device->releaseKey( it->second.event );
 					
-					#ifdef DEBUG0
-					Logger::get() << "Joystick \"" << it->second.device->getName() << " released " << it->second.event << " key." << Logger::endl;
-					#endif
+						#ifdef DEBUG0
+						Logger::get() << "Joystick \"" << it->second.device->getName() << " released " << it->second.event << " button." << Logger::endl;
+						#endif
+					}
+					else
+					{
+						it->second.device->sendAbsoluteAxis( it->second.event, 0, false );
+						
+						#ifdef DEBUG0
+						Logger::get() << "Joystick \"" << it->second.device->getName() << " pressed " << it->second.event << " axis with modifier " << it->second.eventModifier << "." << Logger::endl;
+						#endif
+					}
 				}
 			}
 		}
+		
+		for( vector<VirtualDevice *>::iterator it = devices.begin() ; it != devices.end() ; it++ )
+			(*it)->flush();
 		
 		// Wait 100 ms
 		usleep( 100000 );
