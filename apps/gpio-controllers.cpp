@@ -202,7 +202,7 @@ int main( int argc, char ** argv )
 					#endif
 					
 					// Handle ABS ? Grouped Sync ?
-					it->second.device->pressKey( it->second.event );
+					it->second.device->releaseKey( it->second.event );
 					
 					#ifdef DEBUG0
 					Logger::get() << "Joystick \"" << it->second.device->getName() << " released " << it->second.event << " key." << Logger::endl;
