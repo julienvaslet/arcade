@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <vector>
 
 #ifdef DEBUG0
 #include <cstring>
@@ -185,8 +186,13 @@ namespace tools
 		
 		void GPIO::closeAll()
 		{
+			vector<int> pinNumbers;
+			
 			for( map<int, Direction>::iterator it = this->pins.begin() ; it != this->pins.end() ; it++ )
-				this->close( it->first );
+				pinNumbers.push_back( it->first );
+				
+			for( vector<int>::iterator it = pinNumbers.begin() ; it != pinNumbers.end() ; it++ )
+				this->close( *it );
 		}
 		
 		bool GPIO::isOpen( int pin, Direction direction )

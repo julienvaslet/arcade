@@ -139,7 +139,7 @@ int main( int argc, char ** argv )
 		if( conf->hasKey( "UpAxis", *it ) )
 		{
 			if( device->enableAbsoluteAxis( ABS_Y ) )
-				gpioActions[toInt( conf->getValue( "UpAxis", *it ) )] = { device, ABS_Y, 1, false };
+				gpioActions[toInt( conf->getValue( "UpAxis", *it ) )] = { device, ABS_Y, -1, false };
 		}
 		
 		// DownAxis
@@ -153,7 +153,7 @@ int main( int argc, char ** argv )
 		if( conf->hasKey( "LeftAxis", *it ) )
 		{
 			if( device->enableAbsoluteAxis( ABS_X ) )
-				gpioActions[toInt( conf->getValue( "LeftAxis", *it ) )] = { device, ABS_X, 1, false };
+				gpioActions[toInt( conf->getValue( "LeftAxis", *it ) )] = { device, ABS_X, -1, false };
 		}
 		
 		// RightAxis

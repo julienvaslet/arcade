@@ -32,6 +32,8 @@ namespace controller
 		#ifdef DEBUG0
 		if( this->descriptor == -1 )
 			Logger::get() << "[VirtualDevice#" << this->getName() << "] Unable to open uinput device (" << UINPUT_DEVICE << "): " << strerror( errno ) << Logger::endl;
+		else
+			Logger::get() << "[VirtualDevice#" << this->getName() << "] Initialized." << Logger::endl;
 		#endif
 	}
 	
@@ -41,6 +43,10 @@ namespace controller
 		{
 			ioctl( this->descriptor, UI_DEV_DESTROY );
 			close( this->descriptor );
+			
+			#ifdef DEBUG0
+			Logger::get() << "[VirtualDevice#" << this->getName() << "] Destroyed." << Logger::endl;
+			#endif
 		}
 	}
 
