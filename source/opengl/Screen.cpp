@@ -56,8 +56,16 @@ namespace opengl
 		// Set the OpenGL version
 		SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, majorVersion );
 		SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, minorVersion );
+		
+#ifdef __PI__
+		SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES );
+#else
 		SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
-	
+#endif
+
+		SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+		SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
+
 		Screen * screen = new Screen();
 
 		screen->window = SDL_CreateWindow(
@@ -142,7 +150,6 @@ namespace opengl
 	{
 		glClearColor( this->clearColor.getRed(), this->clearColor.getGreen(), this->clearColor.getBlue(), this->clearColor.getAlpha() );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-		glLoadIdentity();
 	}
 
 	void Screen::render()

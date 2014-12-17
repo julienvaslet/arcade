@@ -19,9 +19,11 @@ namespace opengl
 			
 			enum Access
 			{
-				Draw = 0,
+#ifndef __PI__
 				Read = 1,
-				Copy = 2
+				Copy = 2,
+#endif
+				Draw = 0
 			};
 		
 		protected:

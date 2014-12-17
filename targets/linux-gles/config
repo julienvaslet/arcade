@@ -1,4 +1,4 @@
-target=__LINUX__
+target=__PI__
 debugFlag = -g -DDEBUG0 -DDEBUG1 -DDEBUG2 -DDEBUG3
 librariesDirectory := $(shell pwd)/lib/linux64-gles
 includesDirectory := $(shell pwd)/include

@@ -32,9 +32,6 @@ namespace opengl
 			void setData( const vector<Point2D>& data, Frequency frequency = Static, Access access = Draw );
 			void setData( const vector<Point3D>& data, Frequency frequency = Static, Access access = Draw );
 			void setData( const vector<Color>& data, Frequency frequency = Static, Access access = Draw );
-			
-			void bindColorPointer( unsigned int stride = 0 );
-			void bindVertexPointer( unsigned int stride = 0 );
 	};
 }
 

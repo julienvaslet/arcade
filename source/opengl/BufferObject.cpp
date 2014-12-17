@@ -33,7 +33,11 @@ namespace opengl
 	
 	GLenum BufferObject::getUsage( Frequency f, Access a )
 	{
-		GLenum usages[] = { GL_STREAM_DRAW, GL_STREAM_READ, GL_STREAM_COPY, GL_STATIC_DRAW, GL_STATIC_READ, GL_STATIC_COPY, GL_DYNAMIC_DRAW, GL_DYNAMIC_READ, GL_DYNAMIC_COPY };		
+#ifdef __PI__
+		GLenum usages[] = { GL_STREAM_DRAW, GL_STATIC_DRAW, GL_DYNAMIC_DRAW };
+#else
+		GLenum usages[] = { GL_STREAM_DRAW, GL_STREAM_READ, GL_STREAM_COPY, GL_STATIC_DRAW, GL_STATIC_READ, GL_STATIC_COPY, GL_DYNAMIC_DRAW, GL_DYNAMIC_READ, GL_DYNAMIC_COPY };
+#endif
 		return usages[ static_cast<int>( f ) + static_cast<int>( a ) ];
 	}
 }

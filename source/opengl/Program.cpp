@@ -400,7 +400,14 @@ namespace opengl
 		}
 	}
 	
-	void Program::sendUniform( const string& uniform, unsigned int v0 )
+#ifndef __PI__
+
+	void Program::sendUniform( const string& uniform, const Matrix& matrix, bool transpose )
+	{
+		glUniformMatrix4fv( this->getUniformLocation( uniform ), 1, transpose, matrix.get() );
+	}
+	
+		void Program::sendUniform( const string& uniform, unsigned int v0 )
 	{
 		glUniform1ui( this->getUniformLocation( uniform ), v0 );
 	}
@@ -442,10 +449,7 @@ namespace opengl
 		}
 	}
 	
-	void Program::sendUniform( const string& uniform, const Matrix& matrix, bool transpose )
-	{
-		glUniformMatrix4fv( this->getUniformLocation( uniform ), 1, transpose, matrix.get() );
-	}
+#endif
 	
 	void Program::sendModelviewMatrix( const string& uniform )
 	{

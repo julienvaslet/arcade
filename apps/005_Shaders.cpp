@@ -16,8 +16,6 @@
 #include <opengl/Matrix.h>
 #include <opengl/Program.h>
 
-#include <GL/glu.h>
-
 using namespace opengl;
 using namespace std;
 using namespace tools::logger;
@@ -156,7 +154,10 @@ int main( int argc, char ** argv )
 	camera.getCenter().moveTo( 0.0f, 0.0f, 0.0f );
 	
 	glEnable( GL_DEPTH_TEST );
+	
+#ifndef __PI__
 	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+#endif
 	
 	cout << "Press [ENTER] to switch between shaders." << endl;
 	cout << "Press [SPACE] to switch between rendering with or without shaders." << endl;
@@ -278,29 +279,32 @@ int main( int argc, char ** argv )
 		{
 			Screen::get()->clear();
 			
+			Matrix projection;
+			
 			if( cameraPerspective )
 			{
-				camera.setPerspective( 45.0f, 800.0f / 600.0f, 1.0f, 100.0f );
+				projection = Matrix::perspective( 45.0f, 800.0f / 600.0f, 1.0f, 100.0f );
 			}
 			else if( cameraOrtho )
 			{
-				camera.setOrthogonal( -2.5f, 2.5f, -1.88f, 1.88f, 1.0f, 100.0f );
+				projection = Matrix::ortho( -2.5f, 2.5f, -1.88f, 1.88f, 1.0f, 100.0f );
 			}
 			else if( cameraFrustum )
 			{
-				camera.setFrustum( -1.25f, 1.25f, -0.89f, 0.89f, 1.0f, 100.0f );
+				projection = Matrix::frustum( -1.25f, 1.25f, -0.89f, 0.89f, 1.0f, 100.0f );
 			}
 			
-			glMatrixMode( GL_MODELVIEW );
-			camera.look();
-
-			glMultMatrixf( Matrix::translation( camera.getCenter().getX(), camera.getCenter().getY(), camera.getCenter().getZ() ).get() );
-			glMultMatrixf( Matrix::rotationY( yRotation ).get() );
+			Matrix modelview = Matrix::lookAt( camera.getEye().getX(), camera.getEye().getY(), camera.getEye().getZ(), camera.getCenter().getX(), camera.getCenter().getY(), camera.getCenter().getZ(), camera.getUp().getX(), camera.getUp().getY(), camera.getUp().getZ() );
+			Matrix translation = Matrix::translation( camera.getCenter().getX(), camera.getCenter().getY(), camera.getCenter().getZ() );
+			Matrix rotation = Matrix::rotationY( yRotation );
+			
+			modelview.multiply( translation );
+			modelview.multiply( rotation );
 			
 			if( useShaders )
 			{
-				program->sendProjectionMatrix( "projection_matrix" );
-				program->sendModelviewMatrix( "modelview_matrix" );
+				program->sendUniform( "projection_matrix", projection, false );
+				program->sendUniform( "modelview_matrix", modelview, false );
 				
 				program->sendVertexPointer( "a_Vertex", vbo );
 				
@@ -308,22 +312,25 @@ int main( int argc, char ** argv )
 					program->sendColorPointer( "a_Color", cbo );
 				
 				ibo->draw();
-		
-				glMultMatrixf( Matrix::translation( -1 * camera.getCenter().getX(), -1 * camera.getCenter().getY(), -1 * camera.getCenter().getZ() ).get() );
-				glPushMatrix();
-				glMultMatrixf( Matrix::translation( 2.0f, 0.0f, 1.0f ).get() );
 				
-				program->sendModelviewMatrix( "modelview_matrix" );
+				translation = Matrix::translation( -1 * camera.getCenter().getX(), -1 * camera.getCenter().getY(), -1 * camera.getCenter().getZ() );
+				modelview.multiply( translation );
+				Matrix modelview2( modelview );
+				translation = Matrix::translation( 2.0f, 0.0f, 1.0f );
+				modelview2.multiply( translation );
+				
+				program->sendUniform( "modelview_matrix", modelview2, false );
 				
 				ibo->draw( 0, 24 );
 		
-				glPopMatrix();
-				glMultMatrixf( Matrix::translation( -2.0f, 0.0f, -1.0f ).get() );
+				translation = Matrix::translation( -2.0f, 0.0f, -1.0f );
+				modelview.multiply( translation );
 				
-				program->sendModelviewMatrix( "modelview_matrix" );
+				program->sendUniform( "modelview_matrix", modelview, false );
 				
 				ibo->draw( 0, 12 );
 			}
+#ifndef __PI__
 			else
 			{
 				glColor3f( 1.0f, 1.0f, 1.0f );
@@ -350,6 +357,7 @@ int main( int argc, char ** argv )
 				glDisableClientState( GL_VERTEX_ARRAY );
 				glDisableClientState( GL_COLOR_ARRAY );
 			}
+#endif
 			
 			Screen::get()->render();
 			

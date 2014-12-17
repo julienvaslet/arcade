@@ -4,6 +4,14 @@
 #include <SDL2/SDL.h>
 #include <opengl/Color.h>
 
+#ifdef __PI__
+#define OPENGL_DEFAULT_MAJOR_VERSION	2
+#define OPENGL_DEFAULT_MINOR_VERSION	0
+#else
+#define OPENGL_DEFAULT_MAJOR_VERSION	3
+#define OPENGL_DEFAULT_MINOR_VERSION	0
+#endif
+
 namespace opengl
 {
 	class Screen
@@ -23,7 +31,7 @@ namespace opengl
 			Color clearColor;
 		
 		public:
-			static bool initialize( const char * title, int width = 800, int height = 600, bool resizable = false, int majorVersion = 2, int minorVersion = 1);
+			static bool initialize( const char * title, int width = 800, int height = 600, bool resizable = false, int majorVersion = OPENGL_DEFAULT_MAJOR_VERSION, int minorVersion = OPENGL_DEFAULT_MINOR_VERSION );
 			static Screen * get();
 			static void destroy();
 		

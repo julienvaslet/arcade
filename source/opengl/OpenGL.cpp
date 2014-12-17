@@ -90,27 +90,34 @@ namespace opengl
 		#endif
 		
 		// Draw functions
+		
+		// Not supported in GLES2
 		LoadOpenGLFunction_Windows(glDrawRangeElements);
 		
 		// Textures functions
 		LoadOpenGLFunction_Windows(glActiveTexture);
 		
 		// Buffers functions
+#ifndef __PI__
 		LoadOpenGLFunction(glGenBuffers);
 		LoadOpenGLFunction(glIsBuffer);
 		LoadOpenGLFunction(glDeleteBuffers);
 		LoadOpenGLFunction(glBindBuffer);
 		LoadOpenGLFunction(glBufferData);
+#endif
 		
 		// Shaders functions
+#ifndef __PI__
 		LoadOpenGLFunction(glCreateShader);
 		LoadOpenGLFunction(glDeleteShader);
 		LoadOpenGLFunction(glGetShaderiv);
 		LoadOpenGLFunction(glGetShaderInfoLog);
 		LoadOpenGLFunction(glShaderSource);
 		LoadOpenGLFunction(glCompileShader);
-		
+#endif
+
 		// Program functions
+#ifndef __PI__
 		LoadOpenGLFunction(glCreateProgram);
 		LoadOpenGLFunction(glDeleteProgram);
 		LoadOpenGLFunction(glGetProgramiv);
@@ -126,8 +133,10 @@ namespace opengl
 		LoadOpenGLFunction(glVertexAttribPointer);
 		LoadOpenGLFunction(glGetAttribLocation);
 		LoadOpenGLFunction(glGetUniformLocation);
-		
+#endif
+
 		// Uniforms functions
+#ifndef __PI__
 		LoadOpenGLFunction(glUniform1f);
 		LoadOpenGLFunction(glUniform2f);
 		LoadOpenGLFunction(glUniform3f);
@@ -144,6 +153,9 @@ namespace opengl
 		LoadOpenGLFunction(glUniform2iv);
 		LoadOpenGLFunction(glUniform3iv);
 		LoadOpenGLFunction(glUniform4iv);
+		LoadOpenGLFunction(glUniformMatrix4fv);
+		
+		// Not supported in GLES2
 		LoadOpenGLFunction(glUniform1ui);
 		LoadOpenGLFunction(glUniform2ui);
 		LoadOpenGLFunction(glUniform3ui);
@@ -152,13 +164,14 @@ namespace opengl
 		LoadOpenGLFunction(glUniform2uiv);
 		LoadOpenGLFunction(glUniform3uiv);
 		LoadOpenGLFunction(glUniform4uiv);
-		LoadOpenGLFunction(glUniformMatrix4fv);
+#endif
 		
 		#ifdef DEBUG1
 		Logger::get() << "[OpenGL] Initialized." << Logger::endl;
 		#endif
 	}
 }
+
 
 // Draw functions
 InitializeOpenGLFunction_Windows(glDrawRangeElements);
@@ -167,21 +180,26 @@ InitializeOpenGLFunction_Windows(glDrawRangeElements);
 InitializeOpenGLFunction_Windows(glActiveTexture);
 
 // Buffers functions
+#ifndef __PI__
 InitializeOpenGLFunction(glGenBuffers);
 InitializeOpenGLFunction(glIsBuffer);
 InitializeOpenGLFunction(glDeleteBuffers);
 InitializeOpenGLFunction(glBindBuffer);
 InitializeOpenGLFunction(glBufferData);
+#endif
 
 // Shaders functions
+#ifndef __PI__
 InitializeOpenGLFunction(glCreateShader);
 InitializeOpenGLFunction(glDeleteShader);
 InitializeOpenGLFunction(glGetShaderiv);
 InitializeOpenGLFunction(glGetShaderInfoLog);
 InitializeOpenGLFunction(glShaderSource);
 InitializeOpenGLFunction(glCompileShader);
+#endif
 
 // Programs functions
+#ifndef __PI__
 InitializeOpenGLFunction(glCreateProgram);
 InitializeOpenGLFunction(glDeleteProgram);
 InitializeOpenGLFunction(glGetProgramiv);
@@ -197,8 +215,10 @@ InitializeOpenGLFunction(glDisableVertexAttribArray);
 InitializeOpenGLFunction(glVertexAttribPointer);
 InitializeOpenGLFunction(glGetAttribLocation);
 InitializeOpenGLFunction(glGetUniformLocation);
+#endif
 
 // Uniforms functions
+#ifndef __PI__
 InitializeOpenGLFunction(glUniform1f);
 InitializeOpenGLFunction(glUniform2f);
 InitializeOpenGLFunction(glUniform3f);
@@ -215,6 +235,9 @@ InitializeOpenGLFunction(glUniform1iv);
 InitializeOpenGLFunction(glUniform2iv);
 InitializeOpenGLFunction(glUniform3iv);
 InitializeOpenGLFunction(glUniform4iv);
+InitializeOpenGLFunction(glUniformMatrix4fv);
+
+// Not supported in GLES2
 InitializeOpenGLFunction(glUniform1ui);
 InitializeOpenGLFunction(glUniform2ui);
 InitializeOpenGLFunction(glUniform3ui);
@@ -223,5 +246,5 @@ InitializeOpenGLFunction(glUniform1uiv);
 InitializeOpenGLFunction(glUniform2uiv);
 InitializeOpenGLFunction(glUniform3uiv);
 InitializeOpenGLFunction(glUniform4uiv);
-InitializeOpenGLFunction(glUniformMatrix4fv);
+#endif
 
