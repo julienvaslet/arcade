@@ -321,14 +321,14 @@ int main( int argc, char ** argv )
 				
 				program->sendUniform( "modelview_matrix", modelview2, false );
 				
-				ibo->draw( 0, 24 );
+				ibo->draw( 24 );
 		
 				translation = Matrix::translation( -2.0f, 0.0f, -1.0f );
 				modelview.multiply( translation );
 				
 				program->sendUniform( "modelview_matrix", modelview, false );
 				
-				ibo->draw( 0, 12 );
+				ibo->draw( 12 );
 			}
 #ifndef __PI__
 			else
@@ -347,12 +347,12 @@ int main( int argc, char ** argv )
 				glPushMatrix();
 				glMultMatrixf( Matrix::translation( 2.0f, 0.0f, 1.0f ).get() );
 				
-				ibo->draw( 0, 24 );
+				ibo->draw( 24 );
 		
 				glPopMatrix();
 				glMultMatrixf( Matrix::translation( -2.0f, 0.0f, -1.0f ).get() );
 				
-				ibo->draw( 0, 12 );
+				ibo->draw( 12 );
 		
 				glDisableClientState( GL_VERTEX_ARRAY );
 				glDisableClientState( GL_COLOR_ARRAY );

@@ -27,12 +27,14 @@ namespace opengl
 			Point3D& getEye();
 			Point3D& getCenter();
 			Vector& getUp();
-			
+
+#ifndef __PI__			
 			void look() const;
-			
+
 			void setOrthogonal( float left, float right, float bottom, float top, float near, float far );
 			void setPerspective( float fovy, float aspect, float near, float far );
 			void setFrustum( float left, float right, float bottom, float top, float near, float far );
+#endif
 	};
 }
 

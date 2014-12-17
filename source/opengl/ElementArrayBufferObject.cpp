@@ -22,14 +22,14 @@ namespace opengl
 		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * data.size(), &data[0], BufferObject::getUsage( frequency, access ) );
 	}
 	
-	void ElementArrayBufferObject::draw( OpenGL::DrawMode mode, unsigned int start, unsigned int end )
+	void ElementArrayBufferObject::draw( OpenGL::DrawMode mode, unsigned int count )
 	{
 		this->bind();
-		glDrawRangeElements( mode, start, end, ( end == 0 || end - start > this->size ? this->size - start : end - start), GL_UNSIGNED_INT, NULL );
+		glDrawElements( mode, ( count == 0 || count > this->size ? this->size : count), GL_UNSIGNED_INT, NULL );
 	}
 	
-	void ElementArrayBufferObject::draw( unsigned int start, unsigned int end )
+	void ElementArrayBufferObject::draw( unsigned int count )
 	{
-		this->draw( OpenGL::Triangles, start, end );
+		this->draw( OpenGL::Triangles, count );
 	}
 }

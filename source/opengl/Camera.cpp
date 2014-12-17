@@ -31,6 +31,7 @@ namespace opengl
 		return this->up;
 	}
 	
+#ifndef __PI__
 	void Camera::look() const
 	{
 		Matrix view = Matrix::lookAt( this->eye.getX(), this->eye.getY(), this->eye.getZ(), this->center.getX(), this->center.getY(), this->center.getZ(), this->up.getX(), this->up.getY(), this->up.getZ() );
@@ -62,4 +63,5 @@ namespace opengl
 		glMatrixMode( GL_PROJECTION );
 		frustum.load();
 	}
+#endif
 }

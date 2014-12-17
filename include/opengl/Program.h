@@ -70,10 +70,10 @@ namespace opengl
 			void sendUniform( const string& uniform, unsigned int v0, unsigned int v1, unsigned int v2 );
 			void sendUniform( const string& uniform, unsigned int v0, unsigned int v1, unsigned int v2, unsigned int v3 );
 			void sendUniform( const string& uniform, unsigned int * values, unsigned int size, unsigned int count = 1 );
-#endif
 			
 			void sendModelviewMatrix( const string& uniform );
 			void sendProjectionMatrix( const string& uniform );
+#endif
 			
 			void sendAttributePointer( const string& name, ArrayBufferObject * buffer, unsigned int size, unsigned int stride = 0 );
 			void sendVertexPointer( const string& name, ArrayBufferObject * vbo, unsigned int stride = 0 );

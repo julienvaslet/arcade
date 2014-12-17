@@ -323,14 +323,14 @@ int main( int argc, char ** argv )
 			
 			program->sendModelviewMatrix( "modelview_matrix" );
 			
-			ibo->draw( 0, 24 );
+			ibo->draw( 24 );
 	
 			glPopMatrix();
 			glMultMatrixf( Matrix::translation( -2.0f, 0.0f, -1.0f ).get() );
 			
 			program->sendModelviewMatrix( "modelview_matrix" );
 			
-			ibo->draw( 0, 12 );
+			ibo->draw( 12 );
 			
 			Screen::get()->render();
 			

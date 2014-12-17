@@ -400,14 +400,13 @@ namespace opengl
 		}
 	}
 	
-#ifndef __PI__
-
 	void Program::sendUniform( const string& uniform, const Matrix& matrix, bool transpose )
 	{
 		glUniformMatrix4fv( this->getUniformLocation( uniform ), 1, transpose, matrix.get() );
 	}
 	
-		void Program::sendUniform( const string& uniform, unsigned int v0 )
+#ifndef __PI__
+	void Program::sendUniform( const string& uniform, unsigned int v0 )
 	{
 		glUniform1ui( this->getUniformLocation( uniform ), v0 );
 	}
@@ -449,8 +448,6 @@ namespace opengl
 		}
 	}
 	
-#endif
-	
 	void Program::sendModelviewMatrix( const string& uniform )
 	{
 		float matrix[16];
@@ -464,11 +461,12 @@ namespace opengl
 		glGetFloatv( GL_PROJECTION_MATRIX, matrix );
 		glUniformMatrix4fv( this->getUniformLocation( uniform ), 1, GL_FALSE, matrix );
 	}
+#endif
 		
 	void Program::sendUniform( const string& uniform, const Texture& texture, unsigned int unit )
 	{
 		texture.bind( unit );
-		this->sendUniform( uniform, unit );
+		this->sendUniform( uniform, static_cast<int>( unit ) );
 	}
 		
 	void Program::sendAttributePointer( const string& name, ArrayBufferObject * buffer, unsigned int size, unsigned int stride )

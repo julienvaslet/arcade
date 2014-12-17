@@ -292,7 +292,7 @@ int main( int argc, char ** argv )
 				glMultMatrixf( Matrix::translation( 2.0f, 0.0f, 1.0f ).get() );
 			else
 				glTranslatef( 2.0f, 0.0f, 1.0f );
-			ibo->draw( 0, 24 );
+			ibo->draw( 24 );
 			
 			glPopMatrix();
 			
@@ -301,7 +301,7 @@ int main( int argc, char ** argv )
 			else
 				glTranslatef( -2.0f, 0.0f, -1.0f );
 				
-			ibo->draw( 0, 12 );
+			ibo->draw( 12 );
 			
 			glDisableClientState( GL_VERTEX_ARRAY );
 			glDisableClientState( GL_COLOR_ARRAY );

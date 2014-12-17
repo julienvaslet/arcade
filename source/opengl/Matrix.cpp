@@ -83,11 +83,13 @@ namespace opengl
 	
 		this->set( result.get() );
 	}
-	
+
+#ifndef __PI__
 	void Matrix::load() const
 	{
 		glLoadMatrixf( this->matrix );
 	}
+#endif
 	
 	void Matrix::show() const
 	{
