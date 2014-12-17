@@ -1,9 +1,6 @@
 # Default target
 for = linux
 
-debugMaxLevel = 3
-debugFlag = -g -DDEBUG0 -DDEBUG1 -DDEBUG2 -DDEBUG3
-
 include targets/$(for)/config
 
 # Are we on a Pidora Raspberry Pi ?

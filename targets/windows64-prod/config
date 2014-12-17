@@ -1,11 +1,11 @@
 target=__WINDOWS64__
-debugFlag = -g -DDEBUG0 -DDEBUG1 -DDEBUG2 -DDEBUG3
-librariesDirectory := $(shell pwd)/lib/windows64
+debugFlag =
+librariesDirectory := $(shell pwd)/lib/windows64-prod
 includesDirectory := $(shell pwd)/include
 sourcesDirectory := $(shell pwd)/source
 applicationSuffix := _x86_64.exe
 applicationDirectory := $(shell pwd)/apps
-binariesDirectory := $(shell pwd)/bin/windows64
+binariesDirectory := $(shell pwd)/bin/windows64-prod
 sdlconfig = /usr/x86_64-w64-mingw32/sys-root/mingw/bin/sdl2-config
 compiler = x86_64-w64-mingw32-g++
 compilerOptions = -static-libgcc -static-libstdc++ -std=c++11 -MD -Os -s -Wall -I$(includesDirectory) -c `$(sdlconfig) --cflags` $(debugFlag) -D$(target)

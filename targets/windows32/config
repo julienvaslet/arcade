@@ -1,4 +1,5 @@
 target=__WINDOWS32__
+debugFlag = -g -DDEBUG0 -DDEBUG1 -DDEBUG2 -DDEBUG3
 librariesDirectory := $(shell pwd)/lib/windows32
 includesDirectory := $(shell pwd)/include
 sourcesDirectory := $(shell pwd)/source
