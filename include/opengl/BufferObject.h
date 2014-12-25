@@ -33,6 +33,7 @@ namespace opengl
 			BufferObject();
 			virtual ~BufferObject();
 			
+			virtual void bind() = 0;
 			GLuint getBuffer();
 			static GLenum getUsage( Frequency f, Access a );
 	};

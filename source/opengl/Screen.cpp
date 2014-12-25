@@ -13,7 +13,7 @@ namespace opengl
 {
 	Screen * Screen::instance = NULL;
 
-	Screen::Screen() : window(NULL), context(NULL), width(0), height(0), clearColor(0.0,0.0,0.0,1.0)
+	Screen::Screen() : window(NULL), context(NULL), x(0), y(0), width(0), height(0), clearColor(0.0,0.0,0.0,1.0)
 	{
 	}
 
@@ -38,7 +38,7 @@ namespace opengl
 		}
 	}
 		
-	bool Screen::initialize( const char * title, int width, int height, bool resizable, int majorVersion, int minorVersion )
+	bool Screen::initialize( int width, int height, int majorVersion, int minorVersion )
 	{
 		bool success = true;
 		int imageFlags = IMG_INIT_PNG;
@@ -52,29 +52,25 @@ namespace opengl
 			Logger::get() << "[Screen] Unable to init SDL_image library: " << IMG_GetError() << Logger::endl;
 			#endif
 		}
-		
-		// Set the OpenGL version
-		SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, majorVersion );
-		SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, minorVersion );
-		
-#ifdef __PI__
-		SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES );
-#else
-		SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
-#endif
-
-		SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-		SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
 
 		Screen * screen = new Screen();
 
+		SDL_DisplayMode displayMode;
+		SDL_GetDesktopDisplayMode( 0, &displayMode );
+		
+		// TODO: resize the viewport if larger
+		screen->width = width;
+		screen->height = height;
+		screen->x = static_cast<int>( (displayMode.w - width) / 2.0 );
+		screen->y = static_cast<int>( (displayMode.h - height) / 2.0 );
+
 		screen->window = SDL_CreateWindow(
-			title,
-			SDL_WINDOWPOS_CENTERED,
-			SDL_WINDOWPOS_CENTERED,
-			width,
-			height,
-			( width == 0 || height == 0 ) ? SDL_WINDOW_FULLSCREEN : ( resizable ? SDL_WINDOW_RESIZABLE : 0 ) | SDL_WINDOW_OPENGL
+			NULL,
+			0,
+			0,
+			displayMode.w,
+			displayMode.h,
+			SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL
 		);
 
 		if( screen->window == NULL )
@@ -88,14 +84,22 @@ namespace opengl
 		}
 		else
 		{
-			// TODO: See the fullscreen case
-			// Theses values may be called by Font subclasses in order to render 2D overlay fonts
-			screen->width = width;
-			screen->height = height;
-			
 			#ifdef DEBUG0
 			Logger::get() << "[Screen] Window created." << Logger::endl;
 			#endif
+			
+			// Set the OpenGL version		
+	#ifdef __PI__
+			SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES );
+	#else
+			SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
+	#endif
+
+			SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, majorVersion );
+			SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, minorVersion );
+
+			SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+			SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
 		
 			screen->context = SDL_GL_CreateContext( screen->window );
 	
@@ -150,6 +154,7 @@ namespace opengl
 	{
 		glClearColor( this->clearColor.getRed(), this->clearColor.getGreen(), this->clearColor.getBlue(), this->clearColor.getAlpha() );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		glViewport( this->x, this->y, this->width, this->height );
 	}
 
 	void Screen::render()

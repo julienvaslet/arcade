@@ -24,6 +24,12 @@
 #define LoadOpenGLFunction_Windows(func)			
 #endif
 
+#ifdef DEBUG0
+#define CheckOpenGLError(func)			OpenGL::checkError( #func, __FILE__, __LINE__ )
+#else
+#define CheckOpenGLError(func)
+#endif
+
 #ifdef __PI__
 #include <SDL2/SDL_opengles2.h>
 #include <GLES2/gl2.h>
@@ -75,6 +81,7 @@ namespace opengl
 			static const set<string>& getExtensions();
 			static bool hasExtension( const string& extension );
 			static GLenum getError();
+			static bool checkError( const char * function = NULL, const char * file = NULL, unsigned int line = 0 );
 	};
 }
 

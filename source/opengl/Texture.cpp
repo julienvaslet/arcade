@@ -8,6 +8,7 @@ namespace opengl
 	Texture::Texture() : id(0)
 	{
 		glGenTextures( 1, &(this->id) );
+		CheckOpenGLError(glGenTextures);
 		
 		#ifdef DEBUG0
 		Logger::get() << "[Texture#" << this->id << "] Created." << Logger::endl;
@@ -19,6 +20,7 @@ namespace opengl
 		if( glIsTexture( this->id ) == GL_TRUE )
 		{
 			glDeleteTextures( 1, &(this->id) );
+			CheckOpenGLError(glDeleteTextures);
 
 			#ifdef DEBUG0
 			Logger::get() << "[Texture#" << this->id << "] Deleted." << Logger::endl;

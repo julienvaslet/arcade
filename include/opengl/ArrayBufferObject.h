@@ -19,15 +19,12 @@ using namespace std;
 namespace opengl
 {
 	class ArrayBufferObject : public BufferObject
-	{
-		protected:
-			
-			void bind();
-			
+	{			
 		public:
 			ArrayBufferObject();
 			virtual ~ArrayBufferObject();
 			
+			virtual void bind();
 			void setData( const vector<float>& data, Frequency frequency = Static, Access access = Draw );
 			void setData( const vector<Point2D>& data, Frequency frequency = Static, Access access = Draw );
 			void setData( const vector<Point3D>& data, Frequency frequency = Static, Access access = Draw );

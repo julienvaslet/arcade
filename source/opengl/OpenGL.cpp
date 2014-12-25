@@ -82,6 +82,63 @@ namespace opengl
 	{
 		return glGetError();
 	}
+	
+	bool OpenGL::checkError( const char * function, const char * file, unsigned int line )
+	{
+		bool status = true;
+		GLenum error = OpenGL::getError();
+		
+		if( error != GL_NO_ERROR )
+		{
+			Logger::get() << "[OpenGL][Error#" << error << "]";
+			
+			if( function != NULL )
+				Logger::get() << "[" << function << "]";
+			
+			Logger::get() << " ";
+			
+			switch( error )
+			{
+				case GL_INVALID_OPERATION:
+					Logger::get() << "GL_INVALID_OPERATION";
+					break;
+				
+				case GL_INVALID_ENUM:
+					Logger::get() << "GL_INVALID_ENUM";
+					break;
+					
+				case GL_INVALID_VALUE:
+					Logger::get() << "GL_INVALID_VALUE";
+					break;
+					
+				case GL_OUT_OF_MEMORY:
+					Logger::get() << "GL_OUT_OF_MEMORY";
+					break;
+					
+				case GL_INVALID_FRAMEBUFFER_OPERATION:
+					Logger::get() << "GL_INVALID_FRAMEBUFFER_OPERATION";
+					break;
+					
+				default:
+					Logger::get() << "Unknown error";
+					break;
+			}
+			
+			if( file != NULL )
+			{
+				Logger::get() << " (" << file;
+				
+				if( line > 0 )
+					Logger::get() << ", line " << line;
+					
+				Logger::get() << ")";
+			}
+			
+			Logger::get() << Logger::endl;
+		}
+		
+		return status;
+	}
 
 	void OpenGL::initialize()
 	{

@@ -11,6 +11,7 @@ namespace opengl
 	Shader::Shader( Shader::Type type ) : id(0)
 	{
 		this->id = glCreateShader( static_cast<GLenum>( type ) );
+		CheckOpenGLError(glCreateShader);
 		
 		#ifdef DEBUG0
 		Logger::get() << "[" << this->getShaderTypeString() << "#" << this->id << "] Created." << Logger::endl;
@@ -20,6 +21,7 @@ namespace opengl
 	Shader::~Shader()
 	{
 		glDeleteShader( this->id );
+		CheckOpenGLError(glDeleteShader);
 		
 		#ifdef DEBUG0
 		if( this->getDeleteStatus() )
@@ -55,6 +57,7 @@ namespace opengl
 	{
 		GLint status;
 		glGetShaderiv( this->id, GL_COMPILE_STATUS, &status );
+		CheckOpenGLError(glGetShaderiv);
 		return status == GL_TRUE;
 	}
 	
@@ -62,6 +65,7 @@ namespace opengl
 	{
 		GLint status;
 		glGetShaderiv( this->id, GL_DELETE_STATUS, &status );
+		CheckOpenGLError(glGetShaderiv);
 		return status == GL_TRUE;
 	}
 
@@ -69,6 +73,7 @@ namespace opengl
 	{
 		GLint type;
 		glGetShaderiv( this->id, GL_SHADER_TYPE, &type );
+		CheckOpenGLError(glGetShaderiv);
 		return static_cast<Shader::Type>( type );
 	}
 	
@@ -76,6 +81,7 @@ namespace opengl
 	{
 		GLint length;
 		glGetShaderiv( this->id, GL_INFO_LOG_LENGTH, &length );
+		CheckOpenGLError(glGetShaderiv);
 		return static_cast<int>( length );
 	}
 	
@@ -83,6 +89,7 @@ namespace opengl
 	{
 		GLint length;
 		glGetShaderiv( this->id, GL_SHADER_SOURCE_LENGTH, &length );
+		CheckOpenGLError(glGetShaderiv);
 		return static_cast<int>( length );
 	}
 	
@@ -91,6 +98,7 @@ namespace opengl
 		int length = this->getInfoLogLength();
 		string log( length, ' ' );
 		glGetShaderInfoLog( this->id, length, &length, &log[0] );
+		CheckOpenGLError(glGetShaderInfoLog);
 		return log;
 	}
 	
@@ -125,7 +133,9 @@ namespace opengl
 	{
 		const char * src = source.c_str();
 		glShaderSource( this->id, 1, &src, NULL );
+		CheckOpenGLError(glShaderSource);
 		glCompileShader( this->id );
+		CheckOpenGLError(glCompileShader);
 
 		#ifdef DEBUG1
 		if( this->getCompileStatus() )

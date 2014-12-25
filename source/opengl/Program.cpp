@@ -9,6 +9,7 @@ namespace opengl
 	Program::Program() : id(0)
 	{
 		this->id = glCreateProgram();
+		CheckOpenGLError(glCreateProgram);
 		
 		#ifdef DEBUG0
 		Logger::get() << "[Program#" << this->id << "] Created." << Logger::endl;
@@ -18,12 +19,13 @@ namespace opengl
 	Program::~Program()
 	{
 		glDeleteProgram( this->id );
-		
+		CheckOpenGLError(glDeteleProgram);
+	
 		#ifdef DEBUG0
 		if( this->getDeleteStatus() )
-			Logger::get() << "[Program#" << this->id << "] Deleted." << Logger::endl;
+			Logger::get() << "[Program#" << this->id << "] Flagged for deletion." << Logger::endl;
 		else
-			Logger::get() << "[Program#" << this->id << "] Could not be marked for deletion." << Logger::endl;
+			Logger::get() << "[Program#" << this->id << "] Deleted." << Logger::endl;
 		#endif
 	}
 	
@@ -31,13 +33,20 @@ namespace opengl
 	{
 		GLint status;
 		glGetProgramiv( this->id, GL_LINK_STATUS, &status );
+		CheckOpenGLError(glGetProgramiv);
 		return status == GL_TRUE;
 	}
 	
 	bool Program::getDeleteStatus() const
 	{
-		GLint status;
-		glGetProgramiv( this->id, GL_DELETE_STATUS, &status );
+		GLint status = GL_FALSE;
+		
+		if( glIsProgram( this->id ) )
+		{
+			glGetProgramiv( this->id, GL_DELETE_STATUS, &status );
+			CheckOpenGLError(glGetProgramiv);
+		}
+		
 		return status == GL_TRUE;
 	}
 	
@@ -45,6 +54,7 @@ namespace opengl
 	{
 		GLint status;
 		glGetProgramiv( this->id, GL_VALIDATE_STATUS, &status );
+		CheckOpenGLError(glGetProgramiv);
 		return status == GL_TRUE;
 	}
 	
@@ -52,6 +62,7 @@ namespace opengl
 	{
 		GLint length;
 		glGetProgramiv( this->id, GL_INFO_LOG_LENGTH, &length );
+		CheckOpenGLError(glGetProgramiv);
 		return static_cast<int>( length );
 	}
 	
@@ -59,6 +70,7 @@ namespace opengl
 	{
 		GLint count;
 		glGetProgramiv( this->id, GL_ATTACHED_SHADERS, &count );
+		CheckOpenGLError(glGetProgramiv);
 		return static_cast<int>( count );
 	}
 	
@@ -66,6 +78,7 @@ namespace opengl
 	{
 		GLint count;
 		glGetProgramiv( this->id, GL_ACTIVE_ATTRIBUTES, &count );
+		CheckOpenGLError(glGetProgramiv);
 		return static_cast<int>( count );
 	}
 	
@@ -73,6 +86,7 @@ namespace opengl
 	{
 		GLint length;
 		glGetProgramiv( this->id, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &length );
+		CheckOpenGLError(glGetProgramiv);
 		return static_cast<int>( length );
 	}
 	
@@ -80,6 +94,7 @@ namespace opengl
 	{
 		GLint count;
 		glGetProgramiv( this->id, GL_ACTIVE_UNIFORMS, &count );
+		CheckOpenGLError(glGetProgramiv);
 		return static_cast<int>( count );
 	}
 	
@@ -87,6 +102,7 @@ namespace opengl
 	{
 		GLint length;
 		glGetProgramiv( this->id, GL_ACTIVE_UNIFORM_MAX_LENGTH, &length );
+		CheckOpenGLError(glGetProgramiv);
 		return static_cast<int>( length );
 	}
 	
@@ -95,6 +111,7 @@ namespace opengl
 		int length = this->getInfoLogLength();
 		string log( length, ' ' );
 		glGetProgramInfoLog( this->id, length, &length, &log[0] );
+		CheckOpenGLError(glGetProgramInfoLog);
 		return log;
 	}
 	
@@ -151,7 +168,12 @@ namespace opengl
 	{
 		bool status = true;
 		glAttachShader( this->id, shader->getId() );
+		
+		#ifdef DEBUG0
+		status = CheckOpenGLError(glAttachShader);
+		#else
 		status = (OpenGL::getError() == GL_NO_ERROR);
+		#endif
 		
 		#ifdef DEBUG0
 		if( status )
@@ -191,7 +213,11 @@ namespace opengl
 				GLenum type = GL_FLOAT;
 				glGetActiveAttrib( this->id, i, name.capacity(), &length, &size, &type, &(name[0]) );
 				
+				#ifdef DEBUG0
+				if( CheckOpenGLError(glGetActiveAttrib) )
+				#else
 				if( OpenGL::getError() == GL_NO_ERROR )
+				#endif
 					this->getAttributeLocation( name.c_str() );
 			}
 			
@@ -207,7 +233,11 @@ namespace opengl
 				GLenum type = GL_FLOAT;
 				glGetActiveUniform( this->id, i, name.capacity(), &length, &size, &type, &(name[0]) );
 				
+				#ifdef DEBUG0
+				if( CheckOpenGLError(glGetActiveUniform) )
+				#else
 				if( OpenGL::getError() == GL_NO_ERROR )
+				#endif
 					this->getUniformLocation( name.c_str() );
 			}
 		}
@@ -219,7 +249,11 @@ namespace opengl
 	{
 		glBindAttribLocation( this->id, index, name.c_str() );
 		
+		#ifdef DEBUG0
+		if( CheckOpenGLError(glBindAttribLocation) )
+		#else
 		if( OpenGL::getError() == GL_NO_ERROR )
+		#endif
 		{
 			this->attributes[name] = index;
 			
@@ -236,11 +270,13 @@ namespace opengl
 	void Program::enableAttribute( const string& name )
 	{
 		glEnableVertexAttribArray( this->getAttributeLocation( name ) );
+		CheckOpenGLError(glEnableVertexAttribArray);
 	}
 	
 	void Program::disableAttribute( const string& name )
 	{
 		glDisableVertexAttribArray( this->getAttributeLocation( name ) );
+		CheckOpenGLError(glDisableVertexAttribArray);
 	}
 	
 	int Program::getAttributeLocation( const string& name )
@@ -254,6 +290,7 @@ namespace opengl
 		else
 		{
 			location = glGetAttribLocation( this->id, name.c_str() );
+			CheckOpenGLError(glGetAttribLocation);
 			
 			if( location != -1 )
 			{
@@ -285,6 +322,7 @@ namespace opengl
 		else
 		{
 			location = glGetUniformLocation( this->id, name.c_str() );
+			CheckOpenGLError(glGetUniformLocation);
 			
 			if( location != -1 )
 			{
@@ -308,6 +346,7 @@ namespace opengl
 	void Program::use( bool enableAttributes )
 	{
 		glUseProgram( this->id );
+		CheckOpenGLError(glUseProgram);
 		
 		if( enableAttributes )
 		{
@@ -319,21 +358,25 @@ namespace opengl
 	void Program::sendUniform( const string& uniform, float v0 )
 	{
 		glUniform1f( this->getUniformLocation( uniform ), v0 );
+		CheckOpenGLError(glUniform1f);
 	}
 	
 	void Program::sendUniform( const string& uniform, float v0, float v1 )
 	{
 		glUniform2f( this->getUniformLocation( uniform ), v0, v1 );
+		CheckOpenGLError(glUniform2f);
 	}
 	
 	void Program::sendUniform( const string& uniform, float v0, float v1, float v2 )
 	{
 		glUniform3f( this->getUniformLocation( uniform ), v0, v1, v2 );
+		CheckOpenGLError(glUniform3f);
 	}
 	
 	void Program::sendUniform( const string& uniform, float v0, float v1, float v2, float v3 )
 	{
 		glUniform4f( this->getUniformLocation( uniform ), v0, v1, v2, v3 );
+		CheckOpenGLError(glUniform4f);
 	}
 	
 	void Program::sendUniform( const string& uniform, float * values, unsigned int size, unsigned int count )
@@ -342,18 +385,22 @@ namespace opengl
 		{
 			case 1:
 				glUniform1fv( this->getUniformLocation( uniform ), count, values );
+				CheckOpenGLError(glUniform1fv);
 				break;
 				
 			case 2:
 				glUniform2fv( this->getUniformLocation( uniform ), count, values );
+				CheckOpenGLError(glUniform2fv);
 				break;
 			
 			case 3:
 				glUniform3fv( this->getUniformLocation( uniform ), count, values );
+				CheckOpenGLError(glUniform3fv);
 				break;
 
 			case 4:		
 				glUniform4fv( this->getUniformLocation( uniform ), count, values );
+				CheckOpenGLError(glUniform4fv);
 				break;
 		}
 	}
@@ -361,21 +408,25 @@ namespace opengl
 	void Program::sendUniform( const string& uniform, int v0 )
 	{
 		glUniform1i( this->getUniformLocation( uniform ), v0 );
+		CheckOpenGLError(glUniform1i);
 	}
 	
 	void Program::sendUniform( const string& uniform, int v0, int v1 )
 	{
 		glUniform2i( this->getUniformLocation( uniform ), v0, v1 );
+		CheckOpenGLError(glUniform2i);
 	}
 	
 	void Program::sendUniform( const string& uniform, int v0, int v1, int v2 )
 	{
 		glUniform3i( this->getUniformLocation( uniform ), v0, v1, v2 );
+		CheckOpenGLError(glUniform3i);
 	}
 	
 	void Program::sendUniform( const string& uniform, int v0, int v1, int v2, int v3 )
 	{
 		glUniform4i( this->getUniformLocation( uniform ), v0, v1, v2, v3 );
+		CheckOpenGLError(glUniform4i);
 	}
 	
 	void Program::sendUniform( const string& uniform, int * values, unsigned int size, unsigned int count )
@@ -384,18 +435,22 @@ namespace opengl
 		{
 			case 1:
 				glUniform1iv( this->getUniformLocation( uniform ), count, values );
+				CheckOpenGLError(glUniform1iv);
 				break;
 				
 			case 2:
 				glUniform2iv( this->getUniformLocation( uniform ), count, values );
+				CheckOpenGLError(glUniform2iv);
 				break;
 			
 			case 3:
 				glUniform3iv( this->getUniformLocation( uniform ), count, values );
+				CheckOpenGLError(glUniform3iv);
 				break;
 
 			case 4:		
 				glUniform4iv( this->getUniformLocation( uniform ), count, values );
+				CheckOpenGLError(glUniform4iv);
 				break;
 		}
 	}
@@ -403,6 +458,7 @@ namespace opengl
 	void Program::sendUniform( const string& uniform, const Matrix& matrix, bool transpose )
 	{
 		glUniformMatrix4fv( this->getUniformLocation( uniform ), 1, transpose, matrix.get() );
+		CheckOpenGLError(glUniformMatrix4fv);
 	}
 	
 #ifndef __PI__
@@ -471,8 +527,9 @@ namespace opengl
 		
 	void Program::sendAttributePointer( const string& name, ArrayBufferObject * buffer, unsigned int size, unsigned int stride )
 	{
-		glBindBuffer( GL_ARRAY_BUFFER, buffer->getBuffer() );
+		buffer->bind();
 		glVertexAttribPointer( this->getAttributeLocation( name ), size, GL_FLOAT, GL_FALSE, stride, 0 );
+		CheckOpenGLError(glVertexAttribPointer);
 	}
 	
 	void Program::sendVertexPointer( const string& name, ArrayBufferObject * vbo, unsigned int stride )

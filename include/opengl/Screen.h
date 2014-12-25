@@ -25,13 +25,15 @@ namespace opengl
 			Screen();
 			~Screen();
 			
+			int x;
+			int y;
 			int width;
 			int height;
 			
 			Color clearColor;
 		
 		public:
-			static bool initialize( const char * title, int width = 800, int height = 600, bool resizable = false, int majorVersion = OPENGL_DEFAULT_MAJOR_VERSION, int minorVersion = OPENGL_DEFAULT_MINOR_VERSION );
+			static bool initialize( int width = 800, int height = 600, int majorVersion = OPENGL_DEFAULT_MAJOR_VERSION, int minorVersion = OPENGL_DEFAULT_MINOR_VERSION );
 			static Screen * get();
 			static void destroy();
 		

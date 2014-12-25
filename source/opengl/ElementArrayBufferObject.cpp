@@ -13,6 +13,7 @@ namespace opengl
 	void ElementArrayBufferObject::bind()
 	{
 		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->buffer );
+		CheckOpenGLError(glBindBuffer);
 	}
 	
 	void ElementArrayBufferObject::setData( const vector<unsigned int>& data, Frequency frequency, Access access )
@@ -20,12 +21,14 @@ namespace opengl
 		this->bind();
 		this->size = data.size();
 		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * data.size(), &data[0], BufferObject::getUsage( frequency, access ) );
+		CheckOpenGLError(glBufferData);
 	}
 	
 	void ElementArrayBufferObject::draw( OpenGL::DrawMode mode, unsigned int count )
 	{
 		this->bind();
 		glDrawElements( mode, ( count == 0 || count > this->size ? this->size : count), GL_UNSIGNED_INT, NULL );
+		CheckOpenGLError(glDrawElements);
 	}
 	
 	void ElementArrayBufferObject::draw( unsigned int count )
