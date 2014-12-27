@@ -26,7 +26,7 @@ namespace opengl
 	
 	void Texture2D::setData( unsigned char * data, unsigned int width, unsigned int height, GLenum type )
 	{
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, type, GL_UNSIGNED_BYTE, data );
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, type, GL_UNSIGNED_BYTE, data );
 		CheckOpenGLError(glTexImage2D);
 	}
 	

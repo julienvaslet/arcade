@@ -18,8 +18,6 @@
 #include <opengl/Program.h>
 #include <opengl/Texture2D.h>
 
-#include <GL/glu.h>
-
 using namespace opengl;
 using namespace std;
 using namespace tools::logger;
@@ -29,7 +27,7 @@ int main( int argc, char ** argv )
 	// Initialize standard-output logger
 	new Stdout( "stdout", true );
 	
-	if( !Screen::initialize( "006 - Textures" ) )
+	if( !Screen::initialize() )
 	{
 		Logger::get() << "Unable to initialize screen. Exiting.\n";
 		return 1;
@@ -56,14 +54,24 @@ int main( int argc, char ** argv )
 	Program * program = NULL;
 	
 	Program * program1 = new Program();
+	#ifdef __PI__
+	program1->loadVertexShaderFile( "data/shaders/vertex.es.vs" );
+	program1->loadFragmentShaderFile( "data/shaders/fragment.es.fs" );
+	#else
 	program1->loadVertexShaderFile( "data/shaders/vertex.vs" );
 	program1->loadFragmentShaderFile( "data/shaders/fragment.fs" );
+	#endif
 	program1->link( true );
 	program1->use( true );
 	
 	Program * program2 = new Program();
+	#ifdef __PI__
+	program2->loadVertexShaderFile( "data/shaders/vertex_texture.es.vs" );
+	program2->loadFragmentShaderFile( "data/shaders/fragment_texture.es.fs" );
+	#else
 	program2->loadVertexShaderFile( "data/shaders/vertex_texture.vs" );
 	program2->loadFragmentShaderFile( "data/shaders/fragment_texture.fs" );
+	#endif
 	program2->link( true );
 	program2->use( true );
 
@@ -180,8 +188,7 @@ int main( int argc, char ** argv )
 	camera.getCenter().moveTo( 0.0f, 0.0f, 0.0f );
 	
 	glEnable( GL_DEPTH_TEST );
-	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-	
+
 	cout << "Press [ENTER] to switch between shaders (texture or no texture)." << endl;
 	cout << "Press [F1], [F2], [F3] to switch between, respectively, perspective view, orthogonal view and frustum view." << endl;
 	cout << "Press arrow keys to move the box." << endl;
@@ -209,13 +216,11 @@ int main( int argc, char ** argv )
 		            	{
 		            		cout << "Using shader with texturing." << endl;
 		            		program = program2;	
-							glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 		            	}
 		            	else
 		            	{
 		            		cout << "Using shader with colors." << endl;
 		            		program = program1;
-							glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		            	}
 		            	
 		            	program->use();
@@ -286,28 +291,31 @@ int main( int argc, char ** argv )
 		if( ticks - lastDrawTicks > 15 )
 		{
 			Screen::get()->clear();
-			
+		
+			Matrix projection;
+	
 			if( cameraPerspective )
 			{
-				camera.setPerspective( 45.0f, 800.0f / 600.0f, 1.0f, 100.0f );
+				projection = Matrix::perspective( 45.0f, 800.0f / 600.0f, 1.0f, 100.0f );
 			}
 			else if( cameraOrtho )
 			{
-				camera.setOrthogonal( -2.5f, 2.5f, -1.88f, 1.88f, 1.0f, 100.0f );
+				projection = Matrix::ortho( -2.5f, 2.5f, -1.88f, 1.88f, 1.0f, 100.0f );
 			}
 			else if( cameraFrustum )
 			{
-				camera.setFrustum( -1.25f, 1.25f, -0.89f, 0.89f, 1.0f, 100.0f );
+				projection = Matrix::frustum( -1.25f, 1.25f, -0.89f, 0.89f, 1.0f, 100.0f );
 			}
-			
-			glMatrixMode( GL_MODELVIEW );
-			camera.look();
 
-			glMultMatrixf( Matrix::translation( camera.getCenter().getX(), camera.getCenter().getY(), camera.getCenter().getZ() ).get() );
-			glMultMatrixf( Matrix::rotationY( yRotation ).get() );
+			Matrix modelview = Matrix::lookAt( camera.getEye().getX(), camera.getEye().getY(), camera.getEye().getZ(), camera.getCenter().getX(), camera.getCenter().getY(), camera.getCenter().getZ(), camera.getUp().getX(), camera.getUp().getY(), camera.getUp().getZ() );
+			Matrix translation = Matrix::translation( camera.getCenter().getX(), camera.getCenter().getY(), camera.getCenter().getZ() );
+			Matrix rotation = Matrix::rotationY( yRotation );
+
+			modelview.multiply( translation );
+			modelview.multiply( rotation );
 			
-			program->sendProjectionMatrix( "projection_matrix" );
-			program->sendModelviewMatrix( "modelview_matrix" );
+			program->sendUniform( "projection_matrix", projection, false );
+			program->sendUniform( "modelview_matrix", modelview, false );
 			
 			program->sendVertexPointer( "a_Vertex", vbo );
 			
@@ -323,18 +331,20 @@ int main( int argc, char ** argv )
 			
 			ibo->draw();
 	
-			glMultMatrixf( Matrix::translation( -1 * camera.getCenter().getX(), -1 * camera.getCenter().getY(), -1 * camera.getCenter().getZ() ).get() );
-			glPushMatrix();
-			glMultMatrixf( Matrix::translation( 2.0f, 0.0f, 1.0f ).get() );
+			translation = Matrix::translation( -1 * camera.getCenter().getX(), -1 * camera.getCenter().getY(), -1 * camera.getCenter().getZ() );
+			modelview.multiply( translation );
+			Matrix modelview2( modelview );
+			translation = Matrix::translation( 2.0f, 0.0f, 1.0f );
+			modelview2.multiply( translation );
 			
-			program->sendModelviewMatrix( "modelview_matrix" );
+			program->sendUniform( "modelview_matrix", modelview2, false );
 			
 			ibo->draw( 24 );
 	
-			glPopMatrix();
-			glMultMatrixf( Matrix::translation( -2.0f, 0.0f, -1.0f ).get() );
+			translation = Matrix::translation( -2.0f, 0.0f, -1.0f );
+			modelview.multiply( translation );
 			
-			program->sendModelviewMatrix( "modelview_matrix" );
+			program->sendUniform( "modelview_matrix", modelview, false );
 			
 			ibo->draw( 12 );
 			

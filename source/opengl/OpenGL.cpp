@@ -182,6 +182,7 @@ namespace opengl
 		LoadOpenGLFunction(glAttachShader);
 		LoadOpenGLFunction(glLinkProgram);
 		LoadOpenGLFunction(glUseProgram);
+		LoadOpenGLFunction(glIsProgram);
 		LoadOpenGLFunction(glGetActiveAttrib);
 		LoadOpenGLFunction(glGetActiveUniform);
 		LoadOpenGLFunction(glBindAttribLocation);
@@ -264,6 +265,7 @@ InitializeOpenGLFunction(glGetProgramInfoLog);
 InitializeOpenGLFunction(glAttachShader);
 InitializeOpenGLFunction(glLinkProgram);
 InitializeOpenGLFunction(glUseProgram);
+InitializeOpenGLFunction(glIsProgram);
 InitializeOpenGLFunction(glGetActiveAttrib);
 InitializeOpenGLFunction(glGetActiveUniform);
 InitializeOpenGLFunction(glBindAttribLocation);

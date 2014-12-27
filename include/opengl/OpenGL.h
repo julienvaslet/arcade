@@ -122,6 +122,7 @@ DefineOpenGLFunction( void, glGetProgramInfoLog, GLuint, GLsizei, GLsizei *, GLc
 DefineOpenGLFunction( void, glAttachShader, GLuint, GLuint );
 DefineOpenGLFunction( void, glLinkProgram, GLuint );
 DefineOpenGLFunction( void, glUseProgram, GLuint );
+DefineOpenGLFunction( GLboolean, glIsProgram, GLuint );
 DefineOpenGLFunction( void, glGetActiveAttrib, GLuint, GLuint, GLsizei, GLsizei *, GLint *, GLenum *, GLchar * );
 DefineOpenGLFunction( void, glGetActiveUniform, GLuint, GLuint, GLsizei, GLsizei *, GLint *, GLenum *, GLchar * );
 DefineOpenGLFunction( void, glBindAttribLocation, GLuint, GLuint, const GLchar * );

@@ -3,6 +3,14 @@ applications=""
 target=""
 workingDirectory=""
 
+currentDate=$(stat -c %Y $0)
+
+echo "Setting current date"
+echo "===================="
+date --set="@${currentDate}" &> /dev/null
+echo "Current date: $(date)"
+echo
+
 echo "Project compilation"
 echo "==================="
 echo "Target: ${target}"
@@ -10,14 +18,9 @@ echo "Makefile targets: ${applications}"
 echo "Working directory: ${workingDirectory}"
 echo
 
-echo "Update files' dates"
-echo "==================="
-find ${workingDirectory} | xargs -n1 touch -r /root
-echo "Ok."
-echo
-
 cd ${workingDirectory}
-make ${applications} for="${target}"
+:> compilation.log
+make ${applications} for="${target}" | tee compilation.log
 echo
 
 echo "Automatic shutdown"

@@ -61,9 +61,11 @@ function umount_image ()
 
 mount_image
 
-# Copy auto-compilation script
-cp ${basedir}/init.sh ${mountpoint}/root/init.sh
-chmod 750 ${mountpoint}/root/init.sh
+# Copy auto-compilation script (done by initialization)
+#cp ${basedir}/init.sh ${mountpoint}/root/compile.sh
+#chmod 750 ${mountpoint}/root/compile.sh
+
+# Set compilation variables
 sed -i "s|^target=.*|target=${target}|g" ${mountpoint}/root/compile.sh
 sed -i "s|^applications=.*|applications=${applications}|g" ${mountpoint}/root/compile.sh
 sed -i "s|^workingDirectory=.*|workingDirectory=${guestDirectory}|g" ${mountpoint}/root/compile.sh
@@ -71,7 +73,7 @@ sed -i "s|^workingDirectory=.*|workingDirectory=${guestDirectory}|g" ${mountpoin
 # Synchronize projects files
 mkdir -p ${mountpoint}${guestDirectory}
 rm -rf ${mountpoint}${guestDirectory}/*
-cp -R ${projectDirectory}/{apps,bin,data,get-dependencies.sh,include,Makefile,source,targets} ${mountpoint}${guestDirectory}/
+cp -R ${projectDirectory}/{apps,bin,lib,data,get-dependencies.sh,include,Makefile,source,targets} ${mountpoint}${guestDirectory}/
 
 umount_image
 
@@ -79,6 +81,10 @@ umount_image
 ${basedir}/arm-pi/qemu/bin/qemu-system-arm -cpu arm1176 -hda ${image} -kernel ${kernel} -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw quiet vga=current" -m 256 -no-reboot -serial stdio -machine versatilepb
 
 mount_image
+
+# Show compilation log
+cat ${mountpoint}${guestDirectory}/compilation.log
+rm -f ${mountpoint}${guestDirectory}/compilation.log
 
 # Synchronize compiled files
 mkdir -p ${projectDirectory}/{bin,lib}/${target}
