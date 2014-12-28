@@ -20,7 +20,7 @@ namespace opengl
 			virtual ~ElementArrayBufferObject();
 		
 			virtual void bind();
-			void setData( const vector<unsigned int>& data, Frequency frequency = Static, Access access = Draw );
+			void setData( const vector<unsigned short int>& data, Frequency frequency = Static, Access access = Draw );
 
 			void draw( unsigned int count = 0 );
 			void draw( OpenGL::DrawMode mode, unsigned int count = 0 );

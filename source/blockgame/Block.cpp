@@ -136,10 +136,10 @@ namespace blockgame
 		return this->position;
 	}
 	
-	void Block::prepareRendering( vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned int>& vIndices ) const
+	void Block::prepareRendering( vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices ) const
 	{
-		unsigned int j = vPoints.size();
-		
+		unsigned short int j = static_cast<unsigned short int>( vPoints.size() );
+		 
 		// Points
 		vPoints.push_back( Point3D( 3.0f * this->position.getX(), 3.0f * this->position.getY(), 0.0f ) );
 		vPoints.push_back( Point3D( 3.0f * this->position.getX(), 3.0f * (this->position.getY() + 1.0f), 0.0f ) );
@@ -167,7 +167,7 @@ namespace blockgame
 		vIndices.push_back( j + 3 );
 	}
 	
-	void Block::renderBlocks( vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned int>& vIndices )
+	void Block::renderBlocks( vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices )
 	{
 		Block::program->use( true );
 

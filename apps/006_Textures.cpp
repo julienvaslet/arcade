@@ -33,6 +33,8 @@ int main( int argc, char ** argv )
 		return 1;
 	}
 	
+	Logger::get() << "Found joysticks: " << SDL_NumJoysticks() << Logger::endl;
+	
 	/* Should check if shader's extensions are available.
 	if( !OpenGL::hasExtension( ) )
 	{
@@ -110,7 +112,7 @@ int main( int argc, char ** argv )
 	m_points.push_back( Point3D( 0.5f, 1.0f, -0.5f ) );
 	
 	// Generating indexes
-	vector<unsigned int> m_indices;
+	vector<unsigned short int> m_indices;
 	
 	// Front face
 	m_indices.push_back( 0 );
@@ -201,6 +203,7 @@ int main( int argc, char ** argv )
 			{
 				case SDL_QUIT:
 				{
+					cout << "this is sdl_quit!" << endl;
 					running = false;
 					break;
 				}

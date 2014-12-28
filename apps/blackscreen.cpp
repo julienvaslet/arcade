@@ -12,7 +12,7 @@ int main( int argc, char ** argv )
 	new Stdout( "stdout", true );
 	bool running = true;
 	
-	if( !Screen::initialize( "Blackscreen" ) )
+	if( !Screen::initialize() )
 	{
 		cout << "Unable to initialize screen. Exiting." << endl;
 		return 1;

@@ -40,7 +40,7 @@ function umount_image ()
 	ret=1
 	while [ ${ret} != "0" ]
 	do
-		umount ${mountpoint}
+		umount ${mountpoint} 2>/dev/null
 		ret=$?
 		tries=$(expr ${tries} - 1)
 		
@@ -69,11 +69,12 @@ mount_image
 sed -i "s|^target=.*|target=${target}|g" ${mountpoint}/root/compile.sh
 sed -i "s|^applications=.*|applications=${applications}|g" ${mountpoint}/root/compile.sh
 sed -i "s|^workingDirectory=.*|workingDirectory=${guestDirectory}|g" ${mountpoint}/root/compile.sh
+sed -i "s|^currentDate=.*|currentDate=$(date +%s)|g" ${mountpoint}/root/compile.sh
 
 # Synchronize projects files
 mkdir -p ${mountpoint}${guestDirectory}
 rm -rf ${mountpoint}${guestDirectory}/*
-cp -R ${projectDirectory}/{apps,bin,lib,data,get-dependencies.sh,include,Makefile,source,targets} ${mountpoint}${guestDirectory}/
+cp -pR ${projectDirectory}/{apps,lib,data,get-dependencies.sh,include,Makefile,source,targets} ${mountpoint}${guestDirectory}/
 
 umount_image
 
@@ -88,8 +89,8 @@ rm -f ${mountpoint}${guestDirectory}/compilation.log
 
 # Synchronize compiled files
 mkdir -p ${projectDirectory}/{bin,lib}/${target}
-cp -R ${mountpoint}${guestDirectory}/bin/${target}/* ${projectDirectory}/bin/${target}/
-cp -R ${mountpoint}${guestDirectory}/lib/${target}/* ${projectDirectory}/lib/${target}/
+cp -pR ${mountpoint}${guestDirectory}/bin/${target}/* ${projectDirectory}/bin/${target}/
+cp -pR ${mountpoint}${guestDirectory}/lib/${target}/* ${projectDirectory}/lib/${target}/
 
 chown -R ${projectOwner}:${projectGroup} ${projectDirectory}/{bin,lib}/${target}
 

@@ -14,7 +14,7 @@ int main( int argc, char ** argv )
 	// Initialize standard-output logger
 	new Stdout( "stdout", true );
 	
-	if( !Screen::initialize( "002 - Opengl" ) )
+	if( !Screen::initialize() )
 	{
 		cout << "Unable to initialize screen. Exiting." << endl;
 		return 1;

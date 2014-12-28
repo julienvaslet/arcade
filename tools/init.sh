@@ -2,8 +2,7 @@
 applications=""
 target=""
 workingDirectory=""
-
-currentDate=$(stat -c %Y $0)
+currentDate=""
 
 echo "Setting current date"
 echo "===================="
@@ -20,7 +19,7 @@ echo
 
 cd ${workingDirectory}
 :> compilation.log
-make ${applications} for="${target}" | tee compilation.log
+make ${applications} for="${target}" 2>&1 | tee compilation.log
 echo
 
 echo "Automatic shutdown"

@@ -84,7 +84,7 @@ int main( int argc, char ** argv )
 	m_points.push_back( Point3D( 0.5f, 1.0f, -0.5f ) );
 
 	// Generating indexes
-	vector<unsigned int> m_indices;
+	vector<unsigned short int> m_indices;
 
 	// Front face
 	m_indices.push_back( 0 );

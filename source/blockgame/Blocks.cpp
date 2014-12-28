@@ -64,7 +64,7 @@ namespace blockgame
 			vector<Point3D> vPoints;
 			vector<Point2D> vTexCoords;
 			vector<Color> vColors;
-			vector<unsigned int> vIndices;
+			vector<unsigned short int> vIndices;
 		
 			// Adding blocks to buffer objects
 			for( vector<Block *>::iterator it = this->blocks.begin() ; it != this->blocks.end() ; it++ )

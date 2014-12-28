@@ -12,18 +12,29 @@
 #define OPENGL_DEFAULT_MINOR_VERSION	0
 #endif
 
+#define LCD_MONITOR		0
+
+#ifdef __NO_X_WINDOW__
+#include <EGL/egl.h>
+#include <bcm_host.h>
+#endif
+
 namespace opengl
 {
 	class Screen
 	{
 		protected:
 			static Screen * instance;
-		
+
+#ifdef __NO_X_WINDOW__
+			EGL_DISPMANX_WINDOW_T window;
+			EGLContext context;
+			EGLDisplay display;
+			EGLSurface surface;
+#else
 			SDL_Window * window;
 			SDL_GLContext context;
-		
-			Screen();
-			~Screen();
+#endif
 			
 			int x;
 			int y;
@@ -32,12 +43,21 @@ namespace opengl
 			
 			Color clearColor;
 		
+			Screen();
+			~Screen();
+			bool createWindow( int width, int height );
+			bool createContext( int majorVersion, int minorVersion );
+			
+#ifdef __NO_X_WINDOW__
+			static bool checkEglError();
+#endif
+		
 		public:
+			static void getDisplaySize( int * width, int * height );
 			static bool initialize( int width = 800, int height = 600, int majorVersion = OPENGL_DEFAULT_MAJOR_VERSION, int minorVersion = OPENGL_DEFAULT_MINOR_VERSION );
 			static Screen * get();
 			static void destroy();
 		
-			SDL_GLContext getContext();
 			void setClearColor( const Color& color );
 			void render();
 			void clear();

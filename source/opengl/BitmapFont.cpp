@@ -102,7 +102,7 @@ namespace opengl
 		
 		vector<Point2D> m_points;
 		vector<Point2D> m_texcoords;
-		vector<unsigned int> m_indices;
+		vector<unsigned short int> m_indices;
 
 		Point2D point(origin);
 		
@@ -110,7 +110,7 @@ namespace opengl
 		{
 			BitmapFont::program->use( true );
 
-			for( unsigned int i = 0, j = 0 ; i < text.length() ; i++, j+=4 )
+			for( unsigned short int i = 0, j = 0 ; i < text.length() ; i++, j+=4 )
 			{
 				if( text[i] == '\n' )
 				{

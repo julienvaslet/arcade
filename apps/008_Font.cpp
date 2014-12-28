@@ -21,7 +21,7 @@ int main( int argc, char ** argv )
 	// Initialize standard-output logger
 	new Stdout( "stdout", true );
 	
-	if( !Screen::initialize( "008 - Font" ) )
+	if( !Screen::initialize() )
 	{
 		Logger::get() << "Unable to initialize screen. Exiting.\n";
 		return 1;
