@@ -1,7 +1,7 @@
 arcade
 ======
 
-Arcade project is a C++/OpenGL library and some arcade games which will be playable on a Raspberry Pi.
+Arcade project is a C++/OpenGL ES2 library and some arcade games which will be playable on a Raspberry Pi.
 Project's physical and electronic (for controllers) parts will be linked to this project soon.
 
 ARM compilation
@@ -13,3 +13,7 @@ Once successfuly configured, the command "make <application> for=pi" starts the 
 Virtual joysticks from GPIO
 ---------------------------
 16 GPIO pins (+2 pins for +3.3V and ground) are used to read two players' controllers. Each controller is composed of one 4-directions joystick and 4 push buttons. In the gpio-controllers application, depending on the "data/controllers/gpio.conf" file, as many virtual controllers as sections in the configuration file are created. Associated pins drive the sent events by each controllers.
+
+Raspberry Pi graphics
+---------------------
+Graphics on the Raspberry Pi are managed without X windowing system. It uses the - being deprecated - dispmanx_* functions and EGL to directly create an OpenGL ES context to the screen. SDL is only used for desktop compilations.
