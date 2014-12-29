@@ -119,13 +119,14 @@ namespace opengl
 		
 		DISPMANX_DISPLAY_HANDLE_T dispmanDisplay = vc_dispmanx_display_open( LCD_MONITOR );
 		DISPMANX_UPDATE_HANDLE_T dispmanUpdate = vc_dispmanx_update_start( 0 );
+		VC_DISPMANX_ALPHA_T alpha = { DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS, 0xff, NULL };
 		
-		//VC_DISPMANX_ALPHA_T alpha = { DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS,255,0 };
-		//... DISPMANX_PROTECTION_NONE, 0, &alpha, 0 );
+		vc_dispmanx_display_set_background( dispmanUpdate, dispmanDisplay, 0, 0, 0 );
 		
-		this->window.element = vc_dispmanx_element_add( dispmanUpdate, dispmanDisplay, 0, &dstRect, 0, &srcRect, DISPMANX_PROTECTION_NONE, 0, 0, static_cast<DISPMANX_TRANSFORM_T>( 0 ) );
+		this->window.element = vc_dispmanx_element_add( dispmanUpdate, dispmanDisplay, 0, &dstRect, 0, &srcRect, DISPMANX_PROTECTION_NONE, &alpha, 0, static_cast<DISPMANX_TRANSFORM_T>( 0 ) );
 		this->window.width = width;
 		this->window.height = height;
+		
 		
 		vc_dispmanx_update_submit_sync( dispmanUpdate );
 		
@@ -203,9 +204,9 @@ namespace opengl
 						EGL_GREEN_SIZE,		8,
 						EGL_BLUE_SIZE,		8,
 						EGL_ALPHA_SIZE,		8,
-					    EGL_DEPTH_SIZE,		8, // 24 ?
-					    EGL_STENCIL_SIZE,	8, // EGL_DONT_CARE ?
-					    EGL_SAMPLE_BUFFERS,	1, // 0?
+					    EGL_DEPTH_SIZE,		24,
+					    EGL_STENCIL_SIZE,	EGL_DONT_CARE,
+					    EGL_SAMPLE_BUFFERS,	0,
 						EGL_NONE
 					};
 					
