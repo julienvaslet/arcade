@@ -352,7 +352,6 @@ int main( int argc, char ** argv )
 	delete ibo;
 	delete cbo;
 	delete vbo;
-	//glDeleteVertexArrays( 1, &vao );
 	Screen::destroy();
 	
 	Logger::destroy();

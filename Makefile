@@ -14,9 +14,13 @@ endif
 ifeq ($(isRaspberryPi),false)
 
 all:
+	sudo ./tools/compile.sh $(shell ls -1 $(applicationDirectory) | grep '\.cpp$$' | sed 's/\.cpp$$//g')
 
 %:
 	sudo ./tools/compile.sh $@
+	
+run:
+	
 
 else
 

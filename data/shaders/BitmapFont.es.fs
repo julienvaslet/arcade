@@ -1,19 +1,19 @@
-#version 130
+#version 100
+precision mediump float;
 
 uniform sampler2D texture0;
 uniform vec4 color;
 
-in vec2 texCoord;
-out vec4 fragColor;
+varying vec2 texCoord;
 
 void main(void)
 {
 	vec4 textureColor = texture2D( texture0, texCoord );
 	
 	if( textureColor.rgb != vec3( 1.0, 1.0, 1.0 ) )
-		fragColor = vec4( textureColor.rgb, textureColor.r ) * color;
+		gl_FragColor = vec4( textureColor.rgb, textureColor.r ) * color;
 
 	else
-		fragColor = textureColor * color;
+		gl_FragColor = textureColor * color;
 }
 

@@ -17,8 +17,13 @@ namespace opengl
 		if( BitmapFont::program == NULL )
 		{
 			BitmapFont::program = new Program();
+			#ifdef __PI__
+			BitmapFont::program->loadVertexShaderFile( "data/shaders/BitmapFont.es.vs" );
+			BitmapFont::program->loadFragmentShaderFile( "data/shaders/BitmapFont.es.fs" );
+			#else
 			BitmapFont::program->loadVertexShaderFile( "data/shaders/BitmapFont.vs" );
 			BitmapFont::program->loadFragmentShaderFile( "data/shaders/BitmapFont.fs" );
+			#endif
 			BitmapFont::program->link( true );
 		}
 		
@@ -37,15 +42,13 @@ namespace opengl
 	
 		if( surface != NULL )
 		{
-			// TODO : Handle alpha channel... from PNG file for instance
-			
 			int pitch = surface->pitch / surface->w;
 			
 			this->charactersByLine = surface->w / this->characterWidth;
 			this->relativeCharacterWidth = static_cast<float>( this->characterWidth ) / static_cast<float>( surface->w );
 			this->relativeCharacterHeight = static_cast<float>( this->characterHeight ) / static_cast<float>( surface->h );
 			
-			// Texture should be rotated because of SDL loading functions
+			// Texture should be rotated for OpenGL
 			vector<unsigned char> pixels( surface->h * surface->w * pitch, '\0' );
 			
 			for( int j = 0 ; j < surface->h ; j++ )
@@ -59,7 +62,7 @@ namespace opengl
 				}
 
 			}
-						
+			
 			this->texture->setData( &(pixels[0]), surface->w, surface->h, GL_RGB );
 			this->texture->setFiltering( GL_LINEAR, GL_LINEAR );
 
@@ -157,7 +160,7 @@ namespace opengl
 	
 			BitmapFont::program->sendUniform( "window", static_cast<float>( Screen::get()->getWidth() ), static_cast<float>( Screen::get()->getHeight() ) );
 			BitmapFont::program->sendUniform( "color", color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
-			BitmapFont::program->sendUniform( "texture", *(this->texture), 0 );
+			BitmapFont::program->sendUniform( "texture0", *(this->texture), 0 );
 			BitmapFont::program->sendAttributePointer( "a_Vertex", this->vertices, 2 );
 			BitmapFont::program->sendAttributePointer( "a_TexCoord", this->textureCoordinates, 2 );
 

@@ -203,7 +203,6 @@ int main( int argc, char ** argv )
 			{
 				case SDL_QUIT:
 				{
-					cout << "this is sdl_quit!" << endl;
 					running = false;
 					break;
 				}
