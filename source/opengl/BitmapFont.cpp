@@ -1,9 +1,13 @@
 #include <opengl/BitmapFont.h>
 #include <opengl/Screen.h>
-#include <SDL2/SDL_image.h>
+#include <data/image/Image.h>
 
+using namespace data::image;
+
+#ifdef DEBUG0
 #include <tools/logger/Logger.h>
 using namespace tools::logger;
+#endif
 
 namespace opengl
 {
@@ -32,46 +36,28 @@ namespace opengl
 		this->indices = new ElementArrayBufferObject();
 		
 		this->texture = new Texture2D();
-		this->texture->bind();
 		
 		#ifdef DEBUG0
 		Logger::get() << "[BitmapFont#" << BitmapFont::getFontNameFromPath( filename ) << "] Loading file \"" << filename << "\"..." << Logger::endl;
 		#endif
 		
-		SDL_Surface * surface = IMG_Load( filename.c_str() );
+		Image * image = Image::load( filename.c_str() );
 	
-		if( surface != NULL )
-		{
-			int pitch = surface->pitch / surface->w;
+		if( image != NULL )
+		{	
+			this->charactersByLine = image->getWidth() / this->characterWidth;
+			this->relativeCharacterWidth = static_cast<float>( this->characterWidth ) / static_cast<float>( image->getWidth() );
+			this->relativeCharacterHeight = static_cast<float>( this->characterHeight ) / static_cast<float>( image->getHeight() );
 			
-			this->charactersByLine = surface->w / this->characterWidth;
-			this->relativeCharacterWidth = static_cast<float>( this->characterWidth ) / static_cast<float>( surface->w );
-			this->relativeCharacterHeight = static_cast<float>( this->characterHeight ) / static_cast<float>( surface->h );
-			
-			// Texture should be rotated for OpenGL
-			vector<unsigned char> pixels( surface->h * surface->w * pitch, '\0' );
-			
-			for( int j = 0 ; j < surface->h ; j++ )
-			{
-				for( int i = 0 ; i < surface->w ; i++ )
-				{
-					for( int p = 0 ; p < pitch ; p++ )
-					{
-						pixels[ j * surface->w * pitch + i * pitch + p ] = ( *( static_cast<unsigned char *>(surface->pixels) + (surface->h - j) * surface->w * pitch + i * pitch + p ) );
-					}
-				}
-
-			}
-			
-			this->texture->setData( &(pixels[0]), surface->w, surface->h, GL_RGB );
+			this->texture->setData( *image );
 			this->texture->setFiltering( GL_LINEAR, GL_LINEAR );
 
-			SDL_FreeSurface( surface );
+			delete image;
 		}
 		#ifdef DEBUG1
 		else
 		{
-			Logger::get() << "[BitmapFont#" << BitmapFont::getFontNameFromPath( filename ) << "] Unable to load texture file \"" << filename << "\": " << IMG_GetError() << Logger::endl;
+			Logger::get() << "[BitmapFont#" << BitmapFont::getFontNameFromPath( filename ) << "] Unable to load texture file \"" << filename << "\"." << Logger::endl;
 		}
 		#endif
 	}

@@ -33,8 +33,6 @@ int main( int argc, char ** argv )
 		return 1;
 	}
 	
-	Logger::get() << "Found joysticks: " << SDL_NumJoysticks() << Logger::endl;
-	
 	/* Should check if shader's extensions are available.
 	if( !OpenGL::hasExtension( ) )
 	{

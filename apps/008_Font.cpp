@@ -12,9 +12,13 @@
 #include <opengl/BitmapFont.h>
 #include <opengl/Program.h>
 
+#include <data/image/Image.h>
+#include <data/image/Targa.h>
+
 using namespace opengl;
 using namespace std;
 using namespace tools::logger;
+using namespace data;
 
 int main( int argc, char ** argv )
 {
@@ -31,7 +35,7 @@ int main( int argc, char ** argv )
 	SDL_Event lastEvent;
 	unsigned int lastDrawTicks = 0;
 	
-	new BitmapFont( "data/fonts/bitmap.bmp", 32, 32, 7, 1 );
+	new BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
 
 	Camera camera;
 	camera.getEye().moveTo( 0.0f, 1.25f, 4.0f );
@@ -87,11 +91,7 @@ int main( int argc, char ** argv )
 		if( ticks - lastDrawTicks > 15 )
 		{
 			Screen::get()->clear();
-			//camera.setPerspective( 45.0f, 800.0f / 600.0f, 1.0f, 100.0f );
-			
-			//glMatrixMode( GL_MODELVIEW );
-			//camera.look();
-			
+
 			Font::get("bitmap")->render( Point2D( 20, Screen::get()->getHeight() - 60 ), text.str(), 1.0f );
 			
 			Screen::get()->render();

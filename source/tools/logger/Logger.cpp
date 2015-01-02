@@ -26,7 +26,7 @@ namespace tools
 				Logger::instances[name] = this;
 				
 				#ifdef DEBUG0
-				cout << "[Logger#" << this << "] Replaced Logger \"" << name << "\"." << std::endl;
+				cout << "[Logger#" << name << "] Replaced Logger." << std::endl;
 				#endif
 			}
 			else
@@ -34,13 +34,13 @@ namespace tools
 				Logger::instances[name] = this;
 				
 				#ifdef DEBUG0
-				cout << "[Logger#" << this << "] Created logger \"" << name << "\"." << std::endl;
+				cout << "[Logger#" << name << "] Created." << std::endl;
 				#endif
 			}
 			
 			#ifdef DEBUG0
 			if( defaultLogger )
-				cout << "[Logger#" << this << "] Is now the default logger." << std::endl;
+				cout << "[Logger#" << name << "] Is now the default logger." << std::endl;
 			#endif
 		}
 		
@@ -64,7 +64,7 @@ namespace tools
 					Logger::instances.erase( it );
 					
 					#ifdef DEBUG0
-					cout << "[Logger#" << this << "] Deleted logger \"" << name << "\"." << std::endl;
+					cout << "[Logger#" << name << "] Deleted." << std::endl;
 					#endif
 					break;
 				}
