@@ -29,13 +29,8 @@ int main( int argc, char ** argv )
 	}
 	
 	Program * program = new Program();
-	#ifdef __PI__
-	program->loadVertexShaderFile( "data/shaders/vertex.es.vs" );
-	program->loadFragmentShaderFile( "data/shaders/fragment.es.fs" );
-	#else
 	program->loadVertexShaderFile( "data/shaders/vertex.vs" );
 	program->loadFragmentShaderFile( "data/shaders/fragment.fs" );
-	#endif
 	program->link( true );
 	program->use( true );
 	

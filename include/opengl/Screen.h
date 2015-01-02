@@ -2,6 +2,7 @@
 #define	__OPENGL_SCREEN_H	1
 
 #include <SDL2/SDL.h>
+#include <opengl/OpenGL.h>
 #include <opengl/Color.h>
 
 #ifdef __PI__
@@ -60,7 +61,7 @@ namespace opengl
 		
 			void setClearColor( const Color& color );
 			void render();
-			void clear();
+			void clear( int flags = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, bool automaticViewport = true );
 			int getWidth();
 			int getHeight();
 	};

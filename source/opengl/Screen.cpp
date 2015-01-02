@@ -119,7 +119,7 @@ namespace opengl
 		
 		DISPMANX_DISPLAY_HANDLE_T dispmanDisplay = vc_dispmanx_display_open( LCD_MONITOR );
 		DISPMANX_UPDATE_HANDLE_T dispmanUpdate = vc_dispmanx_update_start( 0 );
-		VC_DISPMANX_ALPHA_T alpha = { DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS, 0xff, NULL };
+		VC_DISPMANX_ALPHA_T alpha = { DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS, 0xff, 0 };
 		
 		vc_dispmanx_display_set_background( dispmanUpdate, dispmanDisplay, 0, 0, 0 );
 		
@@ -387,11 +387,13 @@ namespace opengl
 		SDL_Quit();
 	}
 
-	void Screen::clear()
+	void Screen::clear( int flags, bool automaticViewport )
 	{
 		glClearColor( this->clearColor.getRed(), this->clearColor.getGreen(), this->clearColor.getBlue(), this->clearColor.getAlpha() );
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-		glViewport( this->x, this->y, this->width, this->height );
+		glClear( flags );
+		
+		if( automaticViewport )
+			glViewport( this->x, this->y, this->width, this->height );
 	}
 
 	void Screen::render()

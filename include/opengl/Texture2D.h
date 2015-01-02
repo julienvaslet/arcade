@@ -17,7 +17,7 @@ namespace opengl
 			virtual ~Texture2D();
 			
 			virtual void bind( unsigned int unit = 0 ) const;
-			virtual void setData( unsigned char * data, unsigned int width, unsigned int height, GLenum type = GL_RGB );
+			virtual void setData( unsigned char * data, unsigned int width, unsigned int height, GLenum format = GL_RGB );
 			virtual void setWrapMode( GLenum mode );
 			virtual void setFiltering( GLenum minification, GLenum magnification );
 	};

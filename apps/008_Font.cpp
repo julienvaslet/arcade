@@ -87,10 +87,10 @@ int main( int argc, char ** argv )
 		if( ticks - lastDrawTicks > 15 )
 		{
 			Screen::get()->clear();
-			camera.setPerspective( 45.0f, 800.0f / 600.0f, 1.0f, 100.0f );
+			//camera.setPerspective( 45.0f, 800.0f / 600.0f, 1.0f, 100.0f );
 			
-			glMatrixMode( GL_MODELVIEW );
-			camera.look();
+			//glMatrixMode( GL_MODELVIEW );
+			//camera.look();
 			
 			Font::get("bitmap")->render( Point2D( 20, Screen::get()->getHeight() - 60 ), text.str(), 1.0f );
 			

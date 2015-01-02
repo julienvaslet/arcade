@@ -24,9 +24,9 @@ namespace opengl
 		CheckOpenGLError(glBindTexture);
 	}
 	
-	void Texture2D::setData( unsigned char * data, unsigned int width, unsigned int height, GLenum type )
+	void Texture2D::setData( unsigned char * data, unsigned int width, unsigned int height, GLenum format )
 	{
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, type, GL_UNSIGNED_BYTE, data );
+		glTexImage2D( GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data );
 		CheckOpenGLError(glTexImage2D);
 	}
 	
