@@ -29,8 +29,8 @@ int main( int argc, char ** argv )
 	}
 	
 	Program * program = new Program();
-	program->loadVertexShaderFile( "data/shaders/vertex.vs" );
-	program->loadFragmentShaderFile( "data/shaders/fragment.fs" );
+	program->loadVertexShaderFile( "data/shaders/vertex.es.vs" );
+	program->loadFragmentShaderFile( "data/shaders/fragment.es.fs" );
 	program->link( true );
 	program->use( true );
 	

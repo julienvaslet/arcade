@@ -1,5 +1,6 @@
 #include <blockgame/IntroScene.h>
 #include <blockgame/PlayScene.h>
+#include <blockgame/IntroSceneEventHandler.h>
 
 #include <opengl/OpenGL.h>
 #include <opengl/Font.h>
@@ -7,13 +8,35 @@
 #include <opengl/Point2D.h>
 #include <opengl/Color.h>
 
+#include <controller/Controller.h>
+
 using namespace opengl;
+using namespace controller;
+
+#ifdef DEBUG1
+#include <tools/logger/Logger.h>
+using namespace tools::logger;
+#endif
 
 namespace blockgame
 {
 	IntroScene::IntroScene() : Scene(), lastDrawTicks(0), lastAlphaChangeTicks(0), increaseAlpha(false), textColor(1.0f, 1.0f, 1.0f)
 	{
 		this->textColor.setAlpha( 1.0f );
+		
+		Player * player = Player::get( "Player" );
+		
+		if( player != NULL )
+			player->setEventHandler( new IntroSceneEventHandler( this ) );
+
+		else
+		{
+			#ifdef DEBUG1
+			Logger::get() << "[IntroScene] No player found. Exiting." << Logger::endl;
+			#endif
+			
+			this->running = false;
+		}
 	}
 	
 	IntroScene::~IntroScene()
@@ -30,17 +53,20 @@ namespace blockgame
 				break;
 			}
 			
+			#ifndef __PI__
 			case SDL_KEYDOWN:
 			{
 	            if( event->key.keysym.sym == SDLK_ESCAPE )
 					this->running = false;
-					
-				else if( event->key.keysym.sym != SDLK_LEFT && event->key.keysym.sym != SDLK_RIGHT && event->key.keysym.sym != SDLK_UP && event->key.keysym.sym != SDLK_DOWN )
-				{
-					this->running = false;
-					this->nextScene = new PlayScene();
-				}
-
+				
+				break;
+			}
+			#endif
+			
+			case SDL_JOYBUTTONUP:
+			case SDL_JOYBUTTONDOWN:
+			{
+				Controller::handleEvent( event );
 				break;
 			}
 		}
@@ -116,6 +142,12 @@ namespace blockgame
 			
 			this->lastDrawTicks = ticks;
 		}
+	}
+	
+	void IntroScene::endScene()
+	{
+		this->running = false;
+		this->nextScene = new PlayScene();
 	}
 }
 

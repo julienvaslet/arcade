@@ -57,7 +57,7 @@ namespace blockgame
 		return hasCollision;
 	}
 	
-	void Blocks::render()
+	void Blocks::render( Matrix& projection, Matrix& modelview )
 	{
 		if( this->blocks.size() > 0 )
 		{
@@ -70,7 +70,7 @@ namespace blockgame
 			for( vector<Block *>::iterator it = this->blocks.begin() ; it != this->blocks.end() ; it++ )
 				(*it)->prepareRendering( vPoints, vTexCoords, vColors, vIndices );
 		
-			Block::renderBlocks( vPoints, vTexCoords, vColors, vIndices );
+			Block::renderBlocks( projection, modelview, vPoints, vTexCoords, vColors, vIndices );
 		}
 	}
 }

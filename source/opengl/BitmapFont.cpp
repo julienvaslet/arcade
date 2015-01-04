@@ -99,7 +99,7 @@ namespace opengl
 		{
 			BitmapFont::program->use( true );
 
-			for( unsigned short int i = 0, j = 0 ; i < text.length() ; i++, j+=4 )
+			for( unsigned int i = 0, j = 0 ; i < text.length() ; i++, j+=4 )
 			{
 				if( text[i] == '\n' )
 				{
@@ -143,10 +143,10 @@ namespace opengl
 			this->vertices->setData( m_points );
 			this->textureCoordinates->setData( m_texcoords );
 			this->indices->setData( m_indices );
-	
+
+			BitmapFont::program->sendUniform( "texture0", *(this->texture), 0 );
 			BitmapFont::program->sendUniform( "window", static_cast<float>( Screen::get()->getWidth() ), static_cast<float>( Screen::get()->getHeight() ) );
 			BitmapFont::program->sendUniform( "color", color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
-			BitmapFont::program->sendUniform( "texture0", *(this->texture), 0 );
 			BitmapFont::program->sendAttributePointer( "a_Vertex", this->vertices, 2 );
 			BitmapFont::program->sendAttributePointer( "a_TexCoord", this->textureCoordinates, 2 );
 

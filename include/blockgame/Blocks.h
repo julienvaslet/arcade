@@ -7,6 +7,7 @@
 #include <opengl/Color.h>
 #include <opengl/ArrayBufferObject.h>
 #include <opengl/ElementArrayBufferObject.h>
+#include <opengl/Matrix.h>
 
 #include <vector>
 
@@ -24,7 +25,7 @@ namespace blockgame
 			Blocks( unsigned int reserveBlocks = 4 );
 			~Blocks();
 			
-			void render();
+			void render( Matrix& projection, Matrix& modelview );
 			
 			void insert( Block * block );
 			void insert( Blocks * blocks );

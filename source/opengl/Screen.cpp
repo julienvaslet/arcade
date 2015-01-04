@@ -1,5 +1,4 @@
 #include <opengl/Screen.h>
-#include <SDL2/SDL_image.h>
 #include <opengl/OpenGL.h>
 
 #ifdef DEBUG0
@@ -309,16 +308,6 @@ namespace opengl
 		#else
 		SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO );
 		#endif
-		
-		int imageFlags = IMG_INIT_PNG;
-		int initFlags = IMG_Init( imageFlags );
-		
-		if( (initFlags & imageFlags) != imageFlags )
-		{
-			#ifdef DEBUG0
-			Logger::get() << "[Screen] Unable to init SDL_image library: " << IMG_GetError() << Logger::endl;
-			#endif
-		}
 
 		int displayWidth = 0;
 		int displayHeight = 0;
@@ -383,7 +372,6 @@ namespace opengl
 		delete screen;
 		Screen::instance = NULL;
 	
-		IMG_Quit();
 		SDL_Quit();
 	}
 

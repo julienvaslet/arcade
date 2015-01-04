@@ -4,6 +4,7 @@
 #include <opengl/Screen.h>
 #include <opengl/OpenGL.h>
 #include <opengl/BitmapFont.h>
+#include <controller/Controller.h>
 
 #include <audio/Mixer.h>
 
@@ -12,6 +13,7 @@
 using namespace opengl;
 using namespace tools::logger;
 using namespace audio;
+using namespace controller;
 using namespace blockgame;
 
 int main( int argc, char ** argv )
@@ -25,13 +27,26 @@ int main( int argc, char ** argv )
 		return 1;
 	}
 	
-	new Mixer( 44100, 1, 256 );
+	//new Mixer( 44100, 1, 256 );
+	
+	Controller::open( "Joystick1" );
+	
+	if( Controller::getControllersCount() == 0 )
+		Controller::scan();
+		
+	Controller * controller = Controller::getFreeController();
+	
+	if( controller != NULL )
+	{
+		new Player( "Player" );
+		Player::get( "Player" )->setController( controller );
+	}
 	
 	SDL_Event lastEvent;
 	game::Scene * currentScene = NULL;
 	
 	Screen::get()->setClearColor( Color( 0.0f, 0.0f, 0.0f, 0.0f ) );
-	new BitmapFont( "data/fonts/bitmap.bmp", 32, 32, 7, 1 );
+	new BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
 
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -57,9 +72,12 @@ int main( int argc, char ** argv )
 		currentScene = nextScene;
 	}
 	
+	
+	Player::destroy();
+	Controller::destroy();
 	Font::destroy();
 	Screen::destroy();
-	Mixer::destroy();
+	//Mixer::destroy();
 	Logger::destroy();
 	
 	return 0;

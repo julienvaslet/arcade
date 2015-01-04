@@ -201,30 +201,10 @@ namespace opengl
 		
 		if( cacheLocations && this->getLinkStatus() )
 		{
-			// Attributes
-			int count = this->getActiveAttributes();
-			int maxlength = this->getActiveAttributeMaxLength();
-			string name( maxlength, '\0' );
-			
-			for( int i = 0 ; i < count ; i++ )
-			{
-				int length = 0;
-				GLsizei size = 0;
-				GLenum type = GL_FLOAT;
-				glGetActiveAttrib( this->id, i, name.capacity(), &length, &size, &type, &(name[0]) );
-				
-				#ifdef DEBUG0
-				if( CheckOpenGLError(glGetActiveAttrib) )
-				#else
-				if( OpenGL::getError() == GL_NO_ERROR )
-				#endif
-					this->getAttributeLocation( name.c_str() );
-			}
-			
 			// Uniforms
-			count = this->getActiveUniforms();
-			maxlength = this->getActiveUniformMaxLength();
-			name.reserve( maxlength );
+			int count = this->getActiveUniforms();
+			int maxlength = this->getActiveUniformMaxLength();
+			string name( maxlength, '\0' );
 			
 			for( int i = 0 ; i < count ; i++ )
 			{
@@ -239,6 +219,26 @@ namespace opengl
 				if( OpenGL::getError() == GL_NO_ERROR )
 				#endif
 					this->getUniformLocation( name.c_str() );
+			}
+			
+			// Attributes
+			count = this->getActiveAttributes();
+			maxlength = this->getActiveAttributeMaxLength();
+			name.reserve( maxlength );
+			
+			for( int i = 0 ; i < count ; i++ )
+			{
+				int length = 0;
+				GLsizei size = 0;
+				GLenum type = GL_FLOAT;
+				glGetActiveAttrib( this->id, i, name.capacity(), &length, &size, &type, &(name[0]) );
+				
+				#ifdef DEBUG0
+				if( CheckOpenGLError(glGetActiveAttrib) )
+				#else
+				if( OpenGL::getError() == GL_NO_ERROR )
+				#endif
+					this->getAttributeLocation( name.c_str() );
 			}
 		}
 		
@@ -357,26 +357,29 @@ namespace opengl
 			
 	void Program::sendUniform( const string& uniform, float v0 )
 	{
-		glUniform1f( this->getUniformLocation( uniform ), v0 );
-		CheckOpenGLError(glUniform1f);
+		glUniform1fv( this->getUniformLocation( uniform ), 1, &v0 );
+		CheckOpenGLError(glUniform1fv);
 	}
 	
 	void Program::sendUniform( const string& uniform, float v0, float v1 )
 	{
-		glUniform2f( this->getUniformLocation( uniform ), v0, v1 );
-		CheckOpenGLError(glUniform2f);
+		float v[2] = { v0, v1 };
+		glUniform2fv( this->getUniformLocation( uniform ), 1, v );
+		CheckOpenGLError(glUniform2fv);
 	}
 	
 	void Program::sendUniform( const string& uniform, float v0, float v1, float v2 )
 	{
-		glUniform3f( this->getUniformLocation( uniform ), v0, v1, v2 );
-		CheckOpenGLError(glUniform3f);
+		float v[3] = { v0, v1, v2 };
+		glUniform3fv( this->getUniformLocation( uniform ), 1, v );
+		CheckOpenGLError(glUniform3fv);
 	}
 	
 	void Program::sendUniform( const string& uniform, float v0, float v1, float v2, float v3 )
 	{
-		glUniform4f( this->getUniformLocation( uniform ), v0, v1, v2, v3 );
-		CheckOpenGLError(glUniform4f);
+		float v[4] = { v0, v1, v2, v3 };
+		glUniform4fv( this->getUniformLocation( uniform ), 1, v );
+		CheckOpenGLError(glUniform4fv);
 	}
 	
 	void Program::sendUniform( const string& uniform, float * values, unsigned int size, unsigned int count )
@@ -407,26 +410,29 @@ namespace opengl
 	
 	void Program::sendUniform( const string& uniform, int v0 )
 	{
-		glUniform1i( this->getUniformLocation( uniform ), v0 );
-		CheckOpenGLError(glUniform1i);
+		glUniform1iv( this->getUniformLocation( uniform ), 1, &v0 );
+		CheckOpenGLError(glUniform1iv);
 	}
 	
 	void Program::sendUniform( const string& uniform, int v0, int v1 )
 	{
-		glUniform2i( this->getUniformLocation( uniform ), v0, v1 );
-		CheckOpenGLError(glUniform2i);
+		int v[2] = { v0, v1 };
+		glUniform2iv( this->getUniformLocation( uniform ), 1 , v );
+		CheckOpenGLError(glUniform2iv);
 	}
 	
 	void Program::sendUniform( const string& uniform, int v0, int v1, int v2 )
 	{
-		glUniform3i( this->getUniformLocation( uniform ), v0, v1, v2 );
-		CheckOpenGLError(glUniform3i);
+		int v[3] = { v0, v1, v2 };
+		glUniform3iv( this->getUniformLocation( uniform ), 1, v );
+		CheckOpenGLError(glUniform3iv);
 	}
 	
 	void Program::sendUniform( const string& uniform, int v0, int v1, int v2, int v3 )
 	{
-		glUniform4i( this->getUniformLocation( uniform ), v0, v1, v2, v3 );
-		CheckOpenGLError(glUniform4i);
+		int v[4] = { v0, v1, v2, v3 };
+		glUniform4iv( this->getUniformLocation( uniform ), 1, v );
+		CheckOpenGLError(glUniform4iv);
 	}
 	
 	void Program::sendUniform( const string& uniform, int * values, unsigned int size, unsigned int count )

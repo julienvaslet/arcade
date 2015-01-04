@@ -2,12 +2,12 @@
 #include <tools/logger/Logger.h>
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+#include <data/image/Image.h>
 
 using namespace opengl;
 using namespace tools::logger;
 
-#define BLOCKGAME_TEXTURE_FILENAME	"data/blockgame/block.bmp"
+#define BLOCKGAME_TEXTURE_FILENAME	"data/blockgame/block.tga"
 
 namespace blockgame
 {
@@ -26,8 +26,13 @@ namespace blockgame
 		if( Block::program == NULL )
 		{
 			Block::program = new Program();
+			#ifdef __PI__
+			Block::program->loadVertexShaderFile( "data/blockgame/block.es.vs" );
+			Block::program->loadFragmentShaderFile( "data/blockgame/block.es.fs" );
+			#else
 			Block::program->loadVertexShaderFile( "data/blockgame/block.vs" );
 			Block::program->loadFragmentShaderFile( "data/blockgame/block.fs" );
+			#endif
 			Block::program->link( true );
 		}
 		
@@ -52,36 +57,19 @@ namespace blockgame
 			Logger::get() << "[Block] Loading file \"" << BLOCKGAME_TEXTURE_FILENAME << "\"" << Logger::endl;
 			#endif
 		
-			SDL_Surface * surface = IMG_Load( BLOCKGAME_TEXTURE_FILENAME );
+			Image * image = Image::load( BLOCKGAME_TEXTURE_FILENAME );
 	
-			if( surface != NULL )
-			{			
-				int pitch = surface->pitch / surface->w;
-			
-				// Texture should be rotated because of SDL loading functions
-				vector<unsigned char> pixels( surface->h * surface->w * pitch, '\0' );
-			
-				for( int j = 0 ; j < surface->h ; j++ )
-				{
-					for( int i = 0 ; i < surface->w ; i++ )
-					{
-						for( int p = 0 ; p < pitch ; p++ )
-						{
-							pixels[ j * surface->w * pitch + i * pitch + p ] = ( *( static_cast<unsigned char *>(surface->pixels) + (surface->h - j) * surface->w * pitch + i * pitch + p ) );
-						}
-					}
-
-				}
-						
-				Block::texture->setData( &(pixels[0]), surface->w, surface->h, GL_RGB );
+			if( image != NULL )
+			{	
+				Block::texture->setData( *image );
 				Block::texture->setFiltering( GL_LINEAR, GL_LINEAR );
 
-				SDL_FreeSurface( surface );
+				delete image;
 			}
 			#ifdef DEBUG1
 			else
 			{
-				Logger::get() << "[Block] Unable to load texture file \"" << BLOCKGAME_TEXTURE_FILENAME << "\": " << IMG_GetError() << Logger::endl;
+				Logger::get() << "[Block] Unable to load texture file \"" << BLOCKGAME_TEXTURE_FILENAME << "\"." << Logger::endl;
 			}
 			#endif
 		}
@@ -167,7 +155,7 @@ namespace blockgame
 		vIndices.push_back( j + 3 );
 	}
 	
-	void Block::renderBlocks( vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices )
+	void Block::renderBlocks( Matrix& projection, Matrix& modelview, vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices )
 	{
 		Block::program->use( true );
 
@@ -176,8 +164,8 @@ namespace blockgame
 		Block::colors->setData( vColors );
 		Block::indices->setData( vIndices );
 
-		Block::program->sendModelviewMatrix( "modelview_matrix" );
-		Block::program->sendProjectionMatrix( "projection_matrix" );
+		Block::program->sendUniform( "projection_matrix", projection, false );
+		Block::program->sendUniform( "modelview_matrix", modelview, false );
 		Block::program->sendUniform( "texture", *(Block::texture), 0 );
 		Block::program->sendVertexPointer( "a_Vertex", Block::vertices );
 		Block::program->sendColorPointer( "a_Color", Block::colors );

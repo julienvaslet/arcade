@@ -13,7 +13,6 @@
 #include <opengl/Program.h>
 
 #include <data/image/Image.h>
-#include <data/image/Targa.h>
 
 using namespace opengl;
 using namespace std;
@@ -99,7 +98,8 @@ int main( int argc, char ** argv )
 			lastDrawTicks = ticks;
 		}
 	}
-
+	
+	glUseProgram( 0 );
 	Font::destroy();
 	Screen::destroy();
 	Logger::destroy();

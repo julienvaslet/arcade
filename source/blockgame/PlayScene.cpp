@@ -1,11 +1,14 @@
 #include <blockgame/PlayScene.h>
 #include <blockgame/ScoreScene.h>
+#include <blockgame/PlaySceneEventHandler.h>
 
 #include <opengl/OpenGL.h>
 #include <opengl/Font.h>
 #include <opengl/Screen.h>
 #include <opengl/Point2D.h>
 #include <opengl/Color.h>
+
+#include <controller/Controller.h>
 
 #include <audio/Mixer.h>
 #include <audio/Song.h>
@@ -15,7 +18,13 @@
 #include <cstdlib>
 #include <ctime>
 
+#ifdef DEBUG1
+#include <tools/logger/Logger.h>
+using namespace tools::logger;
+#endif
+
 using namespace opengl;
+using namespace controller;
 using namespace audio;
 using namespace audio::instrument;
 
@@ -23,11 +32,25 @@ namespace blockgame
 {
 	PlayScene::PlayScene() : Scene(), lastDrawTicks(0), lastBlockMove(0), level(1), lines(0), score(0), blocks(NULL), background(NULL), fallingBlock(NULL), nextBlock(NULL)
 	{
+		Player * player = Player::get( "Player" );
+		
+		if( player != NULL )
+			player->setEventHandler( new PlaySceneEventHandler( this ) );
+			
+		else
+		{
+			#ifdef DEBUG1
+			Logger::get() << "[PlayScene] No player found. Exiting." << Logger::endl;
+			#endif
+			
+			this->running = false;
+		}
+		
 		// Initializing random seed
 		srand( time(NULL) );
 		
 		// Creating game song
-		Sine instrument( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
+		/*Sine instrument( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 		Silence silence( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 		Song * song = new Song( 120, Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 	
@@ -77,7 +100,7 @@ namespace blockgame
 		
 		Mixer::get()->add( "BlockgameSong", song );
 		delete song;
-		Mixer::get()->setRepeat( "BlockgameSong", true );
+		Mixer::get()->setRepeat( "BlockgameSong", true );*/
 		
 		// Creating grid
 		this->blocks = new Grid( 10.0f, 20.0f );
@@ -107,13 +130,13 @@ namespace blockgame
 		this->updateLabels();
 		this->lastBlockMove = SDL_GetTicks();
 		
-		Mixer::get()->play( "BlockgameSong" );
+		//Mixer::get()->play( "BlockgameSong" );
 	}
 	
 	PlayScene::~PlayScene()
 	{
 		// Stopping song
-		Mixer::get()->stop( "BlockgameSong" );
+		//Mixer::get()->stop( "BlockgameSong" );
 		
 		if( this->fallingBlock != NULL )
 			delete this->fallingBlock;
@@ -176,60 +199,21 @@ namespace blockgame
 				break;
 			}
 			
+			#ifndef __PI__
 			case SDL_KEYDOWN:
 			{
 	            if( event->key.keysym.sym == SDLK_ESCAPE )
 					this->running = false;
-					
-				else if( event->key.keysym.sym == SDLK_LEFT )
-				{
-					// Move the falling block on the left
-					if( this->fallingBlock != NULL )
-					{
-						this->fallingBlock->moveBy( -1.0f, 0.0f );
-						
-						if( this->fallingBlock->isInCollision( this->blocks ) )
-							this->fallingBlock->moveBy( 1.0f, 0.0f );
-						else
-							this->fallingBlock->correctPosition( this->blocks->getWidth(), this->blocks->getHeight() );
-					}
-				}
-				else if( event->key.keysym.sym == SDLK_RIGHT )
-				{
-					// Move the falling block on the right
-					if( this->fallingBlock != NULL )
-					{
-						this->fallingBlock->moveBy( 1.0f, 0.0f );
-						
-						if( this->fallingBlock->isInCollision( this->blocks ) )
-							this->fallingBlock->moveBy( -1.0f, 0.0f );
-						else
-							this->fallingBlock->correctPosition( this->blocks->getWidth(), this->blocks->getHeight() );
-					}
-				}
-				else if( event->key.keysym.sym == SDLK_UP )
-				{
-					// Rotate the falling block
-					this->fallingBlock->rotate();
-					
-					// Impossible rotation
-					if( this->fallingBlock->isInCollision( this->blocks ) )
-						this->fallingBlock->rotate( true );
-					
-					this->fallingBlock->correctPosition( this->blocks->getWidth(), this->blocks->getHeight() );
-				}
-				else if( event->key.keysym.sym == SDLK_DOWN )
-				{
-					// Drop the falling block
-					this->updateScore();
-					
-					while( !this->fallingBlock->isAtGround() && !this->fallingBlock->isInCollision( this->blocks ) )
-						this->fallingBlock->moveBy( 0.0f, -1.0f );
-					
-					this->fallingBlock->moveBy( 0.0f, 1.0f );
-					this->switchBlocks();
-				}
-
+				
+				break;
+			}
+			#endif
+			
+			case SDL_JOYAXISMOTION:
+			case SDL_JOYBUTTONUP:
+			case SDL_JOYBUTTONDOWN:
+			{
+				Controller::handleEvent( event );
 				break;
 			}
 		}
@@ -265,23 +249,25 @@ namespace blockgame
 			
 			float screenRatio = static_cast<float>( Screen::get()->getWidth() ) / static_cast<float>( Screen::get()->getHeight() );
 			float screenSize = 35.0f;
-			this->camera.setOrthogonal( -1.0f * screenSize * screenRatio, screenSize * screenRatio, -1.0f * screenSize, screenSize, 1.0f, 100.0f );
 			
-			glMatrixMode( GL_MODELVIEW );
-			this->camera.look();
-			
-			glMultMatrixf( Matrix::translation( -28.0f, -30.0f, 0.0f ).get() );
-			this->background->render();
-			this->blocks->render();
+			Matrix projection = Matrix::ortho( -1.0f * screenSize * screenRatio, screenSize * screenRatio, -1.0f * screenSize, screenSize, 1.0f, 100.0f );
+			Matrix modelview = Matrix::lookAt( camera.getEye().getX(), camera.getEye().getY(), camera.getEye().getZ(), camera.getCenter().getX(), camera.getCenter().getY(), camera.getCenter().getZ(), camera.getUp().getX(), camera.getUp().getY(), camera.getUp().getZ() );
+			Matrix translation = Matrix::translation( -28.0f, -30.0f, 0.0f );
+			modelview.multiply( translation );
+
+			this->background->render( projection, modelview );
+			this->blocks->render( projection, modelview );
 			
 			// Falling block
 			if( this->fallingBlock != NULL )
-				this->fallingBlock->render();
+				this->fallingBlock->render( projection, modelview );
 				
 			// Next block
-			glMultMatrixf( Matrix::translation( 35.0f, -42.0f, 0.0f ).get() );
+			Matrix translation2 = Matrix::translation( 35.0f, -42.0f, 0.0f );
+			modelview.multiply( translation2 );
+			
 			if( this->nextBlock != NULL )
-				this->nextBlock->render();
+				this->nextBlock->render( projection, modelview );
 			
 			// User Interface
 			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 80 ), "Score", 1.0f );
@@ -298,6 +284,58 @@ namespace blockgame
 			Screen::get()->render();
 			this->lastDrawTicks = ticks;
 		}
+	}
+	
+	void PlayScene::moveLeft()
+	{
+		// Move the falling block on the left
+		if( this->fallingBlock != NULL )
+		{
+			this->fallingBlock->moveBy( -1.0f, 0.0f );
+			
+			if( this->fallingBlock->isInCollision( this->blocks ) )
+				this->fallingBlock->moveBy( 1.0f, 0.0f );
+			else
+				this->fallingBlock->correctPosition( this->blocks->getWidth(), this->blocks->getHeight() );
+		}
+	}
+	
+	void PlayScene::moveRight()
+	{
+		// Move the falling block on the right
+		if( this->fallingBlock != NULL )
+		{
+			this->fallingBlock->moveBy( 1.0f, 0.0f );
+			
+			if( this->fallingBlock->isInCollision( this->blocks ) )
+				this->fallingBlock->moveBy( -1.0f, 0.0f );
+			else
+				this->fallingBlock->correctPosition( this->blocks->getWidth(), this->blocks->getHeight() );
+		}
+	}
+	
+	void PlayScene::moveDown()
+	{
+		// Drop the falling block
+		this->updateScore();
+		
+		while( !this->fallingBlock->isAtGround() && !this->fallingBlock->isInCollision( this->blocks ) )
+			this->fallingBlock->moveBy( 0.0f, -1.0f );
+		
+		this->fallingBlock->moveBy( 0.0f, 1.0f );
+		this->switchBlocks();
+	}
+	
+	void PlayScene::rotate()
+	{
+		// Rotate the falling block
+		this->fallingBlock->rotate();
+		
+		// Impossible rotation
+		if( this->fallingBlock->isInCollision( this->blocks ) )
+			this->fallingBlock->rotate( true );
+		
+		this->fallingBlock->correctPosition( this->blocks->getWidth(), this->blocks->getHeight() );
 	}
 }
 

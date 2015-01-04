@@ -3,6 +3,7 @@
 
 #include <opengl/OpenGL.h>
 #include <opengl/Color.h>
+#include <opengl/Matrix.h>
 #include <opengl/Program.h>
 #include <opengl/Texture2D.h>
 #include <opengl/ArrayBufferObject.h>
@@ -33,7 +34,7 @@ namespace blockgame
 			Point2D& getPosition();
 			
 			void prepareRendering( vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices ) const;
-			static void renderBlocks( vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices );
+			static void renderBlocks( Matrix& projection, Matrix& modelview, vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices );
 	};
 }
 

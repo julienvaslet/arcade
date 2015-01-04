@@ -12,7 +12,7 @@ namespace controller
 	map<SDL_JoystickID, Controller *> Controller::controllers;
 	map<string, Mapping *> Controller::mappings;
 	
-	Controller::Controller( SDL_Joystick * joystick, const string& mapping ) : joystick(joystick), id(0), mapping(NULL)
+	Controller::Controller( SDL_Joystick * joystick, const string& mapping ) : joystick(joystick), id(0), mapping(NULL), player(NULL)
 	{
 		this->id = SDL_JoystickInstanceID( this->joystick );
 		
@@ -178,11 +178,28 @@ namespace controller
 		return Controller::controllers.size();
 	}
 	
+	Controller * Controller::getFreeController()
+	{
+		Controller * controller = NULL;
+		
+		for( map<SDL_JoystickID, Controller *>::iterator it = Controller::controllers.begin() ; it != Controller::controllers.end() ; it++ )
+		{
+			if( it->second != NULL && it->second->player == NULL )
+			{
+				controller = it->second;
+				break;
+			}
+		}
+		
+		return controller;
+	}
+	
 	void Controller::tickEvent( unsigned int timestamp )
 	{
 		for( map<SDL_JoystickID, Controller *>::iterator it = Controller::controllers.begin() ; it != Controller::controllers.end() ; it++ )
 		{
-			// TODO: Send ( Mapping::NoButton, Mapping::Pushed, timestamp ) to played (tbd)
+			if( it->second != NULL && it->second->player != NULL )
+				it->second->player->handleEvent( Mapping::NoButton, Mapping::Pushed, timestamp );
 		}
 	}
 	
@@ -239,13 +256,10 @@ namespace controller
 	
 	void Controller::updateState( Mapping::Button button, short int value, unsigned int timestamp )
 	{
-		// TODO: Send event to player class (tbd)
+		if( this->player != NULL )
+			this->player->handleEvent( button, value, timestamp );
 
 		this->states[button] = make_pair( value, timestamp );
-		
-		#ifdef DEBUG0
-		Logger::get() << "[Controller#" << this->id << "] Button " << button << " has state " << static_cast<int>( value ) << " @ " << timestamp << "." << Logger::endl;
-		#endif
 	}
 	
 	short int Controller::getState( Mapping::Button button )
@@ -268,6 +282,22 @@ namespace controller
 			timestamp = it->second.second;
 		
 		return timestamp;
+	}
+	
+	void Controller::setPlayer( Player * player )
+	{
+		if( this->player != player )
+		{
+			if( this->player != NULL )
+				this->player->setController( NULL );
+		
+			this->player = player;
+		}
+	}
+	
+	Player * Controller::getPlayer()
+	{
+		return this->player;
 	}
 }
 

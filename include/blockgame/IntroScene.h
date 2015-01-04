@@ -24,6 +24,8 @@ namespace blockgame
 			virtual void handleEvent( SDL_Event * event );
 			virtual void live( unsigned int ticks );
 			virtual void render( unsigned int ticks );
+			
+			void endScene();
 	};
 }
 
