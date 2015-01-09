@@ -1,4 +1,5 @@
 #include <blockgame/PlaySceneEventHandler.h>
+#include <iostream>
 
 namespace blockgame
 {
@@ -22,6 +23,21 @@ namespace blockgame
 				case Mapping::NoButton:
 				{
 					// Tick event
+					unsigned int stateTimestamp = controller->getStateTimestamp( Mapping::HorizontalAxis );
+					short int horizontalAxis = controller->getState( Mapping::HorizontalAxis );
+					
+					if( timestamp - stateTimestamp > 100 )
+					{
+						if( horizontalAxis >= Mapping::Pushed )
+						{
+							this->scene->moveRight();
+						}
+						else if( horizontalAxis <= Mapping::ReversePushed )
+						{
+							this->scene->moveLeft();
+						}
+					}
+					
 					break;
 				}
 				
@@ -43,14 +59,21 @@ namespace blockgame
 						
 					break;
 				}
-					
-				case Mapping::NorthButton:
-				case Mapping::EastButton:
-				case Mapping::SouthButton:
+				
+				case Mapping::LeftTrigger:
 				case Mapping::WestButton:
 				{
-					if( value == Mapping::Released )
-						this->scene->rotate();
+					if( value == Mapping::Pushed )
+						this->scene->rotate( false );
+						
+					break;
+				}
+				
+				case Mapping::RightTrigger:
+				case Mapping::EastButton:
+				{
+					if( value == Mapping::Pushed )
+						this->scene->rotate( true );
 						
 					break;
 				}

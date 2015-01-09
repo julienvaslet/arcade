@@ -30,7 +30,7 @@ using namespace audio::instrument;
 
 namespace blockgame
 {
-	PlayScene::PlayScene() : Scene(), lastDrawTicks(0), lastBlockMove(0), level(1), lines(0), score(0), blocks(NULL), background(NULL), fallingBlock(NULL), nextBlock(NULL)
+	PlayScene::PlayScene() : Scene(), lastDrawTicks(0), lastBlockMove(0), lastTickEvent(0), level(1), lines(0), score(0), blocks(NULL), background(NULL), fallingBlock(NULL), nextBlock(NULL)
 	{
 		Player * player = Player::get( "Player" );
 		
@@ -239,6 +239,12 @@ namespace blockgame
 				this->lastBlockMove = ticks;
 			}
 		}
+		
+		if( ticks - this->lastTickEvent > 100 )
+		{
+			Controller::tickEvent( ticks );
+			this->lastTickEvent = ticks;
+		}
 	}
 	
 	void PlayScene::render( unsigned int ticks )
@@ -326,14 +332,14 @@ namespace blockgame
 		this->switchBlocks();
 	}
 	
-	void PlayScene::rotate()
+	void PlayScene::rotate( bool clockwise )
 	{
 		// Rotate the falling block
-		this->fallingBlock->rotate();
+		this->fallingBlock->rotate( clockwise );
 		
 		// Impossible rotation
 		if( this->fallingBlock->isInCollision( this->blocks ) )
-			this->fallingBlock->rotate( true );
+			this->fallingBlock->rotate( !clockwise );
 		
 		this->fallingBlock->correctPosition( this->blocks->getWidth(), this->blocks->getHeight() );
 	}

@@ -19,6 +19,7 @@ namespace blockgame
 			// Render & life ticks
 			unsigned int lastDrawTicks;
 			unsigned int lastBlockMove;
+			unsigned int lastTickEvent;
 			
 			// Game rules
 			unsigned int level;
@@ -54,7 +55,7 @@ namespace blockgame
 			void moveLeft();
 			void moveRight();
 			void moveDown();
-			void rotate();
+			void rotate( bool clockwise );
 	};
 }
 
