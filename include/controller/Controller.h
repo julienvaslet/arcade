@@ -47,8 +47,10 @@ namespace controller
 			static void handleEvent( const SDL_Event * event );
 			static unsigned int getControllersCount();
 			static Controller * getFreeController();
+			static Controller * get( SDL_JoystickID id );
 			
 			unsigned int getId() const;
+			const char * getName() const;
 			short int getState( Mapping::Button button );
 			unsigned int getStateTimestamp( Mapping::Button button );
 			

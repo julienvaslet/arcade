@@ -72,7 +72,6 @@ int main( int argc, char ** argv )
 		currentScene = nextScene;
 	}
 	
-	
 	Player::destroy();
 	Controller::destroy();
 	Font::destroy();

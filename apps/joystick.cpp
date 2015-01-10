@@ -1,16 +1,13 @@
 #include <SDL2/SDL.h>
 
 #include <opengl/Screen.h>
-#include <tools/logger/Stdout.h>
-#include <opengl/Camera.h>
-#include <opengl/ArrayBufferObject.h>
-#include <opengl/ElementArrayBufferObject.h>
-#include <opengl/Point3D.h>
-#include <opengl/Color.h>
-#include <opengl/Matrix.h>
-#include <opengl/Program.h>
+#include <opengl/Point2D.h>
+#include <opengl/BitmapFont.h>
 
 #include <controller/Controller.h>
+#include <tools/logger/Stdout.h>
+
+#include <sstream>
 
 using namespace opengl;
 using namespace tools::logger;
@@ -20,7 +17,6 @@ int main( int argc, char ** argv )
 {
 	// Initialize standard-output logger
 	new Stdout( "stdout", true );
-	bool running = true;
 	
 	if( !Screen::initialize() )
 	{
@@ -28,39 +24,7 @@ int main( int argc, char ** argv )
 		return 1;
 	}
 	
-	Program * program = new Program();
-	program->loadVertexShaderFile( "data/shaders/vertex.es.vs" );
-	program->loadFragmentShaderFile( "data/shaders/fragment.es.fs" );
-	program->link( true );
-	program->use( true );
-	
-	vector<Point3D> m_points;
-	m_points.push_back( Point3D( -1.0f, 0.0f, 0.0f ) );
-	m_points.push_back( Point3D( 1.0f, 0.0f, 0.0f ) );
-	m_points.push_back( Point3D( 0.0f, 1.0f, 0.0f ) );
-	
-	vector<unsigned short int> m_indices;
-	m_indices.push_back( 0 );
-	m_indices.push_back( 1 );
-	m_indices.push_back( 2 );
-	
-	vector<Color> m_colors;
-	m_colors.push_back( Color( "ff0000" ) );
-	m_colors.push_back( Color( "ff0000" ) );
-	m_colors.push_back( Color( "ff0000" ) );
-	
-	ArrayBufferObject * vbo = new ArrayBufferObject();
-	vbo->setData( m_points );
-
-	ArrayBufferObject * cbo = new ArrayBufferObject();
-	cbo->setData( m_colors );
-
-	ElementArrayBufferObject * ibo = new ElementArrayBufferObject();
-	ibo->setData( m_indices );
-	
-	Camera camera;
-	camera.getEye().moveTo( 0.0f, 0.0f, 4.0f );
-	camera.getCenter().moveTo( 0.0f, 0.0f, 0.0f );
+	new BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
 	
 	// Load joysticks
 	Controller::open( "Joystick1" );
@@ -69,13 +33,22 @@ int main( int argc, char ** argv )
 	if( Controller::getControllersCount() == 0 )
 		Controller::scan();
 	
+	bool running = true;
 	SDL_Event lastEvent;
 	unsigned int lastDrawTicks = 0;
+	Controller * controller = NULL;
+	stringstream text;
 	
-	Matrix projection = Matrix::perspective( 45.0f, 800.0f / 600.0f, 1.0f, 100.0f );
-	Matrix modelview = Matrix::lookAt( camera.getEye().getX(), camera.getEye().getY(), camera.getEye().getZ(), camera.getCenter().getX(), camera.getCenter().getY(), camera.getCenter().getZ(), camera.getUp().getX(), camera.getUp().getY(), camera.getUp().getZ() );
-	Matrix translation = Matrix::translation( camera.getCenter().getX(), camera.getCenter().getY(), camera.getCenter().getZ() );
-	modelview.multiply( translation );
+	unsigned int currentButton = 0;
+	vector<string> buttons;
+	buttons.push_back( "NorthButton" );
+	buttons.push_back( "EastButton" );
+	buttons.push_back( "SouthButton" );
+	buttons.push_back( "WestButton" );
+	buttons.push_back( "HorizontalAxis" );
+	buttons.push_back( "VerticalAxis" );
+	
+	map<string, unsigned int> buttonValues;
 	
 	while( running )
 	{
@@ -91,81 +64,62 @@ int main( int argc, char ** argv )
 				
 				case SDL_JOYBUTTONDOWN:
 				{
-					if( lastEvent.jbutton.state == SDL_PRESSED )
-					{
-						m_colors.clear();
-				
-						switch( lastEvent.jbutton.button )
-						{
-							case 2:
-							{
-								for( int i = 0 ; i < 3 ; i++ )
-									m_colors.push_back( Color( "ffff00" ) );
-
-								break;
-							}
-							
-							case 1:
-							{
-								for( int i = 0 ; i < 3 ; i++ )
-									m_colors.push_back( Color( "888888" ) );
-
-								break;
-							}
-							
-							case 0:
-							{
-								for( int i = 0 ; i < 3 ; i++ )
-									m_colors.push_back( Color( "0000ff" ) );
-
-								break;
-							}
-							
-							default:
-							case 3:
-							{
-								for( int i = 0 ; i < 3 ; i++ )
-									m_colors.push_back( Color( "ff0000" ) );
-
-								break;
-							}
-						}
+					if( controller == NULL )
+						controller = Controller::get( lastEvent.jbutton.which );
 						
-						cbo->setData( m_colors );
+					else if( static_cast<unsigned int>( lastEvent.jbutton.which ) == controller->getId() )
+					{
+						if( currentButton < buttons.size() )
+						{
+							buttonValues[buttons[currentButton]] = lastEvent.jbutton.button;
+							currentButton++;
+						}
+						else
+						{
+							// End.
+							running = false;
+						}
 					}
 					
-					//break;
+					break;
 				}
 				
-				case SDL_JOYBUTTONUP:
 				case SDL_JOYAXISMOTION:
+				{
+					if( controller == NULL )
+						controller = Controller::get( lastEvent.jaxis.which );
+
+					else if( static_cast<unsigned int>( lastEvent.jaxis.which ) == controller->getId() )
+					{
+						if( lastEvent.jaxis.value >= Mapping::Pushed || lastEvent.jaxis.value <= Mapping::ReversePushed )
+						{
+							if( currentButton == 0 || buttonValues[buttons[currentButton - 1]] != lastEvent.jaxis.axis )
+							{
+								if( currentButton < buttons.size() )
+								{
+									buttonValues[buttons[currentButton]] = lastEvent.jaxis.axis;
+									currentButton++;
+								}
+								else
+								{
+									// End.
+									running = false;
+								}
+							}
+						}
+					}
+					
+					break;
+				}
+				
 				case SDL_JOYDEVICEREMOVED:
 				{
-					Controller::handleEvent( &lastEvent );
-					
 					break;
 				}
 				
 				case SDL_JOYDEVICEADDED:
 				{
 					Controller::scan();
-					break;
-				}
-				
-				case SDL_KEYDOWN:
-				{
-		            if( lastEvent.key.keysym.sym == SDLK_ESCAPE )
-						running = false;
-					else if( lastEvent.key.keysym.sym == SDLK_SPACE )
-					{
-						m_colors.clear();
-						
-						for( int i = 0 ; i < 3 ; i++ )
-							m_colors.push_back( Color( "ffff00" ) );
-							
-						cbo->setData( m_colors );
-					}
-						
 					break;
 				}
 			}
@@ -176,13 +130,33 @@ int main( int argc, char ** argv )
 		if( ticks - lastDrawTicks > 15 )
 		{
 			Screen::get()->clear();
+			Point2D origin( 0.0f, 600.0f - 32.0f );
+			text.str( "" );
 			
-			program->sendUniform( "projection_matrix", projection, false );
-			program->sendUniform( "modelview_matrix", modelview, false );
-			program->sendVertexPointer( "a_Vertex", vbo );
-			program->sendColorPointer( "a_Color", cbo );
-	
-			ibo->draw();
+			if( controller == NULL )
+				text << "Press any button to identify controller";
+			else
+			{
+				text << "[" << controller->getName() << "]\n";
+				
+				for( unsigned int i = 0 ; i < buttons.size() ; i++ )
+				{
+					text << buttons[i] << ": ";
+					
+					if( i < currentButton )
+						text << buttonValues[buttons[i]] << "\n";
+					else
+					{
+						text << "?";
+						break;
+					}
+				}
+				
+				if( currentButton >= buttons.size() )
+					text << "\nPress any button to quit.";
+			}
+			
+			Font::get("bitmap")->render( origin, text.str() );
 			
 			Screen::get()->render();
 			
@@ -190,12 +164,18 @@ int main( int argc, char ** argv )
 		}
 	}
 	
-	glUseProgram( 0 );
-	delete program;
-	delete vbo;
-	delete cbo;
-	delete ibo;
-
+	// Print to logger
+	Logger::get() << "[" << controller->getName() << "]" << Logger::endl;
+				
+	for( unsigned int i = 0 ; i < buttons.size() ; i++ )
+	{
+		if( i < currentButton )
+			Logger::get() << buttons[i] << "=" << buttonValues[buttons[i]] << Logger::endl;
+		else
+			break;
+	}
+	
+	Font::destroy();
 	Controller::destroy();
 	Screen::destroy();
 	Logger::destroy();

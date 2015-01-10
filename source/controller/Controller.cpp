@@ -86,6 +86,11 @@ namespace controller
 		return static_cast<unsigned int>( this->id );
 	}
 	
+	const char * Controller::getName() const
+	{
+		return SDL_JoystickName( this->joystick );
+	}
+	
 	void Controller::scan()
 	{
 		#ifdef DEBUG0
@@ -190,6 +195,18 @@ namespace controller
 				break;
 			}
 		}
+		
+		return controller;
+	}
+	
+	Controller * Controller::get( SDL_JoystickID id )
+	{
+		Controller * controller = NULL;
+		
+		map<SDL_JoystickID, Controller *>::iterator it = Controller::controllers.find( id );
+		
+		if( it != Controller::controllers.end() )
+			controller = it->second;
 		
 		return controller;
 	}
