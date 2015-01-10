@@ -130,7 +130,7 @@ int main( int argc, char ** argv )
 		if( ticks - lastDrawTicks > 15 )
 		{
 			Screen::get()->clear();
-			Point2D origin( 0.0f, 600.0f - 32.0f );
+			Point2D origin( 0.0f, 0.0f );
 			text.str( "" );
 			
 			if( controller == NULL )
@@ -164,15 +164,18 @@ int main( int argc, char ** argv )
 		}
 	}
 	
-	// Print to logger
-	Logger::get() << "[" << controller->getName() << "]" << Logger::endl;
-				
-	for( unsigned int i = 0 ; i < buttons.size() ; i++ )
+	if( controller != NULL )
 	{
-		if( i < currentButton )
-			Logger::get() << buttons[i] << "=" << buttonValues[buttons[i]] << Logger::endl;
-		else
-			break;
+		// Print to logger
+		Logger::get() << "[" << controller->getName() << "]" << Logger::endl;
+				
+		for( unsigned int i = 0 ; i < buttons.size() ; i++ )
+		{
+			if( i < currentButton )
+				Logger::get() << buttons[i] << "=" << buttonValues[buttons[i]] << Logger::endl;
+			else
+				break;
+		}
 	}
 	
 	Font::destroy();

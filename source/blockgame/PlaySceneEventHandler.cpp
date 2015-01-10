@@ -28,11 +28,11 @@ namespace blockgame
 					
 					if( timestamp - stateTimestamp > 100 )
 					{
-						if( horizontalAxis >= Mapping::Pushed )
+						if( horizontalAxis == Mapping::Pushed )
 						{
 							this->scene->moveRight();
 						}
-						else if( horizontalAxis <= Mapping::ReversePushed )
+						else if( horizontalAxis == Mapping::ReversePushed )
 						{
 							this->scene->moveLeft();
 						}

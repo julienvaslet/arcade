@@ -251,7 +251,16 @@ namespace controller
 				it = Controller::controllers.find( event->jbutton.which );
 				
 				if( it != Controller::controllers.end() && it->second->mapping != NULL )
-					it->second->updateState( it->second->mapping->getButtonFromAxis( event->jaxis.axis ), event->jaxis.value, event->jaxis.timestamp );
+				{
+					int value = Mapping::Released;
+					
+					if( event->jaxis.value >= Mapping::Pushed )
+						value = Mapping::Pushed;
+					else if( event->jaxis.value <= Mapping::ReversePushed )
+						value = Mapping::ReversePushed;
+					
+					it->second->updateState( it->second->mapping->getButtonFromAxis( event->jaxis.axis ), value, event->jaxis.timestamp );
+				}
 				
 				break;
 			}
