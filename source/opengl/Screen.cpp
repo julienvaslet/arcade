@@ -137,7 +137,7 @@ namespace opengl
 			0,
 			width,
 			height,
-			SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL
+			SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_OPENGL
 		);
 		
 		if( this->window == NULL )
@@ -298,7 +298,7 @@ namespace opengl
 		return success;
 	}
 		
-	bool Screen::initialize( int width, int height, int majorVersion, int minorVersion )
+	bool Screen::initialize( int width, int height, bool autoResize, int majorVersion, int minorVersion )
 	{
 		bool success = true;
 		
@@ -321,9 +321,35 @@ namespace opengl
 		
 		Screen * screen = new Screen();
 		
-		// TODO: resize the viewport if larger
+		if( autoResize )
+		{
+			double widthRatio = static_cast<double>( displayWidth ) / static_cast<double>( width );
+			double heightRatio = static_cast<double>( displayHeight ) / static_cast<double>( height );
+			
+			#ifdef DEBUG0
+			Logger::get() << "[Screen] Original window size: " << width << "x" << height << "." << Logger::endl;
+			#endif
+			
+			if( widthRatio < heightRatio )
+			{
+				width = displayWidth;
+				height = ceil( height * widthRatio );
+			}
+			else
+			{
+				width = ceil( width * heightRatio );
+				height = displayHeight;
+			}
+			
+			#ifdef DEBUG0
+			Logger::get() << "[Screen] Auto-resized window size: " << width << "x" << height << "." << Logger::endl;
+			#endif
+		}
+		
 		screen->width = width;
 		screen->height = height;
+		
+		// Centering
 		screen->x = static_cast<int>( (displayWidth - width) / 2.0 );
 		screen->y = static_cast<int>( (displayHeight - height) / 2.0 );
 

@@ -236,8 +236,8 @@ int main( int argc, char ** argv )
 		for( vector<VirtualDevice *>::iterator it = devices.begin() ; it != devices.end() ; it++ )
 			(*it)->flush();
 		
-		// Wait 100 ms
-		usleep( 100000 );
+		// Wait 50 ms
+		usleep( 50000 );
 	}
 	
 	for( vector<VirtualDevice *>::iterator it = devices.begin() ; it != devices.end() ; it++ )

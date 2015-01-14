@@ -11,7 +11,11 @@ using namespace std;
 namespace opengl
 {
 	class Matrix
-	{	
+	{
+		public:
+			static Matrix projection;
+			static Matrix modelview;
+			
 		protected:
 			float matrix[16];
 			

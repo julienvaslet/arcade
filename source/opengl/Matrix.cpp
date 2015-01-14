@@ -8,6 +8,9 @@
 
 namespace opengl
 {
+	Matrix Matrix::projection = Matrix::identity();
+	Matrix Matrix::modelview = Matrix::identity();
+	
 	Matrix::Matrix()
 	{
 		for( int i = 0 ; i < 16 ; i++ )
