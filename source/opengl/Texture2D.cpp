@@ -16,6 +16,16 @@ namespace opengl
 	{
 	}
 	
+	unsigned int Texture2D::getWidth()
+	{
+		return this->width;
+	}
+	
+	unsigned int Texture2D::getHeight()
+	{
+		return this->height;
+	}
+	
 	void Texture2D::bind( unsigned int unit ) const
 	{
 		glActiveTexture( GL_TEXTURE0 + unit );
@@ -34,6 +44,9 @@ namespace opengl
 		this->bind();
 		glTexImage2D( GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data );
 		CheckOpenGLError(glTexImage2D);
+		
+		this->width = width;
+		this->height = height;
 	}
 	
 	void Texture2D::setWrapMode( GLenum mode )

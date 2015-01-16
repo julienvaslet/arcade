@@ -4,6 +4,9 @@
 #include <opengl/Point2D.h>
 #include <opengl/Point3D.h>
 
+#include <vector>
+using namespace std;
+
 namespace opengl
 {
 	class Rectangle
@@ -28,6 +31,8 @@ namespace opengl
 			void setHeight( unsigned int height );
 			void resize( unsigned int width, unsigned int height );
 			void resizeBy( int deltaWidth, unsigned int deltaHeight );
+			
+			void prepareRendering( vector<Point3D>& vertices, vector<unsigned short int>& indices, bool clockwise = true ) const;
 	};
 }
 

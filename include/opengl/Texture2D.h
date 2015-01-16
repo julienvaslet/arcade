@@ -13,10 +13,15 @@ namespace opengl
 	class Texture2D : public Texture
 	{	
 		protected:
+			unsigned int width;
+			unsigned int height;
 			
 		public:
 			Texture2D();
 			virtual ~Texture2D();
+			
+			unsigned int getWidth();
+			unsigned int getHeight();
 			
 			virtual void bind( unsigned int unit = 0 ) const;
 			virtual void setData( const Image& image );

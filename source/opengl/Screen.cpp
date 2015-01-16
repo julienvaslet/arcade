@@ -126,10 +126,11 @@ namespace opengl
 		this->window.width = width;
 		this->window.height = height;
 		
-		
 		vc_dispmanx_update_submit_sync( dispmanUpdate );
 		
 		#else
+		
+		// BUG: Multiple display is not correctly handled
 		
 		this->window = SDL_CreateWindow(
 			NULL,
@@ -137,7 +138,7 @@ namespace opengl
 			0,
 			width,
 			height,
-			SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_OPENGL
+			SDL_WINDOW_BORDERLESS | SDL_WINDOW_OPENGL
 		);
 		
 		if( this->window == NULL )

@@ -1,8 +1,9 @@
 #include <SDL2/SDL.h>
 
 #include <opengl/Screen.h>
-#include <opengl/ColoredRectangle.h>
+#include <opengl/TexturedRectangle.h>
 #include <opengl/Matrix.h>
+#include <game/Resource.h>
 
 #include <controller/Controller.h>
 #include <tools/logger/Stdout.h>
@@ -28,10 +29,13 @@ int main( int argc, char ** argv )
 	// Set the orthogonal origin at the top-left corner
 	Matrix::projection = Matrix::ortho( 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, -1, 1 );
 	
-	ColoredRectangle * rectangle = new ColoredRectangle( 50, 50 );
-	rectangle->getColor().setColor( "ff0000" );
+	// Resources
+	Resource::loadTexture2D( "texture0", "data/blockgame/block.tga" );
+	
+	TexturedRectangle * rectangle = new TexturedRectangle( 50, 50, "texture0" );
 	rectangle->getOrigin().moveTo( 50.0f, 50.0f, 0.0f );
 	rectangle->getAnchor().moveTo( 25.0f, 25.0f );
+	rectangle->getTile()->setView( 0, 0, 128, 128 );
 	
 	// Load joysticks
 	/*Controller::open( "Joystick1" );
@@ -41,10 +45,10 @@ int main( int argc, char ** argv )
 		Controller::scan();*/
 		
 	vector<Point3D> vertices;
-	vector<Color> colors;
+	vector<Point2D> textureCoordinates;
 	vector<unsigned short int> indices;
 	
-	rectangle->prepareRendering( vertices, colors, indices );
+	rectangle->prepareRendering( vertices, textureCoordinates, indices );
 	
 	bool running = true;
 	SDL_Event lastEvent;
@@ -84,7 +88,7 @@ int main( int argc, char ** argv )
 		{
 			Screen::get()->clear();
 			
-			ColoredRectangle::render( vertices, colors, indices );
+			TexturedRectangle::render( vertices, textureCoordinates, indices, rectangle->getTile()->getTexture(), 0 );
 			
 			Screen::get()->render();
 			
@@ -93,6 +97,7 @@ int main( int argc, char ** argv )
 	}
 	
 	delete rectangle;
+	Resource::destroy();
 	Controller::destroy();
 	Screen::destroy();
 	Logger::destroy();

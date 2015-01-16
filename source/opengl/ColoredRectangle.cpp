@@ -107,27 +107,13 @@ namespace opengl
 	
 	void ColoredRectangle::prepareRendering( vector<Point3D>& vertices, vector<Color>& colors, vector<unsigned short int>& indices ) const
 	{
-		unsigned short int j = static_cast<unsigned short int>( vertices.size() );
-		 
-		// Vertices
-		vertices.push_back( Point3D( this->origin.getX() - this->anchor.getX(), this->origin.getY() - this->anchor.getY(), this->origin.getZ() ) );
-		vertices.push_back( Point3D( this->origin.getX() - this->anchor.getX() + width, this->origin.getY() - this->anchor.getY(), this->origin.getZ() ) );
-		vertices.push_back( Point3D( this->origin.getX() - this->anchor.getX() + width, this->origin.getY() - this->anchor.getY() + height, this->origin.getZ() ) );
-		vertices.push_back( Point3D( this->origin.getX() - this->anchor.getX(), this->origin.getY() - this->anchor.getY() + height, this->origin.getZ() ) );
-
+		Rectangle::prepareRendering( vertices, indices, true );
+		
 		// Colors
 		colors.push_back( this->color );
 		colors.push_back( this->color );
 		colors.push_back( this->color );
 		colors.push_back( this->color );
-
-		// Indices
-		indices.push_back( j );
-		indices.push_back( j + 1 );
-		indices.push_back( j + 2 );
-		indices.push_back( j );
-		indices.push_back( j + 2 );
-		indices.push_back( j + 3 );
 	}
 	
 	void ColoredRectangle::render( vector<Point3D>& vertices, vector<Color>& colors, vector<unsigned short int>& indices )

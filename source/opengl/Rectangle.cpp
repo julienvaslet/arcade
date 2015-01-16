@@ -59,5 +59,36 @@ namespace opengl
 		this->width += deltaWidth;
 		this->height += deltaHeight;
 	}
+	
+	void Rectangle::prepareRendering( vector<Point3D>& vertices, vector<unsigned short int>& indices, bool clockwise ) const
+	{
+		unsigned short int j = static_cast<unsigned short int>( vertices.size() );
+		 
+		// Vertices
+		vertices.push_back( Point3D( this->origin.getX() - this->anchor.getX(), this->origin.getY() - this->anchor.getY(), this->origin.getZ() ) );
+		vertices.push_back( Point3D( this->origin.getX() - this->anchor.getX() + width, this->origin.getY() - this->anchor.getY(), this->origin.getZ() ) );
+		vertices.push_back( Point3D( this->origin.getX() - this->anchor.getX() + width, this->origin.getY() - this->anchor.getY() + height, this->origin.getZ() ) );
+		vertices.push_back( Point3D( this->origin.getX() - this->anchor.getX(), this->origin.getY() - this->anchor.getY() + height, this->origin.getZ() ) );
+
+		// Indices		
+		if( clockwise )
+		{
+			indices.push_back( j );
+			indices.push_back( j + 1 );
+			indices.push_back( j + 2 );
+			indices.push_back( j );
+			indices.push_back( j + 2 );
+			indices.push_back( j + 3 );
+		}
+		else
+		{
+			indices.push_back( j );
+			indices.push_back( j + 3 );
+			indices.push_back( j + 2 );
+			indices.push_back( j );
+			indices.push_back( j + 2 );
+			indices.push_back( j + 1 );
+		}
+	}
 }
 

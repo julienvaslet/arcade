@@ -2,12 +2,13 @@
 #define __OPENGL_TEXTURE_H	1
 
 #include <opengl/OpenGL.h>
+#include <game/Resource.h>
 
 using namespace std;
 
 namespace opengl
 {
-	class Texture
+	class Texture : public game::Resource
 	{	
 		protected:
 			unsigned int id;
