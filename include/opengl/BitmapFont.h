@@ -3,7 +3,7 @@
 
 #include <opengl/Font.h>
 #include <opengl/Program.h>
-#include <opengl/Texture2D.h>
+#include <opengl/TexturedRectangle.h>
 #include <opengl/ArrayBufferObject.h>
 #include <opengl/ElementArrayBufferObject.h>
 
@@ -20,7 +20,7 @@ namespace opengl
 			ArrayBufferObject * vertices;
 			ArrayBufferObject * textureCoordinates;
 			ElementArrayBufferObject * indices;
-			Texture2D * texture;
+			TexturedRectangle * rectangle;
 			unsigned int charactersByLine;
 			unsigned int characterWidth;
 			unsigned int characterHeight;
