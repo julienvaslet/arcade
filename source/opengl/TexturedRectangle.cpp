@@ -8,66 +8,98 @@ namespace opengl
 	ArrayBufferObject * TexturedRectangle::textureCoordinates = NULL;
 	ElementArrayBufferObject * TexturedRectangle::indices = NULL;
 	
-	TexturedRectangle::TexturedRectangle() : Rectangle(), tile(NULL)
+	TexturedRectangle::TexturedRectangle() : Rectangle(), useGenericProgram(true), tile(NULL)
 	{
-		this->initializeRendering();
+		if( this->useGenericProgram )
+			this->initializeRendering();
 	}
 	
-	TexturedRectangle::TexturedRectangle( const TexturedRectangle& rectangle ) : Rectangle(rectangle), tile(NULL)
+	TexturedRectangle::TexturedRectangle( bool useGenericProgram ) : Rectangle(), useGenericProgram(useGenericProgram), tile(NULL)
 	{
-		this->initializeRendering();
+		if( this->useGenericProgram )
+			this->initializeRendering();
+	}
+	
+	TexturedRectangle::TexturedRectangle( const TexturedRectangle& rectangle ) : Rectangle(rectangle), useGenericProgram(rectangle.useGenericProgram), tile(NULL)
+	{
+		if( this->useGenericProgram )
+			this->initializeRendering();
+			
 		this->tile = new Tile( *(rectangle.tile) );
 	}
 	
-	TexturedRectangle::TexturedRectangle( const Rectangle& rectangle, const string& textureResource ) : Rectangle(rectangle), tile(NULL)
+	TexturedRectangle::TexturedRectangle( const Rectangle& rectangle, const string& textureResource, bool useGenericProgram ) : Rectangle(rectangle), useGenericProgram(useGenericProgram), tile(NULL)
 	{
-		this->initializeRendering();
+		if( this->useGenericProgram )
+			this->initializeRendering();
+			
 		this->tile = new Tile( textureResource );
 	}
 	
-	TexturedRectangle::TexturedRectangle( unsigned width, unsigned height ) : Rectangle(width,height), tile(NULL)
+	TexturedRectangle::TexturedRectangle( const Rectangle& rectangle, Texture2D * texture, bool useGenericProgram ) : Rectangle(rectangle), useGenericProgram(useGenericProgram), tile(NULL)
+	{
+		if( this->useGenericProgram )
+			this->initializeRendering();
+			
+		this->tile = new Tile( texture );
+	}
+	
+	TexturedRectangle::TexturedRectangle( unsigned width, unsigned height, bool useGenericProgram ) : Rectangle(width,height), useGenericProgram(useGenericProgram), tile(NULL)
 	{
 		this->initializeRendering();
 		this->tile = new Tile();
 	}
 	
-	TexturedRectangle::TexturedRectangle( unsigned width, unsigned height, const string& textureResource ) : Rectangle(width,height), tile(NULL)
+	TexturedRectangle::TexturedRectangle( unsigned width, unsigned height, const string& textureResource, bool useGenericProgram ) : Rectangle(width,height), useGenericProgram(useGenericProgram), tile(NULL)
 	{
-		this->initializeRendering();
+		if( this->useGenericProgram )
+			this->initializeRendering();
+			
 		this->tile = new Tile( textureResource );
+	}
+	
+	TexturedRectangle::TexturedRectangle( unsigned width, unsigned height, Texture2D * texture, bool useGenericProgram ) : Rectangle(width,height), useGenericProgram(useGenericProgram), tile(NULL)
+	{
+		if( this->useGenericProgram )
+			this->initializeRendering();
+			
+		this->tile = new Tile( texture );
 	}
 	
 	TexturedRectangle::~TexturedRectangle()
 	{
 		if( this->tile != NULL )
 			delete this->tile;
-		
-		TexturedRectangle::instances--;
-		
-		if( TexturedRectangle::instances == 0 )
+			
+		if( this->useGenericProgram )
 		{
-			if( TexturedRectangle::indices != NULL )
+			TexturedRectangle::instances--;
+		
+			if( TexturedRectangle::instances == 0 )
 			{
-				delete TexturedRectangle::indices;
-				TexturedRectangle::indices = NULL;
-			}
+				if( TexturedRectangle::indices != NULL )
+				{
+					delete TexturedRectangle::indices;
+					TexturedRectangle::indices = NULL;
+				}
 			
-			if( TexturedRectangle::textureCoordinates != NULL )
-			{
-				delete TexturedRectangle::textureCoordinates;
-				TexturedRectangle::textureCoordinates = NULL;
-			}
+				if( TexturedRectangle::textureCoordinates != NULL )
+				{
+					delete TexturedRectangle::textureCoordinates;
+					TexturedRectangle::textureCoordinates = NULL;
+				}
 			
-			if( TexturedRectangle::vertices != NULL )
-			{
-				delete TexturedRectangle::vertices;
-				TexturedRectangle::vertices = NULL;
-			}
+				if( TexturedRectangle::vertices != NULL )
+				{
+					delete TexturedRectangle::vertices;
+					TexturedRectangle::vertices = NULL;
+				}
 			
-			if( TexturedRectangle::program != NULL )
-			{
-				delete TexturedRectangle::program;
-				TexturedRectangle::program = NULL;
+				if( TexturedRectangle::program != NULL )
+				{
+					delete TexturedRectangle::program;
+					TexturedRectangle::program = NULL;
+				}
 			}
 		}
 	}

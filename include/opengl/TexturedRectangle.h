@@ -22,16 +22,20 @@ namespace opengl
 			static ArrayBufferObject * textureCoordinates;
 			static ElementArrayBufferObject * indices;
 			
+			bool useGenericProgram;
 			Tile * tile;
 			
 			void initializeRendering();
 		
 		public:
 			TexturedRectangle();
+			TexturedRectangle( bool useGenericProgram );
 			TexturedRectangle( const TexturedRectangle& rectangle );
-			TexturedRectangle( const Rectangle& rectangle, const string& textureResource );
-			TexturedRectangle( unsigned width, unsigned height );
-			TexturedRectangle( unsigned width, unsigned height, const string& textureResource );
+			TexturedRectangle( const Rectangle& rectangle, const string& textureResource, bool useGenericProgram = true );
+			TexturedRectangle( const Rectangle& rectangle, Texture2D * texture, bool useGenericProgram = true );
+			TexturedRectangle( unsigned width, unsigned height, bool useGenericProgram = true );
+			TexturedRectangle( unsigned width, unsigned height, const string& textureResource, bool useGenericProgram = true );
+			TexturedRectangle( unsigned width, unsigned height, Texture2D * texture, bool useGenericProgram = true );
 			virtual ~TexturedRectangle();
 			
 			Tile * getTile();

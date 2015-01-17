@@ -20,13 +20,19 @@ namespace opengl
 		this->texture = static_cast<Texture2D *>( Resource::get( textureResource ) );
 		
 		if( this->texture != NULL )
+		{
+			this->texture->use();
 			this->view.resize( this->texture->getWidth(), this->texture->getHeight() );
+		}
 	}
 	
 	Tile::Tile( Texture2D * texture ) : texture(texture), view()
 	{
 		if( this->texture != NULL )
+		{
+			this->texture->use();
 			this->view.resize( this->texture->getWidth(), this->texture->getHeight() );
+		}
 	}
 	
 	Tile::~Tile()

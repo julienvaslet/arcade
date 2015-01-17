@@ -26,8 +26,6 @@ namespace opengl
 			unsigned int characterHeight;
 			unsigned int marginWidth;
 			unsigned int marginHeight;
-			float relativeCharacterWidth;
-			float relativeCharacterHeight;
 			
 		public:
 			BitmapFont( const string& filename, unsigned int characterWidth, unsigned int characterHeight, unsigned int marginWidth = 0, unsigned int marginHeight = 0 );

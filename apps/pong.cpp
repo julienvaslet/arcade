@@ -4,6 +4,7 @@
 #include <opengl/TexturedRectangle.h>
 #include <opengl/Matrix.h>
 #include <game/Resource.h>
+#include <opengl/BitmapFont.h>
 
 #include <controller/Controller.h>
 #include <tools/logger/Stdout.h>
@@ -29,8 +30,7 @@ int main( int argc, char ** argv )
 	// Set the orthogonal origin at the top-left corner
 	Matrix::projection = Matrix::ortho( 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, -1, 1 );
 	
-	// Resources
-	Resource::loadTexture2D( "texture0", "data/blockgame/block.tga" );
+	new BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
 	
 	TexturedRectangle * rectangle = new TexturedRectangle( 50, 50, "texture0" );
 	rectangle->getOrigin().moveTo( 50.0f, 50.0f, 0.0f );
@@ -43,12 +43,6 @@ int main( int argc, char ** argv )
 	
 	if( Controller::getControllersCount() == 0 )
 		Controller::scan();*/
-		
-	vector<Point3D> vertices;
-	vector<Point2D> textureCoordinates;
-	vector<unsigned short int> indices;
-	
-	rectangle->prepareRendering( vertices, textureCoordinates, indices );
 	
 	bool running = true;
 	SDL_Event lastEvent;
@@ -57,7 +51,12 @@ int main( int argc, char ** argv )
 	unsigned int lastRotate = 0;
 	Matrix translation = Matrix::translation( rectangle->getOrigin().getX(), rectangle->getOrigin().getY(), rectangle->getOrigin().getZ() );
 	Matrix reverseTranslation = Matrix::translation( -1 * rectangle->getOrigin().getX(), -1 * rectangle->getOrigin().getY(), -1 *rectangle->getOrigin().getZ() );
-	Matrix rotate = Matrix::rotationZ( 1 );
+	Matrix rotate = Matrix::rotationZ( 2 );
+	
+	Point2D origin( 0.0f, 0.0f );
+	string text = "Abc";
+	Font::get("bitmap")->renderSize( origin, text, 1.0f );
+	origin.moveTo( (SCREEN_WIDTH - origin.getX()) / 2.0f, (SCREEN_HEIGHT - origin.getY()) / 2.0f );
 	
 	while( running )
 	{
@@ -74,8 +73,8 @@ int main( int argc, char ** argv )
 		}
 
 		unsigned int ticks = SDL_GetTicks();
-		
-		if( ticks - lastRotate > 5 )
+	
+		if( ticks - lastRotate > 15 )
 		{
 			Matrix::modelview.multiply( translation );
 			Matrix::modelview.multiply( rotate );
@@ -88,7 +87,7 @@ int main( int argc, char ** argv )
 		{
 			Screen::get()->clear();
 			
-			TexturedRectangle::render( vertices, textureCoordinates, indices, rectangle->getTile()->getTexture(), 0 );
+			Font::get("bitmap")->render( origin, text, 1.0f );
 			
 			Screen::get()->render();
 			
@@ -97,6 +96,7 @@ int main( int argc, char ** argv )
 	}
 	
 	delete rectangle;
+	Font::destroy();
 	Resource::destroy();
 	Controller::destroy();
 	Screen::destroy();

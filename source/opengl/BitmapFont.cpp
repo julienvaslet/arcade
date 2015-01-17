@@ -1,8 +1,11 @@
 #include <opengl/BitmapFont.h>
-#include <opengl/Screen.h>
-#include <data/image/Image.h>
+#include <opengl/TexturedRectangle.h>
+#include <game/Resource.h>
+#include <sstream>
 
+using namespace game;
 using namespace data::image;
+using namespace std;
 
 #ifdef DEBUG0
 #include <tools/logger/Logger.h>
@@ -14,7 +17,7 @@ namespace opengl
 	Program * BitmapFont::program = NULL;
 	unsigned int BitmapFont::instances = 0;
 	
-	BitmapFont::BitmapFont( const string& filename, unsigned int characterWidth, unsigned int characterHeight, unsigned int marginWidth, unsigned marginHeight ) : Font(BitmapFont::getFontNameFromPath(filename)), vertices(NULL), textureCoordinates(NULL), indices(NULL), texture(NULL), charactersByLine(0), characterWidth(characterWidth), characterHeight(characterHeight), marginWidth(marginWidth), marginHeight(marginHeight), relativeCharacterWidth(0.0f), relativeCharacterHeight(0.0f)
+	BitmapFont::BitmapFont( const string& filename, unsigned int characterWidth, unsigned int characterHeight, unsigned int marginWidth, unsigned marginHeight ) : Font(BitmapFont::getFontNameFromPath(filename)), vertices(NULL), textureCoordinates(NULL), indices(NULL), texture(NULL), charactersByLine(0), characterWidth(characterWidth), characterHeight(characterHeight), marginWidth(marginWidth), marginHeight(marginHeight)
 	{
 		BitmapFont::instances++;
 		
@@ -35,24 +38,19 @@ namespace opengl
 		this->textureCoordinates = new ArrayBufferObject();
 		this->indices = new ElementArrayBufferObject();
 		
-		this->texture = new Texture2D();
-		
-		#ifdef DEBUG0
-		Logger::get() << "[BitmapFont#" << BitmapFont::getFontNameFromPath( filename ) << "] Loading file \"" << filename << "\"..." << Logger::endl;
-		#endif
-		
-		Image * image = Image::load( filename.c_str() );
+		stringstream sFontResourceName;
+		sFontResourceName << "font." << BitmapFont::getFontNameFromPath( filename );
+		string fontResourceName = sFontResourceName.str();
+				
+		Resource::loadTexture2D( fontResourceName, filename );
+		this->texture = static_cast<Texture2D *>( Resource::get( fontResourceName ) );
 	
-		if( image != NULL )
-		{	
-			this->charactersByLine = image->getWidth() / this->characterWidth;
-			this->relativeCharacterWidth = static_cast<float>( this->characterWidth ) / static_cast<float>( image->getWidth() );
-			this->relativeCharacterHeight = static_cast<float>( this->characterHeight ) / static_cast<float>( image->getHeight() );
+		if( this->texture != NULL )
+		{
+			this->texture->use();
 			
-			this->texture->setData( *image );
+			this->charactersByLine = this->texture->getWidth() / this->characterWidth;
 			this->texture->setFiltering( GL_LINEAR, GL_LINEAR );
-
-			delete image;
 		}
 		#ifdef DEBUG1
 		else
@@ -74,7 +72,7 @@ namespace opengl
 			delete this->indices;
 			
 		if( this->texture != NULL )
-			delete this->texture;
+			this->texture->free();
 		
 		BitmapFont::instances--;
 		
@@ -89,68 +87,47 @@ namespace opengl
 	{
 		if( size == 0.0f ) size = 1.0f;
 		
-		vector<Point2D> m_points;
-		vector<Point2D> m_texcoords;
-		vector<unsigned short int> m_indices;
-
-		Point2D point(origin);
-		
-		if( text.length() > 0 )
+		if( this->texture != NULL )
 		{
-			BitmapFont::program->use( true );
+			vector<Point3D> vertices;
+			vector<Point2D> textureCoordinates;
+			vector<unsigned short int> indices;
 
-			for( unsigned int i = 0, j = 0 ; i < text.length() ; i++, j+=4 )
+			TexturedRectangle rectangle( (this->characterWidth - (2.0f * this->marginWidth)) * size, (this->characterHeight - (2.0f * this->marginHeight)) * size, this->texture );
+			rectangle.getOrigin().moveTo( origin.getX(), origin.getY(), 0.0f );
+		
+			if( text.length() > 0 )
 			{
-				if( text[i] == '\n' )
+				for( unsigned int i = 0 ; i < text.length() ; i++ )
 				{
-					point.moveTo( origin.getX(), point.getY() - (this->characterHeight - (2.0f * this->marginHeight)) * size );
-					j -= 4;
-					continue;
+					if( text[i] == '\n' )
+					{
+						rectangle.getOrigin().moveTo( origin.getX(), rectangle.getOrigin().getY() + rectangle.getHeight(), 0.0f );
+						continue;
+					}
+				
+					float x = static_cast<float>( text[i] % this->charactersByLine );
+					float y = static_cast<float>( text[i] / this->charactersByLine );
+					
+					rectangle.getTile()->setView( (x * this->characterWidth) + this->marginWidth, (y * this->characterHeight) + this->marginHeight, rectangle.getWidth(), rectangle.getHeight() );
+					rectangle.prepareRendering( vertices, textureCoordinates, indices );
+					rectangle.getOrigin().moveBy( rectangle.getWidth(), 0.0f, 0.0f );
 				}
 				
-				float x = static_cast<float>( text[i] % this->charactersByLine );
-				float y = static_cast<float>( text[i] / this->charactersByLine );
-				float dx = static_cast<float>( this->marginWidth ) / static_cast<float>( this->characterWidth );
-				float dy = static_cast<float>( this->marginHeight ) / static_cast<float>( this->characterHeight );
+				TexturedRectangle::render( vertices, textureCoordinates, indices, this->texture, 0 );
 
-				// Points
-				m_points.push_back( point );
-				point.moveBy( (this->characterWidth - (2.0f * this->marginWidth)) * size, 0 );
-				m_points.push_back( point );
-				point.moveBy( 0, (this->characterHeight - (2.0f * this->marginHeight)) * size );
-				m_points.push_back( point );
-				point.moveBy( -1.0f * (this->characterWidth - (2.0f * this->marginWidth)) * size, 0 );
-				m_points.push_back( point );
-				
-				// Move to the next character position
-				point.moveBy( (this->characterWidth - (2.0f * this->marginWidth)) * size, -1.0f * (this->characterHeight - (2.0f * this->marginHeight)) * size );
-		
-				// Texture Coordinates
-				m_texcoords.push_back( Point2D( (x + dx) * this->relativeCharacterWidth, 1.0f - ((y + 1.0f - dy) * this->relativeCharacterHeight) ) );
-				m_texcoords.push_back( Point2D( (x + (1.0f - dx)) * this->relativeCharacterWidth, 1.0f - ((y + 1.0f - dy) * this->relativeCharacterHeight) ) );
-				m_texcoords.push_back( Point2D( (x + (1.0f - dx)) * this->relativeCharacterWidth, 1.0f - ((y + dy) * this->relativeCharacterHeight) ) );
-				m_texcoords.push_back( Point2D( (x + dx) * this->relativeCharacterWidth, 1.0f - ((y + dy) * this->relativeCharacterHeight) ) );
-	
-				// Indices
-				m_indices.push_back( j );
-				m_indices.push_back( j + 1 );
-				m_indices.push_back( j + 2 );
-				m_indices.push_back( j );
-				m_indices.push_back( j + 2 );
-				m_indices.push_back( j + 3 );
+				/*this->vertices->setData( m_points );
+				this->textureCoordinates->setData( m_texcoords );
+				this->indices->setData( m_indices );
+
+				BitmapFont::program->sendUniform( "texture0", *(this->texture), 0 );
+				BitmapFont::program->sendUniform( "window", static_cast<float>( Screen::get()->getWidth() ), static_cast<float>( Screen::get()->getHeight() ) );
+				BitmapFont::program->sendUniform( "color", color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
+				BitmapFont::program->sendAttributePointer( "a_Vertex", this->vertices, 2 );
+				BitmapFont::program->sendAttributePointer( "a_TexCoord", this->textureCoordinates, 2 );
+
+				this->indices->draw( OpenGL::Triangles );*/
 			}
-
-			this->vertices->setData( m_points );
-			this->textureCoordinates->setData( m_texcoords );
-			this->indices->setData( m_indices );
-
-			BitmapFont::program->sendUniform( "texture0", *(this->texture), 0 );
-			BitmapFont::program->sendUniform( "window", static_cast<float>( Screen::get()->getWidth() ), static_cast<float>( Screen::get()->getHeight() ) );
-			BitmapFont::program->sendUniform( "color", color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
-			BitmapFont::program->sendAttributePointer( "a_Vertex", this->vertices, 2 );
-			BitmapFont::program->sendAttributePointer( "a_TexCoord", this->textureCoordinates, 2 );
-
-			this->indices->draw( OpenGL::Triangles );
 		}
 	}
 	

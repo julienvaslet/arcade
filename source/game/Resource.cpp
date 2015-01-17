@@ -5,6 +5,11 @@
 using namespace data::image;
 using namespace opengl;
 
+#ifdef DEBUG1
+#include <tools/logger/Logger.h>
+using namespace tools::logger;
+#endif
+
 namespace game
 {
 	map<string, Resource *> Resource::resources;

@@ -5,11 +5,6 @@
 #include <string>
 using namespace std;
 
-#ifdef DEBUG1
-#include <tools/logger/Logger.h>
-using namespace tools::logger;
-#endif
-
 namespace game
 {
 	class Resource
