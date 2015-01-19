@@ -1,10 +1,10 @@
 #include <SDL2/SDL.h>
 
 #include <opengl/Screen.h>
-#include <opengl/TexturedRectangle.h>
-#include <opengl/Matrix.h>
-#include <game/Resource.h>
 #include <opengl/BitmapFont.h>
+#include <game/Resource.h>
+#include <game/Player.h>
+#include <pong/PlayScene.h>
 
 #include <controller/Controller.h>
 #include <tools/logger/Stdout.h>
@@ -12,9 +12,10 @@
 using namespace opengl;
 using namespace tools::logger;
 using namespace controller;
+using namespace pong;
 
-#define SCREEN_WIDTH	100
-#define SCREEN_HEIGHT	100
+#define SCREEN_WIDTH	800
+#define SCREEN_HEIGHT	600
 
 int main( int argc, char ** argv )
 {
@@ -32,74 +33,62 @@ int main( int argc, char ** argv )
 	
 	new BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
 	
-	TexturedRectangle * rectangle = new TexturedRectangle( 50, 50, "texture0" );
-	rectangle->getOrigin().moveTo( 50.0f, 50.0f, 0.0f );
-	rectangle->getAnchor().moveTo( 25.0f, 25.0f );
-	rectangle->getTile()->setView( 0, 0, 128, 128 );
-	
 	// Load joysticks
-	/*Controller::open( "Joystick1" );
+	Controller::open( "Joystick1" );
 	Controller::open( "Joystick2" );
 	
 	if( Controller::getControllersCount() == 0 )
-		Controller::scan();*/
+		Controller::scan();
 	
-	bool running = true;
-	SDL_Event lastEvent;
-	unsigned int lastDrawTicks = 0;
+	// Initializing first player
+	Controller * controller = Controller::getFreeController();
 	
-	unsigned int lastRotate = 0;
-	Matrix translation = Matrix::translation( rectangle->getOrigin().getX(), rectangle->getOrigin().getY(), rectangle->getOrigin().getZ() );
-	Matrix reverseTranslation = Matrix::translation( -1 * rectangle->getOrigin().getX(), -1 * rectangle->getOrigin().getY(), -1 *rectangle->getOrigin().getZ() );
-	Matrix rotate = Matrix::rotationZ( 2 );
-	
-	Point2D origin( 0.0f, 0.0f );
-	string text = "Abc";
-	Font::get("bitmap")->renderSize( origin, text, 1.0f );
-	origin.moveTo( (SCREEN_WIDTH - origin.getX()) / 2.0f, (SCREEN_HEIGHT - origin.getY()) / 2.0f );
-	
-	while( running )
+	if( controller != NULL )
 	{
-		while( SDL_PollEvent( &lastEvent ) )
-		{
-			switch( lastEvent.type )
-			{
-				case SDL_QUIT:
-				{
-					running = false;
-					break;
-				}
-			}
-		}
-
-		unsigned int ticks = SDL_GetTicks();
-	
-		if( ticks - lastRotate > 15 )
-		{
-			Matrix::modelview.multiply( translation );
-			Matrix::modelview.multiply( rotate );
-			Matrix::modelview.multiply( reverseTranslation );
-			
-			lastRotate = ticks;
-		}
-		
-		if( ticks - lastDrawTicks > 15 )
-		{
-			Screen::get()->clear();
-			
-			Font::get("bitmap")->render( origin, text, 1.0f );
-			
-			Screen::get()->render();
-			
-			lastDrawTicks = ticks;
-		}
+		new Player( "Player1" );
+		Player::get( "Player1" )->setController( controller );
 	}
 	
-	delete rectangle;
+	// Initializing second player
+	controller = Controller::getFreeController();
+	
+	if( controller != NULL )
+	{
+		new Player( "Player2" );
+		Player::get( "Player2" )->setController( controller );
+	}
+	
+	glEnable( GL_BLEND );
+	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+	
+	SDL_Event lastEvent;
+	Scene * currentScene = new PlayScene();
+
+	while( currentScene != NULL )
+	{
+		while( currentScene->isRunning() )
+		{
+			while( SDL_PollEvent( &lastEvent ) )
+				currentScene->handleEvent( &lastEvent );
+	
+			unsigned int ticks = SDL_GetTicks();
+	
+			currentScene->live( ticks );
+			currentScene->render( ticks );
+		}
+	
+		Scene * nextScene = currentScene->getNextScene();
+	
+		delete currentScene;
+		currentScene = nextScene;
+	}
+	
+	Player::destroy();
+	Controller::destroy();
 	Font::destroy();
 	Resource::destroy();
-	Controller::destroy();
 	Screen::destroy();
+	//Mixer::destroy();
 	Logger::destroy();
 	
 	return 0;

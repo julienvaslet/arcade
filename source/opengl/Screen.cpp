@@ -305,7 +305,7 @@ namespace opengl
 		
 		#ifdef __NO_X_WINDOW__
 		bcm_host_init();
-		SDL_Init( SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO );
+		SDL_Init( SDL_INIT_EVENTS | SDL_INIT_JOYSTICK /*| SDL_INIT_AUDIO */ );
 		#else
 		SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO );
 		#endif

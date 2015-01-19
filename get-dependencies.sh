@@ -65,7 +65,7 @@ function getIncludedFiles ()
 			
 			if [ -e "${includeDirectory}/${include}" ]
 			then
-				if [ $(echo -n "${includedFiles}" | grep "${include}" | wc -l) = "0" ]
+				if [ $(echo -n "${includedFiles}" | grep "${include}" | wc -l) = "0" -a -e "${sourceDirectory}/${include%.h}.cpp" ]
 				then
 					if [ -z "${includedFiles}" ]
 					then

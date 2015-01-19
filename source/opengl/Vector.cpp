@@ -15,6 +15,21 @@ namespace opengl
 	Vector::~Vector()
 	{
 	}
+	
+	void Vector::setX( float x )
+	{
+		this->x = x;
+	}
+	
+	void Vector::setY( float y )
+	{
+		this->y = y;
+	}
+	
+	void Vector::setZ( float z )
+	{
+		this->z = z;
+	}
 
 	float Vector::getX() const
 	{

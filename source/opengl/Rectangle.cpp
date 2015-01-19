@@ -60,6 +60,12 @@ namespace opengl
 		this->height += deltaHeight;
 	}
 	
+	bool Rectangle::isInCollision( Rectangle& rectangle )
+	{
+		// TODO
+		return false;
+	}
+	
 	void Rectangle::prepareRendering( vector<Point3D>& vertices, vector<unsigned short int>& indices, bool clockwise ) const
 	{
 		unsigned short int j = static_cast<unsigned short int>( vertices.size() );

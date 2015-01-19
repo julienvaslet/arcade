@@ -47,7 +47,7 @@ namespace opengl
 		if( this->rectangle->getTile()->getTexture() != NULL )
 		{	
 			this->charactersByLine = this->rectangle->getTile()->getTexture()->getWidth() / this->characterWidth;
-			this->rectangle->getTile()->getTexture()->setFiltering( GL_LINEAR, GL_LINEAR );
+			this->rectangle->getTile()->getTexture()->setFiltering( GL_NEAREST, GL_NEAREST );
 		}
 		#ifdef DEBUG1
 		else
@@ -106,7 +106,7 @@ namespace opengl
 					float x = static_cast<float>( text[i] % this->charactersByLine );
 					float y = static_cast<float>( text[i] / this->charactersByLine );
 					
-					this->rectangle->getTile()->setView( (x * this->characterWidth) + this->marginWidth, (y * this->characterHeight) + this->marginHeight, this->rectangle->getWidth(), this->rectangle->getHeight() );
+					this->rectangle->getTile()->setView( (x * this->characterWidth) + this->marginWidth, (y * this->characterHeight) + this->marginHeight, this->characterWidth - (2.0f * this->marginWidth), this->characterHeight - (2.0f * this->marginHeight) );
 					this->rectangle->prepareRendering( vertices, textureCoordinates, indices );
 					this->rectangle->getOrigin().moveBy( this->rectangle->getWidth(), 0.0f, 0.0f );
 				}

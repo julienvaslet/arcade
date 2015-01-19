@@ -31,6 +31,7 @@ namespace opengl
 			void setHeight( unsigned int height );
 			void resize( unsigned int width, unsigned int height );
 			void resizeBy( int deltaWidth, unsigned int deltaHeight );
+			bool isInCollision( Rectangle& rectangle );
 			
 			void prepareRendering( vector<Point3D>& vertices, vector<unsigned short int>& indices, bool clockwise = true ) const;
 	};
