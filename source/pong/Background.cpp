@@ -46,16 +46,10 @@ namespace pong
 		this->walls.clear();
 	}
 	
-	void Background::render()
+	void Background::prepareRendering( vector<Point3D>& vertices, vector<Color>& colors, vector<unsigned short int>& indices )
 	{
-		vector<Point3D> vertices;
-		vector<Color> colors;
-		vector<unsigned short int> indices;
-		
 		for( vector<ColoredRectangle *>::iterator it = this->walls.begin() ; it != this->walls.end() ; it++ )
 			(*it)->prepareRendering( vertices, colors, indices );
-		
-		ColoredRectangle::render( vertices, colors, indices );
 	}
 }
 

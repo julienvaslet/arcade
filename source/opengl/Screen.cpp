@@ -19,17 +19,7 @@ namespace opengl
 	Screen::~Screen()
 	{
 		#ifdef __NO_X_WINDOW__
-		if( this->context != EGL_NO_CONTEXT )
-		{
-			eglDestroyContext( this->display, this->context );
-		
-			#ifdef DEBUG0
-			if( Screen::checkEglError() )
-				Logger::get() << "[Screen] Context destroyed." << Logger::endl;
-			else
-				Logger::get() << "[Screen] Context could not be destroyed." << Logger::endl;
-			#endif
-		}
+		eglMakeCurrent( this->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
 		
 		if( this->surface != EGL_NO_SURFACE )
 		{
@@ -40,6 +30,18 @@ namespace opengl
 				Logger::get() << "[Screen] Surface destroyed." << Logger::endl;
 			else
 				Logger::get() << "[Screen] Surface could not be destroyed." << Logger::endl;
+			#endif
+		}
+		
+		if( this->context != EGL_NO_CONTEXT )
+		{
+			eglDestroyContext( this->display, this->context );
+		
+			#ifdef DEBUG0
+			if( Screen::checkEglError() )
+				Logger::get() << "[Screen] Context destroyed." << Logger::endl;
+			else
+				Logger::get() << "[Screen] Context could not be destroyed." << Logger::endl;
 			#endif
 		}
 		
@@ -186,6 +188,7 @@ namespace opengl
 			{
 				EGLint numConfigs = 0;
 				
+				// seems to be useless call
 				eglGetConfigs( this->display, NULL, 0, &numConfigs );
 				
 				if( !Screen::checkEglError() )
@@ -204,9 +207,7 @@ namespace opengl
 						EGL_GREEN_SIZE,		8,
 						EGL_BLUE_SIZE,		8,
 						EGL_ALPHA_SIZE,		8,
-					    EGL_DEPTH_SIZE,		24,
-					    EGL_STENCIL_SIZE,	EGL_DONT_CARE,
-					    EGL_SAMPLE_BUFFERS,	0,
+						EGL_SURFACE_TYPE, 	EGL_WINDOW_BIT,
 						EGL_NONE
 					};
 					
@@ -224,31 +225,31 @@ namespace opengl
 					}
 					else
 					{
-						this->surface = eglCreateWindowSurface( this->display, config, &(this->window), NULL );
+						// majorVersion & minorVersion are ignored
+						EGLint contextAttributes[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE };
+					
+						this->context = eglCreateContext( this->display, config, EGL_NO_CONTEXT, contextAttributes );
 						Screen::checkEglError();
 						
-						if( surface == EGL_NO_SURFACE )
+						if( this->context == EGL_NO_CONTEXT )
 						{
 							success = false;
 							
 							#ifdef DEBUG0
-							Logger::get() << "[Screen] Unable to create window surface." << Logger::endl;
+							Logger::get() << "[Screen] Unable to create the context." << Logger::endl;
 							#endif
 						}
 						else
 						{
-							// majorVersion & minorVersion are ignored
-							EGLint contextAttributes[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE };
-						
-							this->context = eglCreateContext( this->display, config, EGL_NO_CONTEXT, contextAttributes );
+							this->surface = eglCreateWindowSurface( this->display, config, &(this->window), NULL );
 							Screen::checkEglError();
-							
-							if( this->context == EGL_NO_CONTEXT )
+						
+							if( surface == EGL_NO_SURFACE )
 							{
 								success = false;
-								
+							
 								#ifdef DEBUG0
-								Logger::get() << "[Screen] Unable to create the context." << Logger::endl;
+								Logger::get() << "[Screen] Unable to create window surface." << Logger::endl;
 								#endif
 							}
 							else
@@ -261,6 +262,10 @@ namespace opengl
 									#ifdef DEBUG0
 									Logger::get() << "[Screen] Unable to make the context current." << Logger::endl;
 									#endif
+								}
+								else
+								{
+									eglSwapInterval( this->display, 0 );
 								}
 							}
 						}
@@ -294,6 +299,14 @@ namespace opengl
 			Logger::get() << "[Screen] Unable to create the context: " << SDL_GetError() << Logger::endl;
 			#endif
 		}
+		else
+		{
+			// Do not synchronize framerate with monitor frequency (processor more used)
+			SDL_GL_SetSwapInterval( 0 );
+			
+			// Synchronize framerate with monitor frequency (processor less used)
+			//SDL_GL_SetSwapInterval( 1 );
+		}
 		#endif
 
 		return success;
@@ -305,7 +318,7 @@ namespace opengl
 		
 		#ifdef __NO_X_WINDOW__
 		bcm_host_init();
-		SDL_Init( SDL_INIT_EVENTS | SDL_INIT_JOYSTICK /*| SDL_INIT_AUDIO */ );
+		SDL_Init( SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO );
 		#else
 		SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO );
 		#endif

@@ -18,7 +18,6 @@ namespace pong
 	{	
 		protected:
 			unsigned int lastDrawTicks;
-			unsigned int lastTickEvent;
 			unsigned int lastBallMove;
 			Background * background;
 			ColoredRectangle * ball;
@@ -55,8 +54,8 @@ namespace pong
 			virtual void live( unsigned int ticks );
 			virtual void render( unsigned int ticks );
 			
-			void moveUp( unsigned int player );
-			void moveDown( unsigned int player );
+			void moveUp( unsigned int player, double times = 1.0 );
+			void moveDown( unsigned int player, double times = 1.0 );
 			void buttonAction( unsigned int player );
 			
 			void endScene();

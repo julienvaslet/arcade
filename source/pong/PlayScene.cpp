@@ -14,6 +14,7 @@
 #include <controller/Controller.h>
 
 #include <sstream>
+#include <cmath>
 
 using namespace opengl;
 using namespace controller;
@@ -26,7 +27,7 @@ using namespace tools::logger;
 
 namespace pong
 {
-	PlayScene::PlayScene() : Scene(), lastDrawTicks(0), lastTickEvent(0), lastBallMove(0), background(NULL), ball(NULL), ballDirection(0.0f, 0.0f, 0.0f), racket1(NULL), racket2(NULL), scorePlayer1(0), scorePlayer2(0), playing(false), paused(false), player1Ready(false), player2Ready(false)
+	PlayScene::PlayScene() : Scene(), lastDrawTicks(0), lastBallMove(0), background(NULL), ball(NULL), ballDirection(0.0f, 0.0f, 0.0f), racket1(NULL), racket2(NULL), scorePlayer1(0), scorePlayer2(0), playing(false), paused(false), player1Ready(false), player2Ready(false)
 	{
 		Player * player1 = Player::get( "Player1" );
 		Player * player2 = Player::get( "Player2" );
@@ -151,7 +152,7 @@ namespace pong
 		}
 	}
 	
-	void PlayScene::moveUp( unsigned int player )
+	void PlayScene::moveUp( unsigned int player, double times )
 	{
 		if( !this->paused )
 		{
@@ -165,7 +166,7 @@ namespace pong
 						this->initializeNewGame();
 				}
 		
-				this->racket1->getOrigin().moveBy( 0.0f, -1.0f * RACKET_SPEED, 0.0f );
+				this->racket1->getOrigin().moveBy( 0.0f, -1.0f * RACKET_SPEED * times, 0.0f );
 	
 				if( this->racket1->getOrigin().getY() < WALL_SIZE )
 					this->racket1->getOrigin().setY( WALL_SIZE );
@@ -183,7 +184,7 @@ namespace pong
 						this->initializeNewGame();
 				}
 			
-				this->racket2->getOrigin().moveBy( 0.0f, -1.0f * RACKET_SPEED, 0.0f );
+				this->racket2->getOrigin().moveBy( 0.0f, -1.0f * RACKET_SPEED * times, 0.0f );
 		
 				if( this->racket2->getOrigin().getY() < WALL_SIZE )
 					this->racket2->getOrigin().setY( WALL_SIZE );
@@ -193,7 +194,7 @@ namespace pong
 		}
 	}
 	
-	void PlayScene::moveDown( unsigned int player )
+	void PlayScene::moveDown( unsigned int player, double times )
 	{
 		if( !this->paused )
 		{
@@ -207,7 +208,7 @@ namespace pong
 						this->initializeNewGame();
 				}
 			
-				this->racket1->getOrigin().moveBy( 0.0f, RACKET_SPEED, 0.0f );
+				this->racket1->getOrigin().moveBy( 0.0f, RACKET_SPEED * times, 0.0f );
 		
 				if( this->racket1->getOrigin().getY() < WALL_SIZE )
 					this->racket1->getOrigin().setY( WALL_SIZE );
@@ -225,7 +226,7 @@ namespace pong
 						this->initializeNewGame();
 				}
 				
-				this->racket2->getOrigin().moveBy( 0.0f, RACKET_SPEED, 0.0f );
+				this->racket2->getOrigin().moveBy( 0.0f, RACKET_SPEED * times, 0.0f );
 		
 				if( this->racket2->getOrigin().getY() < WALL_SIZE )
 					this->racket2->getOrigin().setY( WALL_SIZE );
@@ -257,11 +258,7 @@ namespace pong
 	
 	void PlayScene::live( unsigned int ticks )
 	{
-		if( ticks - this->lastTickEvent > 15 )
-		{
-			Controller::tickEvent( ticks );
-			this->lastTickEvent = ticks;
-		}
+		Controller::tickEvent( ticks );
 	
 		if( this->playing && !this->paused )
 		{
@@ -281,10 +278,11 @@ namespace pong
 				}
 				#endif
 				
-				this->ball->getOrigin().moveBy( BALL_SPEED * this->ballDirection.getX(), BALL_SPEED * this->ballDirection.getY(), BALL_SPEED * this->ballDirection.getZ() );
+				double realDelta = (ticks - this->lastBallMove) / 15.0 * BALL_SPEED;
+				this->ball->getOrigin().moveBy( realDelta * this->ballDirection.getX(), realDelta * this->ballDirection.getY(), realDelta * this->ballDirection.getZ() );
 				
 				// Check for goal for Player2
-				if( this->ball->getOrigin().getX() <= WALL_SIZE )
+				if( this->ball->getOrigin().getX() <= WALL_SIZE + (BALL_SIZE / 2.0f) )
 				{
 					this->scorePlayer2++;
 					this->updateScoreStrings();
@@ -292,7 +290,7 @@ namespace pong
 				}
 				
 				// Check for goal for Player1
-				else if( this->ball->getOrigin().getX() >= SCREEN_WIDTH - WALL_SIZE - BALL_SIZE )
+				else if( this->ball->getOrigin().getX() >= SCREEN_WIDTH - WALL_SIZE - (BALL_SIZE / 2.0f) )
 				{
 					this->scorePlayer1++;
 					this->updateScoreStrings();
@@ -303,7 +301,7 @@ namespace pong
 				else
 				{
 					// Up & Down walls
-					if( this->ball->getOrigin().getY() <= WALL_SIZE || this->ball->getOrigin().getY() >= SCREEN_HEIGHT - WALL_SIZE - BALL_SIZE )
+					if( this->ball->getOrigin().getY() <= WALL_SIZE + (BALL_SIZE / 2.0f) || this->ball->getOrigin().getY() >= SCREEN_HEIGHT - WALL_SIZE - (BALL_SIZE / 2.0f) )
 					{
 						this->ballDirection.setY( this->ballDirection.getY() * -1.0f );
 					}
@@ -312,20 +310,26 @@ namespace pong
 					else
 					{
 						// Racket1
-						if( this->ball->getOrigin().getX() >= this->racket1->getOrigin().getX() && this->ball->getOrigin().getX() <= this->racket1->getOrigin().getX() + RACKET_WIDTH )
+						if( this->ball->getOrigin().getX() + (BALL_SIZE / 2.0f) >= this->racket1->getOrigin().getX() && this->ball->getOrigin().getX() - (BALL_SIZE / 2.0f) <= this->racket1->getOrigin().getX() + RACKET_WIDTH )
 						{
-							if( this->ball->getOrigin().getY() + BALL_SIZE >= this->racket1->getOrigin().getY() && this->ball->getOrigin().getY() <= this->racket1->getOrigin().getY() + RACKET_HEIGHT )
+							if( this->ball->getOrigin().getY() + (BALL_SIZE / 2.0f) >= this->racket1->getOrigin().getY() && this->ball->getOrigin().getY() - (BALL_SIZE / 2.0f) <= this->racket1->getOrigin().getY() + RACKET_HEIGHT )
 							{
-								this->ballDirection.setX( 1.0f );
+								float y = ((this->ball->getOrigin().getY() + (BALL_SIZE / 2.0f) - this->racket1->getOrigin().getY()) / static_cast<float>( RACKET_HEIGHT + BALL_SIZE )) * 2.0f - 1.0f;
+
+								this->ballDirection.setY( y );							
+								this->ballDirection.setX( 1.0f * sqrt( 1.0f - y * y ) );
 							}
 						}
 						
 						// Racket2
-						else if( this->ball->getOrigin().getX() + BALL_SIZE >= this->racket2->getOrigin().getX() && this->ball->getOrigin().getX() + BALL_SIZE <= this->racket2->getOrigin().getX() + RACKET_WIDTH )
+						else if( this->ball->getOrigin().getX() + (BALL_SIZE / 2.0f) >= this->racket2->getOrigin().getX() && this->ball->getOrigin().getX() - (BALL_SIZE / 2.0f) <= this->racket2->getOrigin().getX() + RACKET_WIDTH )
 						{
-							if( this->ball->getOrigin().getY() + BALL_SIZE >= this->racket2->getOrigin().getY() && this->ball->getOrigin().getY() <= this->racket2->getOrigin().getY() + RACKET_HEIGHT )
+							if( this->ball->getOrigin().getY() + (BALL_SIZE / 2.0f) >= this->racket2->getOrigin().getY() && this->ball->getOrigin().getY() - (BALL_SIZE / 2.0f) <= this->racket2->getOrigin().getY() + RACKET_HEIGHT )
 							{
-								this->ballDirection.setX( -1.0f );
+								float y = ((this->ball->getOrigin().getY() + (BALL_SIZE / 2.0f) - this->racket2->getOrigin().getY()) / static_cast<float>( RACKET_HEIGHT + BALL_SIZE )) * 2.0f - 1.0f;
+
+								this->ballDirection.setY( y );
+								this->ballDirection.setX( -1.0f * sqrt( 1.0f - y * y ) );
 							}
 						}
 					}
@@ -365,17 +369,17 @@ namespace pong
 			Screen::get()->clear();
 			
 			// Background walls
-			this->background->render();
+			this->background->prepareRendering( vertices, colors, indices );
+			
+			// Rackets
+			this->racket1->prepareRendering( vertices, colors, indices );
+			this->racket2->prepareRendering( vertices, colors, indices );
 			
 			// Score
 			unsigned int width = Font::get("bitmap")->renderWidth( sScorePlayer1, 2.0f );
 			Font::get("bitmap")->render( Point2D( 300.0f - (width / 2.0f), 25.0f ), sScorePlayer1, 2.0f );
 			width = Font::get("bitmap")->renderWidth( sScorePlayer2, 2.0f );
 			Font::get("bitmap")->render( Point2D( 450.0f + (width / 2.0f), 25.0f ), sScorePlayer2, 2.0f );
-			
-			// Rackets
-			this->racket1->prepareRendering( vertices, colors, indices );
-			this->racket2->prepareRendering( vertices, colors, indices );
 			
 			if( this->playing )
 			{

@@ -17,6 +17,7 @@
 
 #ifdef __NO_X_WINDOW__
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 #include <bcm_host.h>
 #endif
 

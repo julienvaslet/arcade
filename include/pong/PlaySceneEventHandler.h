@@ -13,6 +13,7 @@ namespace pong
 		protected:
 			PlayScene * scene;
 			unsigned int player;
+			unsigned int lastTickEvent;
 		
 		public:
 			PlaySceneEventHandler( PlayScene * scene, unsigned int player );

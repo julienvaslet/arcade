@@ -7,7 +7,7 @@
 #define BALL_SPEED		5
 #define	RACKET_HEIGHT	75
 #define	RACKET_WIDTH	10
-#define RACKET_SPEED	5
+#define RACKET_SPEED	4
 #define WALL_SIZE		5
 
 
