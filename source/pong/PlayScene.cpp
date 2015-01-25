@@ -10,8 +10,10 @@
 #include <opengl/Vector.h>
 
 #include <game/Player.h>
-
 #include <controller/Controller.h>
+#include <audio/Mixer.h>
+#include <audio/Song.h>
+#include <audio/instrument/Sine.h>
 
 #include <sstream>
 #include <cmath>
@@ -19,6 +21,8 @@
 using namespace opengl;
 using namespace controller;
 using namespace std;
+using namespace audio;
+using namespace audio::instrument;
 
 #ifdef DEBUG1
 #include <tools/logger/Logger.h>
@@ -63,6 +67,17 @@ namespace pong
 		this->racket2->getOrigin().moveTo( SCREEN_WIDTH - (WALL_SIZE * 3.0f) - RACKET_WIDTH, (SCREEN_HEIGHT - RACKET_HEIGHT) / 2.0f, 0.0f );
 		
 		this->updateScoreStrings();
+		
+		Sine instrument( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
+		Song * song = new Song( 120, Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
+		song->mixNote( instrument, Note::getFrequency( 'A', false, 5 ), Note::DoubleCroche );
+		Mixer::get()->add( "pong", song );
+		delete song;
+		
+		song = new Song( 120, Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
+		song->mixNote( instrument, Note::getFrequency( 'A', false, 3 ), Note::Croche );
+		Mixer::get()->add( "goal", song );
+		delete song;
 		
 		#ifdef DEBUG1
 		this->framesPerSecond = 0;
@@ -287,6 +302,8 @@ namespace pong
 					this->scorePlayer2++;
 					this->updateScoreStrings();
 					this->initializeBall( 2 );
+					
+					Mixer::get()->play( "goal" );
 				}
 				
 				// Check for goal for Player1
@@ -295,6 +312,8 @@ namespace pong
 					this->scorePlayer1++;
 					this->updateScoreStrings();
 					this->initializeBall( 1 );
+					
+					Mixer::get()->play( "goal" );
 				}
 				
 				// Check for collisions
@@ -304,6 +323,13 @@ namespace pong
 					if( this->ball->getOrigin().getY() <= WALL_SIZE + (BALL_SIZE / 2.0f) || this->ball->getOrigin().getY() >= SCREEN_HEIGHT - WALL_SIZE - (BALL_SIZE / 2.0f) )
 					{
 						this->ballDirection.setY( this->ballDirection.getY() * -1.0f );
+						
+						if( this->ball->getOrigin().getY() < WALL_SIZE + (BALL_SIZE / 2.0f) )
+							this->ball->getOrigin().setY( WALL_SIZE + (BALL_SIZE / 2.0f) );
+						else if( this->ball->getOrigin().getY() > SCREEN_HEIGHT - WALL_SIZE - (BALL_SIZE / 2.0f) )
+							this->ball->getOrigin().setY( SCREEN_HEIGHT - WALL_SIZE - (BALL_SIZE / 2.0f) );
+						
+						Mixer::get()->play( "pong" );
 					}
 					
 					// Rackets
@@ -318,6 +344,8 @@ namespace pong
 
 								this->ballDirection.setY( y );							
 								this->ballDirection.setX( 1.0f * sqrt( 1.0f - y * y ) );
+								
+								Mixer::get()->play( "pong" );
 							}
 						}
 						
@@ -330,6 +358,8 @@ namespace pong
 
 								this->ballDirection.setY( y );
 								this->ballDirection.setX( -1.0f * sqrt( 1.0f - y * y ) );
+														
+								Mixer::get()->play( "pong" );
 							}
 						}
 					}
@@ -376,10 +406,10 @@ namespace pong
 			this->racket2->prepareRendering( vertices, colors, indices );
 			
 			// Score
-			unsigned int width = Font::get("bitmap")->renderWidth( sScorePlayer1, 2.0f );
-			Font::get("bitmap")->render( Point2D( 300.0f - (width / 2.0f), 25.0f ), sScorePlayer1, 2.0f );
-			width = Font::get("bitmap")->renderWidth( sScorePlayer2, 2.0f );
-			Font::get("bitmap")->render( Point2D( 450.0f + (width / 2.0f), 25.0f ), sScorePlayer2, 2.0f );
+			unsigned int width = Font::get("bitmap")->getTextWidth( sScorePlayer1, 2.0f );
+			Font::get("bitmap")->write( Point2D( 300.0f - (width / 2.0f), 25.0f ), sScorePlayer1, 2.0f );
+			width = Font::get("bitmap")->getTextWidth( sScorePlayer2, 2.0f );
+			Font::get("bitmap")->write( Point2D( 450.0f + (width / 2.0f), 25.0f ), sScorePlayer2, 2.0f );
 			
 			if( this->playing )
 			{
@@ -387,8 +417,8 @@ namespace pong
 				{
 					string pauseStr = "PAUSE";
 					Point2D origin(0.0f, 0.0f);
-					Font::get("bitmap")->renderSize( origin, pauseStr, 2.0f );
-					Font::get("bitmap")->render( Point2D( (SCREEN_WIDTH - origin.getX()) / 2.0f, (SCREEN_HEIGHT - origin.getY()) / 2.0f ), pauseStr, 2.0f );
+					Font::get("bitmap")->getTextSize( origin, pauseStr, 2.0f );
+					Font::get("bitmap")->write( Point2D( (SCREEN_WIDTH - origin.getX()) / 2.0f, (SCREEN_HEIGHT - origin.getY()) / 2.0f ), pauseStr, 2.0f );
 				}
 				
 				this->ball->prepareRendering( vertices, colors, indices );
@@ -399,26 +429,27 @@ namespace pong
 				string areYouReady = "Move your racket when ready!";
 				
 				Point2D origin(0.0f, 0.0f);
-				Font::get("bitmap")->renderSize( origin, areYouReady, 1.0f );
-				Font::get("bitmap")->render( Point2D( (SCREEN_WIDTH - origin.getX()) / 2.0f, (SCREEN_HEIGHT - origin.getY()) / 2.0f ), areYouReady, 1.0f );
+				Font::get("bitmap")->getTextSize( origin, areYouReady, 1.0f );
+				Font::get("bitmap")->write( Point2D( (SCREEN_WIDTH - origin.getX()) / 2.0f, (SCREEN_HEIGHT - origin.getY()) / 2.0f ), areYouReady, 1.0f );
 				
 				origin.moveTo( 0.0f, 0.0f );
-				Font::get("bitmap")->renderSize( origin, ready, 0.7f );
+				Font::get("bitmap")->getTextSize( origin, ready, 0.7f );
 				
 				if( this->player1Ready )
-					Font::get("bitmap")->render( Point2D( ((SCREEN_WIDTH / 2.0f) - origin.getX()) / 2.0f, SCREEN_HEIGHT - WALL_SIZE * 4.0f - origin.getY() ), ready, 0.7f );
+					Font::get("bitmap")->write( Point2D( ((SCREEN_WIDTH / 2.0f) - origin.getX()) / 2.0f, SCREEN_HEIGHT - WALL_SIZE * 4.0f - origin.getY() ), ready, 0.7f );
 					
 				if( this->player2Ready )
-					Font::get("bitmap")->render( Point2D( (SCREEN_WIDTH / 2.0f) + (((SCREEN_WIDTH / 2.0f) - origin.getX()) / 2.0f), SCREEN_HEIGHT - WALL_SIZE * 4.0f - origin.getY() ), ready, 0.7f );
+					Font::get("bitmap")->write( Point2D( (SCREEN_WIDTH / 2.0f) + (((SCREEN_WIDTH / 2.0f) - origin.getX()) / 2.0f), SCREEN_HEIGHT - WALL_SIZE * 4.0f - origin.getY() ), ready, 0.7f );
 			}
 			
 			ColoredRectangle::render( vertices, colors, indices );
 			
 			#ifdef DEBUG1
-			Font::get("bitmap")->render( Point2D( WALL_SIZE, WALL_SIZE ), this->sFramesPerSecond );
-			Font::get("bitmap")->render( Point2D( WALL_SIZE, WALL_SIZE + 30 ), this->sOperationsPerSecond );
+			Font::get("bitmap")->write( Point2D( WALL_SIZE, WALL_SIZE ), this->sFramesPerSecond );
+			Font::get("bitmap")->write( Point2D( WALL_SIZE, WALL_SIZE + 30 ), this->sOperationsPerSecond );
 			#endif
 			
+			Font::get("bitmap")->render();
 			Screen::get()->render();
 			
 			this->lastDrawTicks = ticks;

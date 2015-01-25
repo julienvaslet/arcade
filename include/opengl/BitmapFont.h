@@ -20,6 +20,11 @@ namespace opengl
 			ArrayBufferObject * vertices;
 			ArrayBufferObject * textureCoordinates;
 			ElementArrayBufferObject * indices;
+			
+			vector<Point3D> vVertices;
+			vector<Point2D> vTextureCoordinates;
+			vector<unsigned short int> vIndices;
+			
 			TexturedRectangle * rectangle;
 			unsigned int charactersByLine;
 			unsigned int characterWidth;
@@ -31,10 +36,11 @@ namespace opengl
 			BitmapFont( const string& filename, unsigned int characterWidth, unsigned int characterHeight, unsigned int marginWidth = 0, unsigned int marginHeight = 0 );
 			virtual ~BitmapFont();
 		
-			virtual void render( const Point2D& origin, const string& text, const Color& color, float size = 0.0f ) const;
-			virtual void renderSize( Point2D& origin, const string& text, float size = 0.0f ) const;
-			virtual unsigned int renderWidth( const string& text, float size = 0.0f ) const;
-			virtual unsigned int renderHeight( const string& text, float size = 0.0f ) const;
+			virtual void write( const Point2D& origin, const string& text, const Color& color, float size = 0.0f );
+			virtual void getTextSize( Point2D& origin, const string& text, float size = 0.0f ) const;
+			virtual unsigned int getTextWidth( const string& text, float size = 0.0f ) const;
+			virtual unsigned int getTextHeight( const string& text, float size = 0.0f ) const;
+			virtual void render();
 			
 			static string getFontNameFromPath( const string& filename );
 	};

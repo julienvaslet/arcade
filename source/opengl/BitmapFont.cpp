@@ -80,16 +80,37 @@ namespace opengl
 		}
 	}
 	
-	void BitmapFont::render( const Point2D& origin, const string& text, const Color& color, float size ) const
+	void BitmapFont::render()
+	{
+		this->vertices->setData( this->vVertices );
+		this->textureCoordinates->setData( this->vTextureCoordinates );
+		this->indices->setData( this->vIndices );
+
+		BitmapFont::program->use( true );
+
+		BitmapFont::program->sendUniform( "projection_matrix", Matrix::projection, false );
+		BitmapFont::program->sendUniform( "modelview_matrix", Matrix::modelview, false );
+		BitmapFont::program->sendUniform( "texture0", *(this->rectangle->getTile()->getTexture()), 0 );
+
+		Color color("ffffff");
+		BitmapFont::program->sendUniform( "color", color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
+		
+		BitmapFont::program->sendVertexPointer( "a_Vertex", this->vertices );
+		BitmapFont::program->sendTextureCoordinatesPointer( "a_TexCoord0", this->textureCoordinates );
+
+		this->indices->draw( OpenGL::Triangles );
+		
+		this->vVertices.clear();
+		this->vTextureCoordinates.clear();
+		this->vIndices.clear();
+	}
+	
+	void BitmapFont::write( const Point2D& origin, const string& text, const Color& color, float size )
 	{
 		if( size == 0.0f ) size = 1.0f;
 		
 		if( this->rectangle->getTile()->getTexture() != NULL )
 		{
-			vector<Point3D> vertices;
-			vector<Point2D> textureCoordinates;
-			vector<unsigned short int> indices;
-
 			this->rectangle->resize( (this->characterWidth - (2.0f * this->marginWidth)) * size, (this->characterHeight - (2.0f * this->marginHeight)) * size );
 			this->rectangle->getOrigin().moveTo( origin.getX(), origin.getY(), 0.0f );
 		
@@ -107,30 +128,14 @@ namespace opengl
 					float y = static_cast<float>( text[i] / this->charactersByLine );
 					
 					this->rectangle->getTile()->setView( (x * this->characterWidth) + this->marginWidth, (y * this->characterHeight) + this->marginHeight, this->characterWidth - (2.0f * this->marginWidth), this->characterHeight - (2.0f * this->marginHeight) );
-					this->rectangle->prepareRendering( vertices, textureCoordinates, indices );
+					this->rectangle->prepareRendering( this->vVertices, this->vTextureCoordinates, this->vIndices );
 					this->rectangle->getOrigin().moveBy( this->rectangle->getWidth(), 0.0f, 0.0f );
 				}
-
-				this->vertices->setData( vertices );
-				this->textureCoordinates->setData( textureCoordinates );
-				this->indices->setData( indices );
-
-				BitmapFont::program->use( true );
-
-				BitmapFont::program->sendUniform( "projection_matrix", Matrix::projection, false );
-				BitmapFont::program->sendUniform( "modelview_matrix", Matrix::modelview, false );
-				BitmapFont::program->sendUniform( "texture0", *(this->rectangle->getTile()->getTexture()), 0 );
-				BitmapFont::program->sendUniform( "color", color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
-				
-				BitmapFont::program->sendVertexPointer( "a_Vertex", this->vertices );
-				BitmapFont::program->sendTextureCoordinatesPointer( "a_TexCoord0", this->textureCoordinates );
-
-				this->indices->draw( OpenGL::Triangles );
 			}
 		}
 	}
 	
-	void BitmapFont::renderSize( Point2D& origin, const string& text, float size ) const
+	void BitmapFont::getTextSize( Point2D& origin, const string& text, float size ) const
 	{
 		origin.moveBy( 0, (this->characterHeight - (2.0f * this->marginHeight)) * size );
 		
@@ -143,17 +148,17 @@ namespace opengl
 		}
 	}
 	
-	unsigned int BitmapFont::renderWidth( const string& text, float size ) const
+	unsigned int BitmapFont::getTextWidth( const string& text, float size ) const
 	{
 		Point2D origin( 0, 0 );
-		this->renderSize( origin, text, size );
+		this->getTextSize( origin, text, size );
 		return origin.getX();
 	}
 	
-	unsigned int BitmapFont::renderHeight( const string& text, float size ) const
+	unsigned int BitmapFont::getTextHeight( const string& text, float size ) const
 	{
 		Point2D origin( 0, 0 );
-		this->renderSize( origin, text, size );
+		this->getTextSize( origin, text, size );
 		return origin.getY();
 	}
 	

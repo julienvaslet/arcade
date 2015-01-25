@@ -7,11 +7,13 @@
 #include <pong/PlayScene.h>
 
 #include <controller/Controller.h>
+#include <audio/Mixer.h>
 #include <tools/logger/Stdout.h>
 
 using namespace opengl;
 using namespace tools::logger;
 using namespace controller;
+using namespace audio;
 using namespace pong;
 
 #define SCREEN_WIDTH	800
@@ -27,6 +29,8 @@ int main( int argc, char ** argv )
 		cout << "Unable to initialize screen. Exiting." << endl;
 		return 1;
 	}
+	
+	new Mixer( 44100, 1, 256 );
 	
 	// Set the orthogonal origin at the top-left corner
 	Matrix::projection = Matrix::ortho( 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, -1, 1 );
@@ -88,7 +92,7 @@ int main( int argc, char ** argv )
 	Font::destroy();
 	Resource::destroy();
 	Screen::destroy();
-	//Mixer::destroy();
+	Mixer::destroy();
 	Logger::destroy();
 	
 	return 0;
