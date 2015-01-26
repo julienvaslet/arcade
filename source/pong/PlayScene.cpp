@@ -68,7 +68,7 @@ namespace pong
 		
 		this->updateScoreStrings();
 		
-		Sine instrument( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
+		/*Sine instrument( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 		Song * song = new Song( 120, Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 		song->mixNote( instrument, Note::getFrequency( 'A', false, 5 ), Note::DoubleCroche );
 		Mixer::get()->add( "pong", song );
@@ -77,7 +77,7 @@ namespace pong
 		song = new Song( 120, Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 		song->mixNote( instrument, Note::getFrequency( 'A', false, 3 ), Note::Croche );
 		Mixer::get()->add( "goal", song );
-		delete song;
+		delete song;*/
 		
 		#ifdef DEBUG1
 		this->framesPerSecond = 0;
@@ -303,7 +303,7 @@ namespace pong
 					this->updateScoreStrings();
 					this->initializeBall( 2 );
 					
-					Mixer::get()->play( "goal" );
+					//Mixer::get()->play( "goal" );
 				}
 				
 				// Check for goal for Player1
@@ -313,7 +313,7 @@ namespace pong
 					this->updateScoreStrings();
 					this->initializeBall( 1 );
 					
-					Mixer::get()->play( "goal" );
+					//Mixer::get()->play( "goal" );
 				}
 				
 				// Check for collisions
@@ -329,7 +329,7 @@ namespace pong
 						else if( this->ball->getOrigin().getY() > SCREEN_HEIGHT - WALL_SIZE - (BALL_SIZE / 2.0f) )
 							this->ball->getOrigin().setY( SCREEN_HEIGHT - WALL_SIZE - (BALL_SIZE / 2.0f) );
 						
-						Mixer::get()->play( "pong" );
+						//Mixer::get()->play( "pong" );
 					}
 					
 					// Rackets
@@ -345,7 +345,7 @@ namespace pong
 								this->ballDirection.setY( y );							
 								this->ballDirection.setX( 1.0f * sqrt( 1.0f - y * y ) );
 								
-								Mixer::get()->play( "pong" );
+								//Mixer::get()->play( "pong" );
 							}
 						}
 						
@@ -359,7 +359,7 @@ namespace pong
 								this->ballDirection.setY( y );
 								this->ballDirection.setX( -1.0f * sqrt( 1.0f - y * y ) );
 														
-								Mixer::get()->play( "pong" );
+								//Mixer::get()->play( "pong" );
 							}
 						}
 					}

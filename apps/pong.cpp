@@ -30,7 +30,7 @@ int main( int argc, char ** argv )
 		return 1;
 	}
 	
-	new Mixer( 44100, 1, 256 );
+	//new Mixer( 44100, 1, 256 );
 	
 	// Set the orthogonal origin at the top-left corner
 	Matrix::projection = Matrix::ortho( 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, -1, 1 );
@@ -92,7 +92,7 @@ int main( int argc, char ** argv )
 	Font::destroy();
 	Resource::destroy();
 	Screen::destroy();
-	Mixer::destroy();
+	//Mixer::destroy();
 	Logger::destroy();
 	
 	return 0;
