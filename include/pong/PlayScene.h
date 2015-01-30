@@ -44,6 +44,7 @@ namespace pong
 			
 			void updateScoreStrings();
 			void initializeNewGame();
+			void initializeTimes();
 			void initializeBall( unsigned int player = 1 );
 			
 		public:

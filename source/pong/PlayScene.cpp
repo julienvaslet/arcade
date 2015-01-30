@@ -127,6 +127,15 @@ namespace pong
 		this->player2Ready = false;
 		this->playing = true;
 		this->paused = false;
+		
+		this->initializeTimes();
+	}
+	
+	void PlayScene::initializeTimes()
+	{
+		unsigned int ticks = SDL_GetTicks();
+		this->lastDrawTicks = ticks;
+		this->lastBallMove = ticks;
 	}
 	
 	void PlayScene::initializeBall( unsigned int player )
@@ -268,6 +277,11 @@ namespace pong
 			if( player == 2 || player == 0 )
 			{
 			}
+			
+			// If the game is not in "pause" anymore, we re-initiliaze times
+			// to compute logical deltas
+			if( !this->paused )
+				this->initializeTimes();
 		}
 	}
 	
