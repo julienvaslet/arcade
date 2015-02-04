@@ -56,7 +56,7 @@ namespace opengl
 		
 		public:
 			static void getDisplaySize( int * width, int * height );
-			static bool initialize( int width = 800, int height = 600, bool autoResize = true, int majorVersion = OPENGL_DEFAULT_MAJOR_VERSION, int minorVersion = OPENGL_DEFAULT_MINOR_VERSION );
+			static bool initialize( int width = 0, int height = 0, bool autoResize = true, int majorVersion = OPENGL_DEFAULT_MAJOR_VERSION, int minorVersion = OPENGL_DEFAULT_MINOR_VERSION );
 			static Screen * get();
 			static void destroy();
 		

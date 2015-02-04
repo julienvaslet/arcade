@@ -87,6 +87,29 @@ namespace game
 		return player;
 	}
 	
+	unsigned int Player::getCount()
+	{
+		return Player::players.size();
+	}
+	
+	Player * Player::get( unsigned int index )
+	{
+		Player * player = NULL;
+		
+		for( map<string, Player *>::iterator it = Player::players.begin() ; it != Player::players.end() ; it++ )
+		{
+			if( index == 0 )
+			{
+				player = it->second;
+				break;
+			}
+			
+			index--;
+		}
+		
+		return player;
+	}
+	
 	void Player::destroy()
 	{
 		for( map<string, Player *>::iterator it = Player::players.begin() ; it != Player::players.end() ; it++ )

@@ -335,7 +335,16 @@ namespace opengl
 		
 		Screen * screen = new Screen();
 		
-		if( autoResize )
+		if( width == 0 || height == 0 )
+		{
+			width = displayWidth;
+			height = displayHeight;
+			
+			#ifdef DEBUG0
+			Logger::get() << "[Screen] Auto-sized window: " << width << "x" << height << "." << Logger::endl;
+			#endif
+		}
+		else if( autoResize )
 		{
 			double widthRatio = static_cast<double>( displayWidth ) / static_cast<double>( width );
 			double heightRatio = static_cast<double>( displayHeight ) / static_cast<double>( height );

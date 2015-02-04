@@ -36,6 +36,8 @@ namespace game
 			void setController( Controller * controller );
 			
 			static Player * get( const string& name );
+			static unsigned int getCount();
+			static Player * get( unsigned int index );
 			static void destroy();
 	};
 }

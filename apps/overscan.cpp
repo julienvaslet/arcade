@@ -4,33 +4,41 @@
 #include <opengl/BitmapFont.h>
 #include <game/Resource.h>
 #include <game/Player.h>
-#include <pong/PlayScene.h>
+#include <overscan/ConfigScene.h>
 
 #include <controller/Controller.h>
 #include <tools/logger/Stdout.h>
+#include <tools/pi/Overscan.h>
 
 using namespace opengl;
 using namespace tools::logger;
+using namespace tools::pi;
 using namespace controller;
-using namespace audio;
-using namespace pong;
+using namespace overscan;
 
-#define SCREEN_WIDTH	800
-#define SCREEN_HEIGHT	600
+//https://github.com/ukscone/set_overscan/blob/master/overscan.c
 
 int main( int argc, char ** argv )
 {
 	// Initialize standard-output logger
 	new Stdout( "stdout", true );
 	
-	if( !Screen::initialize( SCREEN_WIDTH, SCREEN_HEIGHT ) )
+	if( !Overscan::initialize() )
+	{
+		Logger::get() << "Could not initialize overscan tool. Exiting." << Logger::endl;
+
+		Logger::destroy();
+		exit( 1 );
+	}
+	
+	if( !Screen::initialize() )
 	{
 		cout << "Unable to initialize screen. Exiting." << endl;
 		return 1;
 	}
 	
 	// Set the orthogonal origin at the top-left corner
-	Matrix::projection = Matrix::ortho( 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, -1, 1 );
+	Matrix::projection = Matrix::ortho( 0, Screen::get()->getWidth(), Screen::get()->getHeight(), 0, -1, 1 );
 	
 	new BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
 	
@@ -41,20 +49,25 @@ int main( int argc, char ** argv )
 	if( Controller::getControllersCount() == 0 )
 		Controller::scan();
 	
-	Controller * controller = Controller::getFreeController();
+	Controller * controller = NULL;
 	
-	if( controller != NULL )
+	do
 	{
-		new Player( "Player1" );
-		Player::get( "Player1" )->setController( controller );
+		controller = Controller::getFreeController();
+		
+		if( controller != NULL )
+		{
+			Player * player = new Player( controller->getName() );
+			player->setController( controller );
+		}
 	}
-	
+	while( controller != NULL );
+		
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 	
 	SDL_Event lastEvent;
-	Scene * currentScene = new PlayScene();
-
+	Scene * currentScene = new ConfigScene();
 	while( currentScene != NULL )
 	{
 		while( currentScene->isRunning() )
@@ -79,6 +92,7 @@ int main( int argc, char ** argv )
 	Font::destroy();
 	Resource::destroy();
 	Screen::destroy();
+	Overscan::destroy();
 	Logger::destroy();
 	
 	return 0;

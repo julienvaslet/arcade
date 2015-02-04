@@ -137,7 +137,11 @@ namespace opengl
 	
 	void BitmapFont::getTextSize( Point2D& origin, const string& text, float size ) const
 	{
-		origin.moveBy( 0, (this->characterHeight - (2.0f * this->marginHeight)) * size );
+		if( size == 0.0f )
+			size = 1.0f;
+			
+		if( text.length() > 0 )
+			origin.moveBy( 0, (this->characterHeight - (2.0f * this->marginHeight)) * size );
 		
 		for( unsigned int i = 0 ; i < text.length() ; i++ )
 		{
