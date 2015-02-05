@@ -315,9 +315,33 @@ namespace overscan
 			Font::get("bitmap")->write( Point2D( this->left + (screenWidth - textSize.getX()) / 2.0f, this->top + screenHeight - textSize.getY() - 20 ), this->sBottom );
 			
 			// Instructions
-			textSize.moveTo( 0, 0 );
-			Font::get("bitmap")->getTextSize( textSize, this->instructions );
-			Font::get("bitmap")->write( Point2D( this->left + (screenWidth - textSize.getX()) / 2.0f, this->top + (screenHeight - textSize.getY()) / 2.0f ), this->instructions );
+			textSize.moveTo( 0, this->top + (screenHeight - Font::get("bitmap")->getTextHeight( this->instructions ) ) / 2.0f );
+			
+			string line;
+			unsigned int index = 0;
+			size_t newLineIndex = this->instructions.find( '\n', index );
+			
+			while( newLineIndex != string::npos )
+			{
+				line = this->instructions.substr( index, newLineIndex - index );
+				textSize.setX( this->left + (screenWidth - Font::get("bitmap")->getTextWidth( line )) / 2.0f );
+				
+				Font::get("bitmap")->write( textSize, line );
+				textSize.moveBy( 0, Font::get("bitmap")->getTextHeight( line ) );
+				
+				index = newLineIndex + 1;
+				newLineIndex = this->instructions.find( '\n', index );
+			}
+			
+			if( index < this->instructions.length() )
+			{
+				line = this->instructions.substr( index );
+				textSize.setX( this->left + (screenWidth - Font::get("bitmap")->getTextWidth( line )) / 2.0f );
+				Font::get("bitmap")->write( textSize, line );
+			}
+			
+			//Font::get("bitmap")->getTextSize( textSize, this->instructions );
+			//Font::get("bitmap")->write( Point2D( this->left + (screenWidth - textSize.getX()) / 2.0f, this->top + (screenHeight - textSize.getY()) / 2.0f ), this->instructions );
 			
 			Font::get("bitmap")->render();
 			
