@@ -137,6 +137,8 @@ namespace opengl
 	
 	void BitmapFont::getTextSize( Point2D& origin, const string& text, float size ) const
 	{
+		float maxWidth = 0.0f;
+		
 		if( size == 0.0f )
 			size = 1.0f;
 			
@@ -146,20 +148,28 @@ namespace opengl
 		for( unsigned int i = 0 ; i < text.length() ; i++ )
 		{
 			if( text[i] == '\n' )
-				origin.moveBy( 0, (this->characterHeight - (2.0f * this->marginHeight)) * size );
+			{
+				if( origin.getX() > maxWidth )
+					maxWidth = origin.getX();
+				
+				origin.moveBy( -1 * origin.getX(), (this->characterHeight - (2.0f * this->marginHeight)) * size );
+			}
 			else
 				origin.moveBy( (this->characterWidth - (2.0f * this->marginWidth)) * size, 0 );
 		}
+		
+		if( maxWidth > origin.getX() )
+			origin.setX( maxWidth );
 	}
 	
-	unsigned int BitmapFont::getTextWidth( const string& text, float size ) const
+	float BitmapFont::getTextWidth( const string& text, float size ) const
 	{
 		Point2D origin( 0, 0 );
 		this->getTextSize( origin, text, size );
 		return origin.getX();
 	}
 	
-	unsigned int BitmapFont::getTextHeight( const string& text, float size ) const
+	float BitmapFont::getTextHeight( const string& text, float size ) const
 	{
 		Point2D origin( 0, 0 );
 		this->getTextSize( origin, text, size );

@@ -2,7 +2,7 @@
 
 namespace overscan
 {
-	ConfigSceneEventHandler::ConfigSceneEventHandler( ConfigScene * scene ) : scene(scene)
+	ConfigSceneEventHandler::ConfigSceneEventHandler( ConfigScene * scene ) : scene(scene), lastTickEvent(0)
 	{
 	}
 	

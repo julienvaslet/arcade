@@ -22,29 +22,6 @@ namespace overscan
 	{
 		Overscan::get( &(this->left), &(this->right), &(this->top), &(this->bottom) );
 		
-		Color white( "ffffff" );		
-		ColoredRectangle * rectangle = NULL;
-
-		// Top
-		rectangle = new ColoredRectangle( Screen::get()->getWidth(), 10, white );
-		rectangle->getOrigin().moveTo( 0.0f, 0.0f, 0.0f );
-		this->rectangles.push_back( rectangle );
-		
-		// Left
-		rectangle = new ColoredRectangle( 10, Screen::get()->getHeight(), white );
-		rectangle->getOrigin().moveTo( 0.0f, 0.0f, 0.0f );
-		this->rectangles.push_back( rectangle );
-		
-		// Right
-		rectangle = new ColoredRectangle( Screen::get()->getWidth(), 10, white );
-		rectangle->getOrigin().moveTo( 0.0f, Screen::get()->getHeight() - 10, 0.0f );
-		this->rectangles.push_back( rectangle );
-		
-		// Bottom
-		rectangle = new ColoredRectangle( 10, Screen::get()->getHeight(), white );
-		rectangle->getOrigin().moveTo( Screen::get()->getWidth() - 10, 0.0f, 0.0f );
-		this->rectangles.push_back( rectangle );
-		
 		this->updateStrings();
 		this->initializeStep();
 		
@@ -86,6 +63,43 @@ namespace overscan
 	{
 		Overscan::set( &(this->left), &(this->right), &(this->top), &(this->bottom) );
 		this->updateStrings();
+		this->initializeStep( this->step );
+	}
+	
+	void ConfigScene::initializeRectangles()
+	{
+		// Create a rectangle to keep shaders loaded
+		Color white( "ffffff" );
+		ColoredRectangle * rectangle = new ColoredRectangle( 0, 0, white );
+		
+		// Clear old rectangles
+		for( vector<ColoredRectangle *>::iterator it = this->rectangles.begin() ; it != this->rectangles.end() ; it++ )
+			delete (*it);
+			
+		this->rectangles.clear();
+		
+		unsigned int screenWidth = Screen::get()->getWidth() - this->left - this->right;
+		unsigned int screenHeight = Screen::get()->getHeight() - this->top - this->bottom;
+		
+		// Top
+		rectangle->resize( screenWidth, 10 );
+		rectangle->getOrigin().moveTo( this->left, this->top, 0.0f );
+		this->rectangles.push_back( rectangle );
+		
+		// Left
+		rectangle = new ColoredRectangle( 10, screenHeight, white );
+		rectangle->getOrigin().moveTo( this->left, this->top, 0.0f );
+		this->rectangles.push_back( rectangle );
+		
+		// Bottom
+		rectangle = new ColoredRectangle( screenWidth, 10, white );
+		rectangle->getOrigin().moveTo( this->left, this->top + screenHeight - 10, 0.0f );
+		this->rectangles.push_back( rectangle );
+		
+		// Right
+		rectangle = new ColoredRectangle( 10, screenHeight, white );
+		rectangle->getOrigin().moveTo( this->left + screenWidth - 10, this->top, 0.0f );
+		this->rectangles.push_back( rectangle );
 	}
 	
 	void ConfigScene::initializeStep( int step )
@@ -95,18 +109,18 @@ namespace overscan
 		{
 			case 0:
 			{
-				this->instructions = "Make the top-left corner visible";
+				this->instructions = "Make the top-left\ncorner visible";
 				
-				
+				this->initializeRectangles();
 		
 				// Left-top corner
 				ColoredRectangle * rectangle = new ColoredRectangle( 10, 100 );
-				rectangle->getOrigin().moveTo( 0.0f, 0.0f, 0.0f );
+				rectangle->getOrigin().moveTo( this->left, this->top, 0.0f );
 				rectangle->getColor().setColor( "ff0000" );
 				this->rectangles.push_back( rectangle );
 		
 				rectangle = new ColoredRectangle( 100, 10 );
-				rectangle->getOrigin().moveTo( 0.0f, 0.0f, 0.0f );
+				rectangle->getOrigin().moveTo( this->left, this->top, 0.0f );
 				rectangle->getColor().setColor( "ff0000" );
 				this->rectangles.push_back( rectangle );
 				
@@ -116,16 +130,18 @@ namespace overscan
 			
 			case 1:
 			{
-				this->instructions = "Make the bottom-right corner visible";
+				this->instructions = "Make the bottom-right\ncorner visible";
+				
+				this->initializeRectangles();
 		
 				// Right-bottom corner
 				ColoredRectangle * rectangle = new ColoredRectangle( 10, 100 );
-				rectangle->getOrigin().moveTo( Screen::get()->getWidth() - 10, Screen::get()->getHeight() - 100, 0.0f );
+				rectangle->getOrigin().moveTo( Screen::get()->getWidth() - this->right - 10, Screen::get()->getHeight() - this->bottom - 100, 0.0f );
 				rectangle->getColor().setColor( "ff0000" );
 				this->rectangles.push_back( rectangle );
 		
 				rectangle = new ColoredRectangle( 100, 10 );
-				rectangle->getOrigin().moveTo( Screen::get()->getWidth() - 100, Screen::get()->getHeight() - 10, 0.0f );
+				rectangle->getOrigin().moveTo( Screen::get()->getWidth() - this->right - 100, Screen::get()->getHeight() - this->bottom - 10, 0.0f );
 				rectangle->getColor().setColor( "ff0000" );
 				this->rectangles.push_back( rectangle );
 				
@@ -160,80 +176,80 @@ namespace overscan
 		}
 	}
 
-	void ConfigScene::moveDown()
+	void ConfigScene::moveDown( unsigned int times )
 	{
 		switch( this->step )
 		{
 			case 0:
 			{
-				this->top++;
+				this->top += times;
 				this->updateOverscan();
 				break;
 			}
 			
 			case 1:
 			{
-				this->bottom--;
+				this->bottom -= times;
 				this->updateOverscan();
 				break;
 			}
 		}
 	}
 	
-	void ConfigScene::moveUp()
+	void ConfigScene::moveUp( unsigned int times )
 	{
 		switch( this->step )
 		{
 			case 0:
 			{
-				this->top--;
+				this->top -= times;
 				this->updateOverscan();
 				break;
 			}
 			
 			case 1:
 			{
-				this->bottom++;
+				this->bottom += times;
 				this->updateOverscan();
 				break;
 			}
 		}
 	}
 	
-	void ConfigScene::moveLeft()
+	void ConfigScene::moveLeft( unsigned int times )
 	{
 		switch( this->step )
 		{
 			case 0:
 			{
-				this->left--;
+				this->left -= times;
 				this->updateOverscan();
 				break;
 			}
 			
 			case 1:
 			{
-				this->right++;
+				this->right += times;
 				this->updateOverscan();
 				break;
 			}
 		}
 	}
 	
-	void ConfigScene::moveRight()
+	void ConfigScene::moveRight( unsigned int times )
 	{
 		switch( this->step )
 		{
 			case 0:
 			{
-				this->left++;
+				this->left += times;
 				this->updateOverscan();
 				break;
 			}
 			
 			case 1:
 			{
-				this->right--;
+				this->right -= times;
 				this->updateOverscan();
 				break;
 			}
@@ -256,6 +272,7 @@ namespace overscan
 
 	void ConfigScene::live( unsigned int ticks )
 	{
+		Controller::tickEvent( ticks );
 	}
 	
 	void ConfigScene::render( unsigned int ticks )
@@ -274,30 +291,33 @@ namespace overscan
 				
 			ColoredRectangle::render( vertices, colors, indices );
 			
+			unsigned int screenWidth = Screen::get()->getWidth() - this->left - this->right;
+			unsigned int screenHeight = Screen::get()->getHeight() - this->top - this->bottom;
+			
 			// Top
 			textSize.moveTo( 0, 0 );
 			Font::get("bitmap")->getTextSize( textSize, this->sTop );
-			Font::get("bitmap")->write( Point2D( (Screen::get()->getWidth() - textSize.getX()) / 2.0f, 20 ), this->sTop );
+			Font::get("bitmap")->write( Point2D( this->left + (screenWidth - textSize.getX()) / 2.0f, this->top + 20 ), this->sTop );
 			
 			// Left
 			textSize.moveTo( 0, 0 );
 			Font::get("bitmap")->getTextSize( textSize, this->sLeft );
-			Font::get("bitmap")->write( Point2D( 20, (Screen::get()->getHeight() - textSize.getY()) / 2.0f ), this->sLeft );
+			Font::get("bitmap")->write( Point2D( this->left + 20, this->top + (screenHeight - textSize.getY()) / 2.0f ), this->sLeft );
 			
 			// Right
 			textSize.moveTo( 0, 0 );
 			Font::get("bitmap")->getTextSize( textSize, this->sRight );
-			Font::get("bitmap")->write( Point2D( Screen::get()->getWidth() - textSize.getX() - 20, (Screen::get()->getHeight() - textSize.getY()) / 2.0f ), this->sRight );
+			Font::get("bitmap")->write( Point2D( this->left + screenWidth - textSize.getX() - 20, this->top + (screenHeight - textSize.getY()) / 2.0f ), this->sRight );
 			
 			// Bottom
 			textSize.moveTo( 0, 0 );
 			Font::get("bitmap")->getTextSize( textSize, this->sBottom );
-			Font::get("bitmap")->write( Point2D( (Screen::get()->getWidth() - textSize.getX()) / 2.0f, Screen::get()->getHeight() - textSize.getY() - 20 ), this->sBottom );
+			Font::get("bitmap")->write( Point2D( this->left + (screenWidth - textSize.getX()) / 2.0f, this->top + screenHeight - textSize.getY() - 20 ), this->sBottom );
 			
 			// Instructions
 			textSize.moveTo( 0, 0 );
 			Font::get("bitmap")->getTextSize( textSize, this->instructions );
-			Font::get("bitmap")->write( Point2D( (Screen::get()->getWidth() - textSize.getX()) / 2.0f, (Screen::get()->getHeight() - textSize.getY()) / 2.0f ), this->instructions );
+			Font::get("bitmap")->write( Point2D( this->left + (screenWidth - textSize.getX()) / 2.0f, this->top + (screenHeight - textSize.getY()) / 2.0f ), this->instructions );
 			
 			Font::get("bitmap")->render();
 			

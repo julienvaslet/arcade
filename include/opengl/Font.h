@@ -22,8 +22,8 @@ namespace opengl
 		public:
 			virtual void write( const Point2D& origin, const string& text, const Color& color, float size = 0.0f ) = 0;
 			virtual void getTextSize( Point2D& origin, const string& text, float size = 0.0f ) const = 0;
-			virtual unsigned int getTextWidth( const string& text, float size = 0.0f ) const = 0;
-			virtual unsigned int getTextHeight( const string& text, float size = 0.0f ) const = 0;
+			virtual float getTextWidth( const string& text, float size = 0.0f ) const = 0;
+			virtual float getTextHeight( const string& text, float size = 0.0f ) const = 0;
 			void write( const Point2D& origin, const string& text, float size = 0.0f )
 			{
 				Color color( 1.0f, 1.0f, 1.0f, 1.0f );

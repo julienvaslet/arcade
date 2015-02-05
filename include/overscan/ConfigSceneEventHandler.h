@@ -12,6 +12,7 @@ namespace overscan
 	{
 		protected:
 			ConfigScene * scene;
+			unsigned int lastTickEvent;
 		
 		public:
 			ConfigSceneEventHandler( ConfigScene * scene );

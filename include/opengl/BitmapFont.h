@@ -38,8 +38,8 @@ namespace opengl
 		
 			virtual void write( const Point2D& origin, const string& text, const Color& color, float size = 0.0f );
 			virtual void getTextSize( Point2D& origin, const string& text, float size = 0.0f ) const;
-			virtual unsigned int getTextWidth( const string& text, float size = 0.0f ) const;
-			virtual unsigned int getTextHeight( const string& text, float size = 0.0f ) const;
+			virtual float getTextWidth( const string& text, float size = 0.0f ) const;
+			virtual float getTextHeight( const string& text, float size = 0.0f ) const;
 			virtual void render();
 			
 			static string getFontNameFromPath( const string& filename );

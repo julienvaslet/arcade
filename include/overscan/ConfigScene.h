@@ -30,6 +30,7 @@ namespace overscan
 			
 			void updateStrings();
 			void updateOverscan();
+			void initializeRectangles();
 			void initializeStep( int step = 0 );
 			
 		public:
@@ -40,10 +41,10 @@ namespace overscan
 			virtual void live( unsigned int ticks );
 			virtual void render( unsigned int ticks );
 			
-			void moveDown();
-			void moveUp();
-			void moveLeft();
-			void moveRight();
+			void moveDown( unsigned int times = 1 );
+			void moveUp( unsigned int times = 1 );
+			void moveLeft( unsigned int times = 1 );
+			void moveRight( unsigned int times = 1 );
 			void nextStep();
 			void previousStep();
 	};
