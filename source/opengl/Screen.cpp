@@ -1,5 +1,8 @@
 #include <opengl/Screen.h>
 #include <opengl/OpenGL.h>
+#include <tools/pi/Overscan.h>
+
+using namespace tools::pi;
 
 #ifdef DEBUG0
 #include <tools/logger/Logger.h>
@@ -312,7 +315,7 @@ namespace opengl
 		return success;
 	}
 		
-	bool Screen::initialize( int width, int height, bool autoResize, int majorVersion, int minorVersion )
+	bool Screen::initialize( int width, int height, bool autoResize, bool ignoreOverscan, int majorVersion, int minorVersion )
 	{
 		bool success = true;
 		
@@ -322,6 +325,17 @@ namespace opengl
 		#else
 		SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO );
 		#endif
+		
+		int overscanTop = 0;
+		int overscanBottom = 0;
+		int overscanLeft = 0;
+		int overscanRight = 0;
+		
+		if( !ignoreOverscan )
+		{
+			Overscan::initialize();
+			Overscan::get( &overscanLeft, &overscanRight, &overscanTop, &overscanBottom );
+		}
 
 		int displayWidth = 0;
 		int displayHeight = 0;
@@ -333,12 +347,15 @@ namespace opengl
 			displayHeight = height;
 		}
 		
+		int viewWidth = displayWidth - overscanLeft - overscanRight;
+		int viewHeight = displayHeight - overscanTop - overscanBottom;
+		
 		Screen * screen = new Screen();
 		
 		if( width == 0 || height == 0 )
 		{
-			width = displayWidth;
-			height = displayHeight;
+			width = viewWidth;
+			height = viewHeight;
 			
 			#ifdef DEBUG0
 			Logger::get() << "[Screen] Auto-sized window: " << width << "x" << height << "." << Logger::endl;
@@ -346,8 +363,8 @@ namespace opengl
 		}
 		else if( autoResize )
 		{
-			double widthRatio = static_cast<double>( displayWidth ) / static_cast<double>( width );
-			double heightRatio = static_cast<double>( displayHeight ) / static_cast<double>( height );
+			double widthRatio = static_cast<double>( viewWidth ) / static_cast<double>( width );
+			double heightRatio = static_cast<double>( viewHeight ) / static_cast<double>( height );
 			
 			#ifdef DEBUG0
 			Logger::get() << "[Screen] Original window size: " << width << "x" << height << "." << Logger::endl;
@@ -355,13 +372,13 @@ namespace opengl
 			
 			if( widthRatio < heightRatio )
 			{
-				width = displayWidth;
+				width = viewWidth;
 				height = ceil( height * widthRatio );
 			}
 			else
 			{
 				width = ceil( width * heightRatio );
-				height = displayHeight;
+				height = viewHeight;
 			}
 			
 			#ifdef DEBUG0
@@ -373,8 +390,8 @@ namespace opengl
 		screen->height = height;
 		
 		// Centering
-		screen->x = static_cast<int>( (displayWidth - width) / 2.0 );
-		screen->y = static_cast<int>( (displayHeight - height) / 2.0 );
+		screen->x = static_cast<int>( overscanLeft + (viewWidth - width) / 2.0 );
+		screen->y = static_cast<int>( overscanRight + (viewHeight - height) / 2.0 );
 
 		if( !screen->createWindow( displayWidth, displayHeight ) )
 		{
@@ -421,6 +438,7 @@ namespace opengl
 		delete screen;
 		Screen::instance = NULL;
 	
+		Overscan::destroy();
 		SDL_Quit();
 	}
 

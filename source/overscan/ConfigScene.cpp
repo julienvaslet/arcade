@@ -340,9 +340,6 @@ namespace overscan
 				Font::get("bitmap")->write( textSize, line );
 			}
 			
-			//Font::get("bitmap")->getTextSize( textSize, this->instructions );
-			//Font::get("bitmap")->write( Point2D( this->left + (screenWidth - textSize.getX()) / 2.0f, this->top + (screenHeight - textSize.getY()) / 2.0f ), this->instructions );
-			
 			Font::get("bitmap")->render();
 			
 			Screen::get()->render();

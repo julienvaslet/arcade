@@ -31,10 +31,13 @@ int main( int argc, char ** argv )
 		exit( 1 );
 	}
 	
-	if( !Screen::initialize() )
+	if( !Screen::initialize( 0, 0, false, true ) )
 	{
-		cout << "Unable to initialize screen. Exiting." << endl;
-		return 1;
+		Logger::get() << "Unable to initialize screen. Exiting." << Logger::endl;
+		
+		Overscan::destroy();
+		Logger::destroy();
+		exit( 1 );
 	}
 	
 	// Set the orthogonal origin at the top-left corner
@@ -86,6 +89,18 @@ int main( int argc, char ** argv )
 		delete currentScene;
 		currentScene = nextScene;
 	}
+	
+	#ifdef __NO_X_WINDOW__
+	// Save overscan (only on a pi)
+	int left = 0;
+	int right = 0;
+	int top = 0;
+	int bottom = 0;
+	
+	Overscan::get( &left, &right, &top, &bottom );
+	
+	
+	#endif
 	
 	Player::destroy();
 	Controller::destroy();
