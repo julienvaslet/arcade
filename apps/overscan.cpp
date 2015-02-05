@@ -10,6 +10,10 @@
 #include <tools/logger/Stdout.h>
 #include <tools/pi/Overscan.h>
 
+#include <fstream>
+#include <sstream>
+#include <string>
+
 using namespace opengl;
 using namespace tools::logger;
 using namespace tools::pi;
@@ -99,7 +103,24 @@ int main( int argc, char ** argv )
 	
 	Overscan::get( &left, &right, &top, &bottom );
 	
+	stringstream ss;
+	ss << "\n# Overscan configuration\n";
+	ss << "overscan_left=" << left << "\n";
+	ss << "overscan_right=" << right << "\n";
+	ss << "overscan_top=" << top << "\n";
+	ss << "overscan_bottom=" << bottom << "\n";
 	
+	ofstream configTxt;
+	configTxt.open( "/boot/config.txt", ios::out | ios::app );
+	
+	if( configTxt.is_open() )
+	{
+		configTxt << ss.str();
+		configTxt.close();
+	}
+	else
+		Logger::get() << "Could not open \"/boot/config.txt\". Overscan configuration will not persist." << Logger::endl;
+
 	#endif
 	
 	Player::destroy();
