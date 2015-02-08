@@ -8,8 +8,12 @@
 #include <opengl/Texture2D.h>
 #include <opengl/ArrayBufferObject.h>
 #include <opengl/ElementArrayBufferObject.h>
+#include <opengl/TexturedRectangle.h>
+
+#include <game/Resource.h>
 
 using namespace opengl;
+using namespace game;
 
 namespace blockgame
 {
@@ -25,6 +29,7 @@ namespace blockgame
 			static ElementArrayBufferObject * indices;
 		
 			Point2D position;
+			TexturedRectangle * rectangle;
 			Color color;
 			
 		public:
@@ -32,9 +37,9 @@ namespace blockgame
 			~Block();
 			
 			Point2D& getPosition();
+			void prepareRendering( Point3D& origin, vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices );
 			
-			void prepareRendering( vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices ) const;
-			static void renderBlocks( Matrix& projection, Matrix& modelview, vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices );
+			static void render( vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices );
 	};
 }
 

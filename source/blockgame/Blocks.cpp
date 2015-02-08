@@ -19,6 +19,11 @@ namespace blockgame
 			delete (*it);
 	}
 	
+	Point3D& Blocks::getOrigin()
+	{
+		return this->origin;
+	}
+	
 	void Blocks::insert( Block * block )
 	{
 		this->blocks.push_back( block );
@@ -57,21 +62,10 @@ namespace blockgame
 		return hasCollision;
 	}
 	
-	void Blocks::render( Matrix& projection, Matrix& modelview )
+	void Blocks::prepareRendering( vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices )
 	{
-		if( this->blocks.size() > 0 )
-		{
-			vector<Point3D> vPoints;
-			vector<Point2D> vTexCoords;
-			vector<Color> vColors;
-			vector<unsigned short int> vIndices;
-		
-			// Adding blocks to buffer objects
-			for( vector<Block *>::iterator it = this->blocks.begin() ; it != this->blocks.end() ; it++ )
-				(*it)->prepareRendering( vPoints, vTexCoords, vColors, vIndices );
-		
-			Block::renderBlocks( projection, modelview, vPoints, vTexCoords, vColors, vIndices );
-		}
+		for( vector<Block *>::iterator it = this->blocks.begin() ; it != this->blocks.end() ; it++ )
+			(*it)->prepareRendering( this->origin, vPoints, vTexCoords, vColors, vIndices );
 	}
 }
 

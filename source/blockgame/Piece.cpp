@@ -1,11 +1,10 @@
 #include <blockgame/Piece.h>
-#include <tools/logger/Logger.h>
+#include <blockgame/Constants.h>
 #include <opengl/Vector.h>
 
 #include <cstdlib>
 
 using namespace opengl;
-using namespace tools::logger;
 using namespace std;
 
 namespace blockgame
@@ -90,7 +89,7 @@ namespace blockgame
 			float baseX = (*it)->getPosition().getX();
 			float baseY =  (*it)->getPosition().getY();
 			
-			Vector v1( 0.0f, 0.0f, clockwise ? -1.0f : 1.0f );
+			Vector v1( 0.0f, 0.0f, clockwise ? 1.0f : -1.0f );
 			
 			for( it++ ; it != this->blocks.end(); it++ )
 			{
@@ -114,11 +113,11 @@ namespace blockgame
 		
 			for( ; it != this->blocks.end() ; it++ )
 			{
-				if( (*it)->getPosition().getY() < down )
+				if( (*it)->getPosition().getY() > down )
 					down = (*it)->getPosition().getY();
 			}
 			
-			if( down < 0.0f )
+			if( down >= GRID_HEIGHT )
 				touchingGround = true;
 		}
 		
@@ -128,7 +127,7 @@ namespace blockgame
 	Piece * Piece::generate()
 	{
 		Piece * piece = new Piece();
-		Point2D position( 5.0f, 19.0f );
+		Point2D position( 5.0f, 1.0f );
 		Color color( 0.0f, 0.0f, 0.0f );
 		
 		int index = rand() % 7;

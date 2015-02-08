@@ -2,7 +2,6 @@
 #define __BLOCKGAME_PLAYSCENE_H	1
 
 #include <game/Scene.h>
-#include <opengl/Camera.h>
 #include <blockgame/Grid.h>
 #include <blockgame/Piece.h>
 
@@ -10,6 +9,7 @@
 #include <string>
 
 using namespace game;
+using namespace std;
 
 namespace blockgame
 {
@@ -26,7 +26,7 @@ namespace blockgame
 			unsigned int lines;
 			unsigned int score;
 
-			// Stringss to print
+			// Strings to print
 			stringstream levelStr;
 			stringstream linesStr;
 			stringstream scoreStr;
@@ -36,9 +36,6 @@ namespace blockgame
 			Grid * background;
 			Piece * fallingBlock;
 			Piece * nextBlock;
-			
-			// Camera
-			Camera camera;
 			
 			void updateScore();
 			void updateLabels();

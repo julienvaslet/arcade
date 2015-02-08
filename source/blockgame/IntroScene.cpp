@@ -9,14 +9,19 @@
 #include <opengl/Color.h>
 
 #include <controller/Controller.h>
+#include <vector>
 
 using namespace opengl;
 using namespace controller;
+using namespace std;
 
 #ifdef DEBUG1
 #include <tools/logger/Logger.h>
 using namespace tools::logger;
 #endif
+
+#define SCREEN_WIDTH	800
+#define SCREEN_HEIGHT	600	
 
 namespace blockgame
 {
@@ -80,7 +85,7 @@ namespace blockgame
 			
 			if( increaseAlpha )
 			{
-				alpha += 0.1f;
+				alpha += 0.1f * (static_cast<float>( this->lastAlphaChangeTicks ) / static_cast<float>( ticks ));
 				
 				if( alpha > 1.0f )
 				{
@@ -90,7 +95,7 @@ namespace blockgame
 			}
 			else
 			{
-				alpha -= 0.1f;
+				alpha -= 0.1f * (static_cast<float>( this->lastAlphaChangeTicks ) / static_cast<float>( ticks ));
 				
 				if( alpha < 0.0f )
 				{
@@ -109,6 +114,7 @@ namespace blockgame
 		if( ticks - this->lastDrawTicks > 15 )
 		{
 			Screen::get()->clear();
+			Point2D origin;
 			
 			string title = "Block Game !";
 			vector<Color> titleColors;
@@ -125,19 +131,20 @@ namespace blockgame
 			titleColors.push_back( Color( "000000" ) ); // _
 			titleColors.push_back( Color( "ff00ff" ) ); // !
 			
-			Point2D origin;
-			Font::get("bitmap")->renderSize( origin, title, 2.0f );
-			origin.moveTo( (Screen::get()->getWidth() - origin.getX()) / 2.0f, Screen::get()->getHeight() - 150 );
+			Font::get("bitmap")->getTextSize( origin, title, 2.0f );
+			origin.moveTo( (SCREEN_WIDTH - origin.getX()) / 2.0f, 150 );
 			
 			for( unsigned int i = 0 ; i < title.length() ; i++ )
 			{
-				Font::get("bitmap")->render( origin, title.substr( i, 1 ), titleColors[i], 2.0f );
-				origin.moveBy( Font::get("bitmap")->renderWidth( title.substr( i, 1 ), 2.0f ), 0.0f );
-			}	
+				Font::get("bitmap")->write( origin, title.substr( i, 1 ), titleColors[i], 2.0f );
+				origin.moveBy( Font::get("bitmap")->getTextWidth( title.substr( i, 1 ), 2.0f ), 0.0f );
+			}
 			
-			unsigned int width = Font::get("bitmap")->renderWidth( "Press any button to start", 1.0f );
-			Font::get("bitmap")->render( Point2D( (Screen::get()->getWidth() - width) / 2.0f, 200 ), "Press any button to start", this->textColor, 1.0f );
+			origin.moveTo( 0.0f, 0.0f );
+			Font::get("bitmap")->getTextSize( origin, "Press any button to start", 1.0f );
+			Font::get("bitmap")->write( Point2D( (SCREEN_WIDTH - origin.getX()) / 2.0f, SCREEN_HEIGHT - origin.getY() - 200 ), "Press any button to start", this->textColor, 1.0f );
 			
+			Font::get("bitmap")->render();
 			Screen::get()->render();
 			
 			this->lastDrawTicks = ticks;

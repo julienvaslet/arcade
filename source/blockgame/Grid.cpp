@@ -49,15 +49,15 @@ namespace blockgame
 			{
 				for( vector<Block *>::iterator itBlock = this->blocks.begin() ; itBlock != this->blocks.end() ; )
 				{
-					if( (*itBlock)->getPosition().getY() == it->first - deletedLines )
+					if( (*itBlock)->getPosition().getY() == it->first )
 					{
 						delete *itBlock;
 						itBlock = this->blocks.erase( itBlock );
 					}
 					else
 					{
-						if( (*itBlock)->getPosition().getY() > it->first - deletedLines )
-							(*itBlock)->getPosition().moveBy( 0.0f, -1.0f );
+						if( (*itBlock)->getPosition().getY() < it->first )
+							(*itBlock)->getPosition().moveBy( 0.0f, 1.0f );
 
 						itBlock++;
 					}

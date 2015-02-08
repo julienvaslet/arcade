@@ -20,6 +20,9 @@ using namespace tools::logger;
 using namespace opengl;
 using namespace controller;
 
+#define SCREEN_WIDTH	800
+#define SCREEN_HEIGHT	600	
+
 namespace blockgame
 {
 	ScoreScene::ScoreScene( unsigned int score ) : Scene(), lastDrawTicks(0), lastAlphaChangeTicks(0), increaseAlpha(false), textColor(1.0f, 1.0f, 1.0f)
@@ -85,7 +88,7 @@ namespace blockgame
 			
 			if( increaseAlpha )
 			{
-				alpha += 0.1f;
+				alpha += 0.1f * (static_cast<float>( this->lastAlphaChangeTicks ) / static_cast<float>( ticks ));
 				
 				if( alpha > 1.0f )
 				{
@@ -95,7 +98,7 @@ namespace blockgame
 			}
 			else
 			{
-				alpha -= 0.1f;
+				alpha -= 0.1f * (static_cast<float>( this->lastAlphaChangeTicks ) / static_cast<float>( ticks ));
 				
 				if( alpha < 0.0f )
 				{
@@ -114,13 +117,16 @@ namespace blockgame
 		if( ticks - this->lastDrawTicks > 15 )
 		{
 			Screen::get()->clear();
+			Point2D origin;
 			
-			unsigned int width = Font::get("bitmap")->renderWidth( this->score, 1.5f );
-			Font::get("bitmap")->render( Point2D( (Screen::get()->getWidth() - width) / 2.0f, Screen::get()->getHeight() - 150 ), this->score, 1.5f );
+			Font::get("bitmap")->getTextSize( origin, this->score, 1.5f );
+			Font::get("bitmap")->write( Point2D( (SCREEN_WIDTH - origin.getX()) / 2.0f, 150 ), this->score, 1.5f );
 			
-			width = Font::get("bitmap")->renderWidth( "Press any button to quit", 1.0f );
-			Font::get("bitmap")->render( Point2D( (Screen::get()->getWidth() - width) / 2.0f, 200 ), "Press any button to quit", this->textColor, 1.0f );
+			origin.moveTo( 0.0f, 0.0f );
+			Font::get("bitmap")->getTextSize( origin, "Press any button to quit", 1.0f );
+			Font::get("bitmap")->write( Point2D( (SCREEN_WIDTH - origin.getX()) / 2.0f, SCREEN_HEIGHT - origin.getY() - 200 ), "Press any button to quit", this->textColor, 1.0f );
 			
+			Font::get("bitmap")->render();
 			Screen::get()->render();
 			
 			this->lastDrawTicks = ticks;

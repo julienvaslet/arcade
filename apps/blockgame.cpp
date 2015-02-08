@@ -9,6 +9,7 @@
 #include <audio/Mixer.h>
 
 #include <blockgame/IntroScene.h>
+#include <blockgame/Constants.h>
 
 using namespace opengl;
 using namespace tools::logger;
@@ -21,12 +22,14 @@ int main( int argc, char ** argv )
 	// Initialize standard-output logger
 	new Stdout( "stdout", true );
 	
-	// 720 * 576 ?
-	if( !Screen::initialize() )
+	if( !Screen::initialize( SCREEN_WIDTH, SCREEN_HEIGHT ) )
 	{
 		Logger::get() << "Unable to initialize screen. Exiting.\n";
 		return 1;
 	}
+	
+	// Set the orthogonal origin at the top-left corner
+	Matrix::projection = Matrix::ortho( 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, -1, 1 );
 	
 	//new Mixer( 44100, 1, 256 );
 	
@@ -46,8 +49,8 @@ int main( int argc, char ** argv )
 	SDL_Event lastEvent;
 	game::Scene * currentScene = NULL;
 	
-	Screen::get()->setClearColor( Color( 0.0f, 0.0f, 0.0f, 0.0f ) );
-	new BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
+	new BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );	
+	Resource::loadTexture2D( "texture.block", "data/blockgame/block.tga", true );
 
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -76,6 +79,7 @@ int main( int argc, char ** argv )
 	Player::destroy();
 	Controller::destroy();
 	Font::destroy();
+	Resource::destroy();
 	Screen::destroy();
 	//Mixer::destroy();
 	Logger::destroy();

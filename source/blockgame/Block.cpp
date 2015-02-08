@@ -1,13 +1,14 @@
 #include <blockgame/Block.h>
-#include <tools/logger/Logger.h>
+#include <opengl/Matrix.h>
 
-#include <SDL2/SDL.h>
-#include <data/image/Image.h>
+#ifdef DEBUG1
+#include <tools/logger/Logger.h>
+using namespace tools::logger;
+#endif
 
 using namespace opengl;
-using namespace tools::logger;
 
-#define BLOCKGAME_TEXTURE_FILENAME	"data/blockgame/block.tga"
+#define BLOCK_SIZE	25.0f
 
 namespace blockgame
 {
@@ -19,7 +20,7 @@ namespace blockgame
 	ArrayBufferObject * Block::colors = NULL;
 	ElementArrayBufferObject * Block::indices = NULL;
 	
-	Block::Block( const Point2D& position, const Color& color ) : position(position), color(color)
+	Block::Block( const Point2D& position, const Color& color ) : position(position), rectangle(NULL), color(color)
 	{
 		Block::instances++;
 		
@@ -36,6 +37,14 @@ namespace blockgame
 			Block::program->link( true );
 		}
 		
+		if( Block::texture == NULL )
+		{
+			Block::texture = (Texture2D *) Resource::get("texture.block");
+			
+			if( Block::texture != NULL )
+				Block::texture->use();
+		}
+		
 		if( Block::vertices == NULL )
 			Block::vertices = new ArrayBufferObject();
 			
@@ -47,37 +56,16 @@ namespace blockgame
 			
 		if( Block::indices == NULL )
 			Block::indices = new ElementArrayBufferObject();
-		
-		if( Block::texture == NULL )
-		{
-			Block::texture = new Texture2D();
-			Block::texture->bind();
-		
-			#ifdef DEBUG0
-			Logger::get() << "[Block] Loading file \"" << BLOCKGAME_TEXTURE_FILENAME << "\"" << Logger::endl;
-			#endif
-		
-			Image * image = Image::load( BLOCKGAME_TEXTURE_FILENAME );
-	
-			if( image != NULL )
-			{	
-				Block::texture->setData( *image );
-				Block::texture->setFiltering( GL_LINEAR, GL_LINEAR );
-
-				delete image;
-			}
-			#ifdef DEBUG1
-			else
-			{
-				Logger::get() << "[Block] Unable to load texture file \"" << BLOCKGAME_TEXTURE_FILENAME << "\"." << Logger::endl;
-			}
-			#endif
-		}
+			
+		this->rectangle = new TexturedRectangle( BLOCK_SIZE, BLOCK_SIZE, "texture.block", false );
 	}
 	
 	Block::~Block()
 	{
 		Block::instances--;
+		
+		if( this->rectangle != NULL )
+			delete this->rectangle;
 		
 		if( Block::instances == 0 )
 		{
@@ -85,6 +73,12 @@ namespace blockgame
 			{
 				delete Block::program;
 				Block::program = NULL;
+			}
+			
+			if( Block::texture != NULL )
+			{
+				Block::texture->free();
+				Block::texture = NULL;
 			}
 			
 			if( Block::vertices != NULL )
@@ -110,12 +104,6 @@ namespace blockgame
 				delete Block::indices;
 				Block::indices = NULL;
 			}
-			
-			if( Block::texture != NULL )
-			{
-				delete Block::texture;
-				Block::texture = NULL;
-			}
 		}
 	}
 	
@@ -124,38 +112,19 @@ namespace blockgame
 		return this->position;
 	}
 	
-	void Block::prepareRendering( vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices ) const
+	void Block::prepareRendering( Point3D& origin, vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices )
 	{
-		unsigned short int j = static_cast<unsigned short int>( vPoints.size() );
-		 
-		// Points
-		vPoints.push_back( Point3D( 3.0f * this->position.getX(), 3.0f * this->position.getY(), 0.0f ) );
-		vPoints.push_back( Point3D( 3.0f * this->position.getX(), 3.0f * (this->position.getY() + 1.0f), 0.0f ) );
-		vPoints.push_back( Point3D( 3.0f * (this->position.getX() + 1.0f), 3.0f * (this->position.getY() + 1.0f), 0.0f ) );
-		vPoints.push_back( Point3D( 3.0f * (this->position.getX() + 1.0f), 3.0f * this->position.getY(), 0.0f ) );
-		
-		// Texture Coordinates
-		vTexCoords.push_back( Point2D( 0.0f, 0.0f ) );
-		vTexCoords.push_back( Point2D( 0.0f, 1.0f ) );
-		vTexCoords.push_back( Point2D( 1.0f, 1.0f ) );
-		vTexCoords.push_back( Point2D( 1.0f, 0.0f ) );
+		this->rectangle->getOrigin().moveTo( origin.getX() + this->position.getX() * BLOCK_SIZE, origin.getY() + this->position.getY() * BLOCK_SIZE, origin.getZ() );
+		this->rectangle->prepareRendering( vPoints, vTexCoords, vIndices );
 		
 		// Colors
 		vColors.push_back( this->color );
 		vColors.push_back( this->color );
 		vColors.push_back( this->color );
 		vColors.push_back( this->color );
-
-		// Indices
-		vIndices.push_back( j );
-		vIndices.push_back( j + 1 );
-		vIndices.push_back( j + 2 );
-		vIndices.push_back( j );
-		vIndices.push_back( j + 2 );
-		vIndices.push_back( j + 3 );
 	}
 	
-	void Block::renderBlocks( Matrix& projection, Matrix& modelview, vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices )
+	void Block::render( vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices )
 	{
 		Block::program->use( true );
 
@@ -164,8 +133,8 @@ namespace blockgame
 		Block::colors->setData( vColors );
 		Block::indices->setData( vIndices );
 
-		Block::program->sendUniform( "projection_matrix", projection, false );
-		Block::program->sendUniform( "modelview_matrix", modelview, false );
+		Block::program->sendUniform( "projection_matrix", Matrix::projection, false );
+		Block::program->sendUniform( "modelview_matrix", Matrix::modelview, false );
 		Block::program->sendUniform( "texture", *(Block::texture), 0 );
 		Block::program->sendVertexPointer( "a_Vertex", Block::vertices );
 		Block::program->sendColorPointer( "a_Color", Block::colors );

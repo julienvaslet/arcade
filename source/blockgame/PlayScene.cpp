@@ -1,10 +1,12 @@
 #include <blockgame/PlayScene.h>
 #include <blockgame/ScoreScene.h>
 #include <blockgame/PlaySceneEventHandler.h>
+#include <blockgame/Constants.h>
 
 #include <opengl/OpenGL.h>
 #include <opengl/Font.h>
 #include <opengl/Screen.h>
+#include <opengl/Point3D.h>
 #include <opengl/Point2D.h>
 #include <opengl/Color.h>
 
@@ -103,16 +105,22 @@ namespace blockgame
 		Mixer::get()->setRepeat( "BlockgameSong", true );*/
 		
 		// Creating grid
-		this->blocks = new Grid( 10.0f, 20.0f );
-		this->background = new Grid( 10.0f, 20.0f );
+		this->blocks = new Grid( GRID_WIDTH, GRID_HEIGHT );
+		this->blocks->getOrigin().moveTo( GRID_X, GRID_Y, 0.0f );
+		
+		this->background = new Grid( GRID_WIDTH, GRID_HEIGHT );
+		this->background->getOrigin().moveTo( GRID_X, GRID_Y, -0.5f );
 		
 		// Generating pieces
 		this->fallingBlock = Piece::generate();
+		this->fallingBlock->getOrigin().moveTo( GRID_X, GRID_Y, 0.0f );
+		
 		this->nextBlock = Piece::generate();
+		this->nextBlock->getOrigin().moveTo( NEXT_X, NEXT_Y, 0.0f );
 	
 		// Fill background vector
 		Point2D position( 0.0f, 0.0f );
-		Color backgroundColor( 1.0f, 1.0f, 1.0f );
+		Color backgroundColor( "ffffff" );
 		backgroundColor.setAlpha( 0.2f );
 	
 		for( unsigned int y = 0 ; y < 20 ; y++ )
@@ -123,9 +131,6 @@ namespace blockgame
 				this->background->insert( new Block( position, backgroundColor ) );
 			}
 		}
-		
-		this->camera.getEye().moveTo( 0.0f, 0.0f, 70.0f );
-		this->camera.getCenter().moveTo( 0.0f, 0.0f, 0.0f );
 	
 		this->updateLabels();
 		this->lastBlockMove = SDL_GetTicks();
@@ -143,7 +148,7 @@ namespace blockgame
 		
 		if( this->nextBlock != NULL )
 			delete this->nextBlock;
-			
+		
 		if( this->blocks != NULL )
 			delete this->blocks;
 			
@@ -171,7 +176,10 @@ namespace blockgame
 		this->blocks->insert( this->fallingBlock );
 		delete this->fallingBlock;
 		this->fallingBlock = this->nextBlock;
+		this->fallingBlock->getOrigin().moveTo( GRID_X, GRID_Y, 0.0f );
+		
 		this->nextBlock = Piece::generate();
+		this->nextBlock->getOrigin().moveTo( NEXT_X, NEXT_Y, 0.0f );
 	
 		this->lines += this->blocks->deleteFullLines();
 		this->level = ( this->lines / 10 ) + 1;
@@ -226,11 +234,11 @@ namespace blockgame
 			if( ticks - this->lastBlockMove > static_cast<unsigned int>( 500.0f - ((static_cast<float>( this->level ) - 1.0f) * 50.0f)) )
 			{
 				// Free-fall action
-				this->fallingBlock->moveBy( 0.0f, -1.0f );
+				this->fallingBlock->moveBy( 0.0f, 1.0f );
 				
 				if( this->fallingBlock->isAtGround() || this->fallingBlock->isInCollision( this->blocks ) )
 				{					
-					this->fallingBlock->moveBy( 0.0f, 1.0f );
+					this->fallingBlock->moveBy( 0.0f, -1.0f );
 					this->updateScore();
 					
 					this->switchBlocks();
@@ -251,41 +259,38 @@ namespace blockgame
 	{
 		if( ticks - this->lastDrawTicks > 15 )
 		{
+			vector<Point3D> vPoints;
+			vector<Point2D> vTexCoords;
+			vector<Color> vColors;
+			vector<unsigned short int> vIndices;
+			
 			Screen::get()->clear();
-			
-			float screenRatio = static_cast<float>( Screen::get()->getWidth() ) / static_cast<float>( Screen::get()->getHeight() );
-			float screenSize = 35.0f;
-			
-			Matrix projection = Matrix::ortho( -1.0f * screenSize * screenRatio, screenSize * screenRatio, -1.0f * screenSize, screenSize, 1.0f, 100.0f );
-			Matrix modelview = Matrix::lookAt( camera.getEye().getX(), camera.getEye().getY(), camera.getEye().getZ(), camera.getCenter().getX(), camera.getCenter().getY(), camera.getCenter().getZ(), camera.getUp().getX(), camera.getUp().getY(), camera.getUp().getZ() );
-			Matrix translation = Matrix::translation( -28.0f, -30.0f, 0.0f );
-			modelview.multiply( translation );
 
-			this->background->render( projection, modelview );
-			this->blocks->render( projection, modelview );
+			this->background->prepareRendering( vPoints, vTexCoords, vColors, vIndices );
+			this->blocks->prepareRendering( vPoints, vTexCoords, vColors, vIndices );
 			
 			// Falling block
 			if( this->fallingBlock != NULL )
-				this->fallingBlock->render( projection, modelview );
-				
-			// Next block
-			Matrix translation2 = Matrix::translation( 35.0f, -42.0f, 0.0f );
-			modelview.multiply( translation2 );
+				this->fallingBlock->prepareRendering( vPoints, vTexCoords, vColors, vIndices );
 			
+			// Next block
 			if( this->nextBlock != NULL )
-				this->nextBlock->render( projection, modelview );
+				this->nextBlock->prepareRendering( vPoints, vTexCoords, vColors, vIndices );
+			
+			Block::render( vPoints, vTexCoords, vColors, vIndices );
 			
 			// User Interface
-			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 80 ), "Score", 1.0f );
-			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 112 ), this->scoreStr.str(), 1.0f );
+			Font::get("bitmap")->write( Point2D( SCREEN_WIDTH - 250, 80 ), "Score", 1.0f );
+			Font::get("bitmap")->write( Point2D( SCREEN_WIDTH - 250, 112 ), this->scoreStr.str(), 1.0f );
 			
-			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 160 ), "Lines", 1.0f );
-			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 192 ), this->linesStr.str(), 1.0f );
+			Font::get("bitmap")->write( Point2D( SCREEN_WIDTH - 250, 160 ), "Lines", 1.0f );
+			Font::get("bitmap")->write( Point2D( SCREEN_WIDTH - 250, 192 ), this->linesStr.str(), 1.0f );
 			
-			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 240 ), "Level", 1.0f );
-			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 272 ), this->levelStr.str(), 1.0f );
+			Font::get("bitmap")->write( Point2D( SCREEN_WIDTH - 250, 240 ), "Level", 1.0f );
+			Font::get("bitmap")->write( Point2D( SCREEN_WIDTH - 250, 272 ), this->levelStr.str(), 1.0f );
 			
-			Font::get("bitmap")->render( Point2D( Screen::get()->getWidth() - 250, Screen::get()->getHeight() - 380 ), "Next", 1.0f );
+			Font::get("bitmap")->write( Point2D( SCREEN_WIDTH - 250, 380 ), "Next", 1.0f );
+			Font::get("bitmap")->render();
 			
 			Screen::get()->render();
 			this->lastDrawTicks = ticks;
@@ -326,9 +331,9 @@ namespace blockgame
 		this->updateScore();
 		
 		while( !this->fallingBlock->isAtGround() && !this->fallingBlock->isInCollision( this->blocks ) )
-			this->fallingBlock->moveBy( 0.0f, -1.0f );
+			this->fallingBlock->moveBy( 0.0f, 1.0f );
 		
-		this->fallingBlock->moveBy( 0.0f, 1.0f );
+		this->fallingBlock->moveBy( 0.0f, -1.0f );
 		this->switchBlocks();
 	}
 	

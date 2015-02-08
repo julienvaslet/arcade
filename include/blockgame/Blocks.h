@@ -20,12 +20,15 @@ namespace blockgame
 	{
 		protected:
 			vector<Block *> blocks;
+			Point3D origin;
 			
 		public:
 			Blocks( unsigned int reserveBlocks = 4 );
 			~Blocks();
 			
-			void render( Matrix& projection, Matrix& modelview );
+			Point3D& getOrigin();
+			
+			void prepareRendering( vector<Point3D>& vPoints, vector<Point2D>& vTexCoords, vector<Color>& vColors, vector<unsigned short int>& vIndices );
 			
 			void insert( Block * block );
 			void insert( Blocks * blocks );
