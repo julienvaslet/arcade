@@ -12,10 +12,10 @@
 
 #include <controller/Controller.h>
 
-#include <audio/Mixer.h>
+/*#include <audio/Mixer.h>
 #include <audio/Song.h>
 #include <audio/instrument/Sine.h>
-#include <audio/instrument/Silence.h>
+#include <audio/instrument/Silence.h>*/
 
 #include <cstdlib>
 #include <ctime>
@@ -27,8 +27,8 @@ using namespace tools::logger;
 
 using namespace opengl;
 using namespace controller;
-using namespace audio;
-using namespace audio::instrument;
+/*using namespace audio;
+using namespace audio::instrument;*/
 
 namespace blockgame
 {
@@ -172,9 +172,9 @@ namespace blockgame
 	}
 	
 	void PlayScene::switchBlocks()
-	{
+	{	
 		this->blocks->insert( this->fallingBlock );
-		delete this->fallingBlock;
+		delete this->fallingBlock; // this piece is now empty, must be deleted
 		this->fallingBlock = this->nextBlock;
 		this->fallingBlock->getOrigin().moveTo( GRID_X, GRID_Y, 0.0f );
 		

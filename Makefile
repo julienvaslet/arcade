@@ -4,20 +4,20 @@ for = linux
 include targets/$(for)/config
 
 # Are we on a Pidora Raspberry Pi ?
-ifeq ($(for),pi)
+ifneq (,$(filter $(for),pi pi-prod))
 isRaspberryPi := $(shell if [ $(shell grep "^Pidora" /etc/redhat-release | wc -l) = "1" ] ; then echo true ; else echo false; fi)
 else
 isRasberryPi = true
 endif
 
-# If we are on a Raspberry Pi, we launch QEMU
+# If we are not on a Raspberry Pi, we launch QEMU
 ifeq ($(isRaspberryPi),false)
 
 all:
-	sudo ./tools/compile.sh $(shell ls -1 $(applicationDirectory) | grep '\.cpp$$' | sed 's/\.cpp$$//g')
+	sudo TARGET=$(for) ./tools/compile.sh $(shell ls -1 $(applicationDirectory) | grep '\.cpp$$' | sed 's/\.cpp$$//g')
 
 %:
-	sudo ./tools/compile.sh $@
+	sudo TARGET=$(for) ./tools/compile.sh $@
 	
 run:
 	

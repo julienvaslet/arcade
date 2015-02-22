@@ -1,5 +1,5 @@
 target=__PI__
-compileFlags = -D__NO_X_WINDOW__
+compileFlags = -D__NO_X_WINDOW__ -DHAVE_LIBBCM_HOST -DUSE_EXTERNAL_LIBBCM_HOST -DUSE_VCHIQ_ARM
 librariesDirectory := $(shell pwd)/lib/pi-prod
 includesDirectory := $(shell pwd)/include
 sourcesDirectory := $(shell pwd)/source
@@ -10,4 +10,5 @@ sdlconfig = sdl2-config
 compiler = g++
 compilerOptions = -Wall -std=c++11 -I$(includesDirectory) -c `$(sdlconfig) --cflags` $(compileFlags) -D$(target) -I/usr/include/vc -I/usr/include/vc/interface/vcos/pthreads -I/usr/include/vc/interface/vmcs_host/linux
 linker = g++
-linkerOptions = `$(sdlconfig) --libs` -L/usr/lib/vc -lGLESv2 -lbcm_host -lEGL
+#linkerOptions = `$(sdlconfig) --libs` -L/usr/lib/vc -lGLESv2 -lbcm_host -lEGL
+linkerOptions = `$(sdlconfig) --libs` -L/usr/lib/vc -lGLESv2 -lbcm_host -lEGL -lvcos -lvchiq_arm -lpthread -lrt
