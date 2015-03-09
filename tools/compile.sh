@@ -79,7 +79,7 @@ cp -pR ${projectDirectory}/{apps,lib,data,get-dependencies.sh,include,Makefile,s
 umount_image
 
 # Start VM
-${basedir}/arm-pi/qemu/bin/qemu-system-arm -cpu arm1176 -hda ${image} -kernel ${kernel} -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw quiet vga=current" -m 256 -no-reboot -serial stdio -machine versatilepb
+${basedir}/arm-pi/qemu/bin/qemu-system-arm -cpu arm1176 -hda ${image} -kernel ${kernel} -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw quiet vga=current" -m 512 -no-reboot -serial stdio -machine versatilepb
 
 mount_image
 

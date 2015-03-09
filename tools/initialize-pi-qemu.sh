@@ -88,12 +88,12 @@ then
 	echo "QEMU is not installed."
 	
 	title "Installing RPM dependencies"
-	sudo yum install -y SDL-devel zlib-devel pixman-devel libfdt-devel
+	sudo yum install -y SDL-devel zlib-devel pixman-devel libfdt-devel glib2-devel
 	
 	title "Installing QEMU from git repository"
-    git clone git://git.qemu-project.org/qemu.git
-    cd qemu
-    ./configure --target-list="arm-softmmu arm-linux-user" --enable-sdl --enable-kvm --prefix="${basedir}/arm-pi/qemu"
+	git clone git://git.qemu-project.org/qemu.git
+	cd qemu
+	./configure --target-list="arm-softmmu arm-linux-user" --enable-sdl --enable-kvm --prefix="${basedir}/arm-pi/qemu"
 	make
 	make install
 	cd ${basedir}
