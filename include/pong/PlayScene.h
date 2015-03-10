@@ -32,6 +32,7 @@ namespace pong
 			bool paused;
 			bool player1Ready;
 			bool player2Ready;
+			unsigned int gameBounces;
 			
 			#ifdef DEBUG1
 			unsigned int lastFPSRefresh;

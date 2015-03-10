@@ -31,7 +31,7 @@ using namespace tools::logger;
 
 namespace pong
 {
-	PlayScene::PlayScene() : Scene(), lastDrawTicks(0), lastBallMove(0), background(NULL), ball(NULL), ballDirection(0.0f, 0.0f, 0.0f), racket1(NULL), racket2(NULL), scorePlayer1(0), scorePlayer2(0), playing(false), paused(false), player1Ready(false), player2Ready(false)
+	PlayScene::PlayScene() : Scene(), lastDrawTicks(0), lastBallMove(0), background(NULL), ball(NULL), ballDirection(0.0f, 0.0f, 0.0f), racket1(NULL), racket2(NULL), scorePlayer1(0), scorePlayer2(0), playing(false), paused(false), player1Ready(false), player2Ready(false), gameBounces(0)
 	{
 		Player * player1 = Player::get( "Player1" );
 		Player * player2 = Player::get( "Player2" );
@@ -141,6 +141,7 @@ namespace pong
 	void PlayScene::initializeBall( unsigned int player )
 	{
 		this->ball->getOrigin().moveTo( SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f, 0.0f );
+		this->gameBounces = 0;
 		
 		ColoredRectangle * racket = this->racket1;
 		
@@ -307,7 +308,7 @@ namespace pong
 				}
 				#endif
 				
-				double realDelta = (ticks - this->lastBallMove) / 15.0 * BALL_SPEED;
+				double realDelta = (ticks - this->lastBallMove) / 15.0 * ( BALL_SPEED + static_cast<double>( this->gameBounces ) / 10.0 );
 				this->ball->getOrigin().moveBy( realDelta * this->ballDirection.getX(), realDelta * this->ballDirection.getY(), realDelta * this->ballDirection.getZ() );
 				
 				// Check for goal for Player2
@@ -354,6 +355,7 @@ namespace pong
 						{
 							if( this->ball->getOrigin().getY() + (BALL_SIZE / 2.0f) >= this->racket1->getOrigin().getY() && this->ball->getOrigin().getY() - (BALL_SIZE / 2.0f) <= this->racket1->getOrigin().getY() + RACKET_HEIGHT )
 							{
+								gameBounces++;
 								float y = ((this->ball->getOrigin().getY() + (BALL_SIZE / 2.0f) - this->racket1->getOrigin().getY()) / static_cast<float>( RACKET_HEIGHT + BALL_SIZE )) * 2.0f - 1.0f;
 
 								this->ballDirection.setY( y );							
@@ -368,6 +370,7 @@ namespace pong
 						{
 							if( this->ball->getOrigin().getY() + (BALL_SIZE / 2.0f) >= this->racket2->getOrigin().getY() && this->ball->getOrigin().getY() - (BALL_SIZE / 2.0f) <= this->racket2->getOrigin().getY() + RACKET_HEIGHT )
 							{
+								gameBounces++;
 								float y = ((this->ball->getOrigin().getY() + (BALL_SIZE / 2.0f) - this->racket2->getOrigin().getY()) / static_cast<float>( RACKET_HEIGHT + BALL_SIZE )) * 2.0f - 1.0f;
 
 								this->ballDirection.setY( y );
