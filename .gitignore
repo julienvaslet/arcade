@@ -4,3 +4,5 @@
 bin/
 lib/
 tools/arm-pi
+tools/RPI
+tools/RPI2
