@@ -35,17 +35,17 @@ function check_command ()
 	fi
 }
 
-function mount_image ()
+function mount_image_partition ()
 {
-	# Start sector of the last partition
-	startsector=$(file $1 | grep -o "startsector\s\+[0-9]\+" | tail -n1 | cut -f2 -d' ')
+	# Start sector of the N partition
+	startsector=$(file $1 | grep -o "startsector\s\+[0-9]\+" | head -n$2 | tail -n1 | cut -f2 -d' ')
 	offset=$(echo "${startsector} * 512" | bc)
 
-	mkdir -p $2
-	mount -o offset=${offset} $1 $2
+	mkdir -p $3
+	mount -o offset=${offset} $1 $3
 }
 
-function umount_image ()
+function umount_image_partition ()
 {
 	tries=3
 	ret=1
@@ -112,3 +112,39 @@ function download_file ()
 		exit 2
 	fi
 }
+
+# Patches for QEMU Environment
+function apply_qemu_patches ()
+{
+	if [ -z "${basedir}" ]
+	then
+		basedir=$(cd `dirname $0`; pwd)
+	fi
+	
+	if [ -z "$1" ]
+	then
+		echo "No image specified for patches application."
+		return
+	fi
+	
+	mount_image_partition $1 2 "${basedir}/qemu_patches_root"
+	
+	umount_image_partition "${basedir}/qemu_patches_root"
+}
+
+
+function remove_qemu_patches ()
+{
+	if [ -z "${basedir}" ]
+	then
+		basedir=$(cd `dirname $0`; pwd)
+	fi
+	
+	if [ -z "$1" ]
+	then
+		echo "No image specified for patches deletion."
+		return
+	fi
+}
+
+
