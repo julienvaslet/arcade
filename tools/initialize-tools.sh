@@ -21,6 +21,7 @@ title "Prerequisites"
 check_command wget
 check_command md5sum
 check_command awk
+check_command dd
 check_command fdisk
 check_command losetup
 check_command kpartx
@@ -28,12 +29,24 @@ check_command mkfs.vfat
 check_command mkfs.ext4
 check_command fsck.vfat
 check_command e2fsck
+check_command mount
+check_command sed
 
 RPI_VERSION="RPI"
 
+title "QEMU installation"
+if [ "$(which qemu-system-arm ; echo $?)" = "1" ]
+then
+	install_package ${QEMU_PACKAGE}
+else
+	echo "QEMU is already installed for ARM systems."
+fi
+
 title "Arch Linux ARM"
 if [ ! -e "${basedir}/${RPI_VERSION}/arch-linux.img" ]
-then
+then	
+	question "Perform full system update ?" full_update "y" "n"
+	
 	mkdir -p "${basedir}/${RPI_VERSION}"
 	chown ${user}:${group} "${basedir}/${RPI_VERSION}"
 
@@ -107,6 +120,49 @@ then
 	bsdtar -xpf "${basedir}/${RPI_VERSION}/arch-linux.tar.gz" -C "${basedir}/${RPI_VERSION}/root"
 	mv "${basedir}/${RPI_VERSION}"/root/boot/* "${basedir}/${RPI_VERSION}/boot/"
 	
+	echo "Setting keymap to \"${KEYBOARD_KEYMAP}\"..."
+	echo "KEYMAP=\"${KEYBOARD_KEYMAP}\"" > "${basedir}/${RPI_VERSION}/root/etc/vconsole.conf"
+	chown root:root "${basedir}/${RPI_VERSION}/root/etc/vconsole.conf"
+	chmod 644 "${basedir}/${RPI_VERSION}/root/etc/vconsole.conf"
+	
+	echo "Setting localtime to \"${LOCALTIME}\"..."
+	if [ -e "${basedir}/${RPI_VERSION}/root/usr/share/zoneinfo/${LOCALTIME}" ]
+	then
+		cd "${basedir}/${RPI_VERSION}/root"
+		rm -f etc/localtime
+		ln -s usr/share/zoneinfo/${LOCALTIME} etc/localtime
+		cd "${basedir}"
+	else
+		echo "Timezone \"${LOCALTIME}\" does not exist. Skipping."
+	fi
+	
+	echo "Copying script for packages installation..."
+	
+	autologinServiceFile="${basedir}/${RPI_VERSION}/root/etc/systemd/system/getty@tty1.service.d/autologin.conf"
+	mkdir -p $(dirname "${autologinServiceFile}")
+	echo "[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin root --noclear %I 38400 linux
+Type=idle" > "${autologinServiceFile}"
+	chown root:root "${autologinServiceFile}"
+	chmod 644 "${autologinServiceFile}"
+	
+	fullUpdateCommands=""
+	
+	if [ "${full_update}" = "y" ]
+	then
+		fullUpdateCommands="pacman -Syu"
+	fi
+
+#Establish package list & configure internet access
+	
+	echo "#!/bin/bash
+${fullUpdateCommands}
+#pacman -Sy SDL2
+reboot" > "${basedir}/${RPI_VERSION}/root/root/.bash_profile"
+	chown root:root "${basedir}/${RPI_VERSION}/root/root/.bash_profile"
+	chmod 640 "${basedir}/${RPI_VERSION}/root/root/.bash_profile"
+	
 	umount "${basedir}/${RPI_VERSION}/boot"
 	umount "${basedir}/${RPI_VERSION}/root"
 	
@@ -118,33 +174,35 @@ then
 	
 	kpartx -d ${devloop}
 	losetup -d ${devloop}
+	
+	title "ARM1176 Linux Kernel"
+	if [ ! -e "${basedir}/arm1176-kernel" ]
+	then
+		echo "Kernel is not present \"${basedir}/arm1176-kernel\"."
+		echo "Compilation is not embedded in this script."
+		echo "You may gather one arm1176 kernel @ http://www.xecdesign.com/downloads/linux-qemu/kernel-qemu"
+		echo "Aborting initialization."
+		
+		rm -f "${basedir}/${RPI_VERSION}/arch-linux.img"
+		exit 1
+	else
+		echo "Kernel is already compiled."
+	fi
+
+	title "Arch Linux packages installation"
+	launch_vm "${basedir}/${RPI_VERSION}/arch-linux.img"
+	
+	title "Installation & update scripts deletion"
+	mount_image_partition "${basedir}/${RPI_VERSION}/arch-linux.img" 2 "${basedir}/mnt_script_deletion"
+	
+	rm -f "${basedir}/mnt_script_deletion/etc/systemd/system/getty@tty1.service.d/autologin.conf"
+	rm -f "${basedir}/mnt_script_deletion/root/.bash_profile"
+	
+	umount_image_partition "${basedir}/mnt_script_deletion"
+	echo "Image cleaned."
 else
 	echo "Arch Linux image is already installed."
 fi
-
-title "QEMU installation"
-if [ "$(which qemu-system-arm ; echo $?)" = "1" ]
-then
-	install_package ${QEMU_PACKAGE}
-else
-	echo "QEMU is already installed for ARM systems."
-fi
-
-title "ARM1176 Linux Kernel"
-if [ ! -e "${basedir}/arm1176-kernel" ]
-then
-	echo "Kernel is not present \"${basedir}/arm1176-kernel\"."
-	echo "Compilation is not embedded in this script."
-	echo "You may gather one arm1176 kernel @ http://www.xecdesign.com/downloads/linux-qemu/kernel-qemu"
-	echo "Aborting initialization."
-	exit 1
-else
-	echo "Kernel is already compiled."
-fi
-
-title "Test !"
-apply_qemu_patches "${basedir}/${RPI_VERSION}/arch-linux.img"
-
 
 exit
 

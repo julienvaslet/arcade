@@ -23,6 +23,55 @@ function title ()
 	echo
 }
 
+function question ()
+{
+	ret=""
+	values=""
+	
+	if [ $# -gt 1 ]
+	then
+		for i in $(seq 3 $#)
+		do
+			if [ -z "${values}" ]
+			then
+				values=${!i}
+			else
+				values="${values}\n${!i}"
+			fi
+		done
+	fi
+	
+	while [ -z "${ret}" ]
+	do
+		echo -ne "$1 "
+		if [ ! -z ${values} ]
+		then
+			echo -n "[$(echo -e "${values}" | sed ':a;N;$!ba;s/\n/,/g')] "
+		fi
+		
+		read ret
+		valid=1
+		
+		OLDIFS=${IFS}
+		IFS=$'\n'
+		for v in $(echo -e "${values}")
+		do
+			if [ "${v}" = "${ret}" ]
+			then
+				valid=0
+				break
+			fi
+		done
+		
+		if [ ${valid} -eq 1 ]
+		then
+			ret=""
+		fi
+	done
+	
+	eval "$2=\"${ret}\""
+}
+
 function check_command ()
 {
 	echo -n "Checking command \"$1\"... "
@@ -111,6 +160,21 @@ function download_file ()
 		echo "URL or filename (or both) have not been specified for download."
 		exit 2
 	fi
+}
+
+# Launch a QEMU Environment
+function launch_vm ()
+{
+	if [ -z "${basedir}" ]
+	then
+		basedir=$(cd `dirname $0`; pwd)
+	fi
+	
+	apply_qemu_patches $1
+
+	qemu-system-arm -kernel ${basedir}/arm1176-kernel -cpu arm1176 -m 256 -M versatilepb -no-reboot -serial stdio -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda $1
+	
+	remove_qemu_patches $1
 }
 
 # Patches for QEMU Environment
