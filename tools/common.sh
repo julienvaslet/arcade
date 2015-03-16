@@ -129,6 +129,40 @@ function apply_qemu_patches ()
 	
 	mount_image_partition $1 2 "${basedir}/qemu_patches_root"
 	
+	cd "${basedir}/qemu_patches_root"
+
+	# Device symlinks
+	udevQemuFile="etc/udev/rules.d/90-qemu.rules"
+	: > "${udevQemuFile}"
+	chown root:root "${udevQemuFile}"
+	chmod 644 "${udevQemuFile}"
+	echo "KERNEL==\"sda\", SYMLINK+=\"mmcblk0\"
+KERNEL==\"sda?\", SYMLINK+=\"mmcblk0p%n\"
+KERNEL==\"sda2\", SYMLINK+=\"root\"" >> "${udevQemuFile}"
+	
+	# Fstab
+	sed -i 's|^/dev/mmcblk.*$|#\0|g' "etc/fstab"
+	
+	# Late-mount
+	lateMountServiceLink="etc/systemd/system/multi-user.target.wants/late-mount.service"
+	lateMountService="usr/lib/systemd/system/late-mount.service"
+	: > "${lateMountService}"
+	echo "[Unit]
+Description=Late-mount /boot
+After=systemd-udevd.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/mount /dev/mmcblk0p1 /boot
+
+[Install]
+WantedBy=multi-user.target
+" >> "${lateMountService}"
+
+	ln -s "${lateMountService}" "${lateMountServiceLink}"
+	
+	cd ${basedir}
+	
 	umount_image_partition "${basedir}/qemu_patches_root"
 }
 
@@ -145,6 +179,27 @@ function remove_qemu_patches ()
 		echo "No image specified for patches deletion."
 		return
 	fi
+	
+	mount_image_partition $1 2 "${basedir}/qemu_patches_root"
+	
+	cd "${basedir}/qemu_patches_root"
+	
+	# Device symlinks
+	udevQemuFile="etc/udev/rules.d/90-qemu.rules"
+	rm -f "${udevQemuFile}"
+	
+	# Fstab
+	sed -i 's|^#\(/dev/mmcblk.*\)$|\1|g' "etc/fstab"
+	
+	# Late-mount service
+	lateMountServiceLink="etc/systemd/system/multi-user.target.wants/late-mount.service"
+	lateMountService="usr/lib/systemd/system/late-mount.service"
+	rm -f "${lateMountServiceLink}"
+	rm -f "${lateMountService}"
+	
+	cd ${basedir}
+	
+	umount_image_partition "${basedir}/qemu_patches_root"
 }
 
 

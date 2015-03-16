@@ -145,6 +145,7 @@ fi
 title "Test !"
 apply_qemu_patches "${basedir}/${RPI_VERSION}/arch-linux.img"
 
+
 exit
 
 title "Crosstool-ng installation check"
