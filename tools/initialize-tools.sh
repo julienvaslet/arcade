@@ -86,11 +86,11 @@ then
 	fi
 	
 	echo "Initializing arch-linux.img file..."
-	dd if=/dev/zero of="${basedir}/${RPI_VERSION}/arch-linux.img" bs=1M count=800
+	dd if=/dev/zero of="${basedir}/${RPI_VERSION}/arch-linux.img" bs=1M count=${IMAGE_SIZE_MO}
 	chown ${user}:${group} "${basedir}/${RPI_VERSION}/arch-linux.img"
 	
 	echo "Creating partitions..."
-	echo -e "o\nn\np\n1\n\n+100M\nt\nc\nn\np\n2\n\n\np\nw\n" | fdisk "${basedir}/${RPI_VERSION}/arch-linux.img"
+	echo -e "o\nn\np\n1\n\n+${BOOT_PARTITION_SIZE}\nt\nc\nn\np\n2\n\n\np\nw\n" | fdisk "${basedir}/${RPI_VERSION}/arch-linux.img"
 	devloop=$(losetup -f --show "${basedir}/${RPI_VERSION}/arch-linux.img")
 	kpartx -a ${devloop}
 	
@@ -151,14 +151,14 @@ Type=idle" > "${autologinServiceFile}"
 	
 	if [ "${full_update}" = "y" ]
 	then
-		fullUpdateCommands="pacman -Syu"
+		fullUpdateCommands="pacman -Su --noconfirm"
 	fi
-
-#Establish package list & configure internet access
 	
 	echo "#!/bin/bash
+dhcpcd
+pacman -Sy
 ${fullUpdateCommands}
-#pacman -Sy SDL2
+pacman -S ${ARCADE_MANDATORY_PACKAGES} --noconfirm
 reboot" > "${basedir}/${RPI_VERSION}/root/root/.bash_profile"
 	chown root:root "${basedir}/${RPI_VERSION}/root/root/.bash_profile"
 	chmod 640 "${basedir}/${RPI_VERSION}/root/root/.bash_profile"
@@ -202,6 +202,47 @@ reboot" > "${basedir}/${RPI_VERSION}/root/root/.bash_profile"
 	echo "Image cleaned."
 else
 	echo "Arch Linux image is already installed."
+fi
+
+if [ ! -e "${basedir}/${RPI_VERSION}/arch-linux-devel.img" ]
+then
+	title "Arch Linux development image initialization"
+	cp "${basedir}/${RPI_VERSION}/arch-linux.img" "${basedir}/${RPI_VERSION}/arch-linux-devel.img"
+	
+	
+	title "Development libraries' scripts installation"
+	mount_image_partition "${basedir}/${RPI_VERSION}/arch-linux-devel.img" 2 "${basedir}/mnt_devel_libs_install"
+	
+	autologinServiceFile="${basedir}/mnt_devel_libs_install/etc/systemd/system/getty@tty1.service.d/autologin.conf"
+	mkdir -p $(dirname "${autologinServiceFile}")
+	echo "[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin root --noclear %I 38400 linux
+Type=idle" > "${autologinServiceFile}"
+	chown root:root "${autologinServiceFile}"
+	chmod 644 "${autologinServiceFile}"
+
+	echo "#!/bin/bash
+dhcpcd
+pacman -Sy ${ARCADE_DEVELOPMENT_PACKAGES} --noconfirm
+reboot" > "${basedir}/mnt_devel_libs_install/root/.bash_profile"
+	chown root:root "${basedir}/mnt_devel_libs_install/root/.bash_profile"
+	chmod 640 "${basedir}/mnt_devel_libs_install/root/.bash_profile"
+	
+	umount_image_partition "${basedir}/mnt_devel_libs_install"
+	
+	title "Development libraries installation"
+	launch_vm "${basedir}/${RPI_VERSION}/arch-linux-devel.img"
+	
+	title "Development libraries' scripts deletion"
+	mount_image_partition "${basedir}/${RPI_VERSION}/arch-linux-devel.img" 2 "${basedir}/mnt_devel_scripts_deletion"
+	
+	rm -f "${basedir}/mnt_devel_scripts_deletion/etc/systemd/system/getty@tty1.service.d/autologin.conf"
+	rm -f "${basedir}/mnt_devel_scripts_deletion/root/.bash_profile"
+	
+	umount_image_partition "${basedir}/mnt_devel_scripts_deletion"
+else
+	echo "Arch Linux for development librairies is already installed."
 fi
 
 exit
