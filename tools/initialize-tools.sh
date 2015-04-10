@@ -20,6 +20,7 @@ cd ${basedir}
 title "Prerequisites"
 check_command wget
 check_command md5sum
+check_command sha1sum
 check_command awk
 check_command dd
 check_command fdisk
@@ -245,30 +246,79 @@ else
 	echo "Arch Linux for development librairies is already installed."
 fi
 
-exit
-
 title "Crosstool-ng installation check"
 if [ ! -e "${crosstoolngDir}/bin/ct-ng" ]
 then
 	if [ ! -e "${basedir}/crosstool-ng" ]
 	then
 		title "Crosstool-ng installation"
-		yum install -y gperf bison flex texinfo patch libtool ncurses-devel
-		git clone ${crosstoolngUri}
+		yum install -y gperf gawk bison flex texinfo patch libtool ncurses-devel cvs automake subversion python-devel cmake gcc-c++ glibc-devel glibc-static libstdc++-static
+		#libexpat1-devel ??
+		
+		downloadCrosstoolng=0
+		download_file "${CROSSTOOLNG_SHA1_URL}" "${basedir}/crosstoolng.tar.bz2.sha1"
+		
+		if [ -e "${basedir}/crosstoolng.tar.bz2" ]
+		then
+			localSha1=$(sha1sum "${basedir}/crosstoolng.tar.bz2" | awk '{print $1}')
+			remoteSha1=$(cat "${basedir}/crosstoolng.tar.bz2.sha1" | awk '{print $1}')
+			
+			if [ "${localSha1}" = "${remoteSha1}" ]
+			then
+				echo "Crosstool-ng archive is already present. Skipping download."
+				downloadCrosstoolng=1
+			fi
+		fi
+		
+		if [ ${downloadCrosstoolng} -eq 0 ]
+		then
+			download_file "${CROSSTOOLNG_URL}" "${basedir}/crosstoolng.tar.bz2"
+			
+			localSha1=$(sha1sum "${basedir}/crosstoolng.tar.bz2" | awk '{print $1}')
+			remoteSha1=$(cat "${basedir}/crosstoolng.tar.bz2.sha1" | awk '{print $1}')
+			
+			if [ "${localSha1}" != "${remoteSha1}" ]
+			then
+				echo "Downloaded file checksums do not match. Exiting."
+				exit 1
+			fi
+		fi
 
-		cd ${basedir}/crosstool-ng
+		tar xjf "${basedir}/crosstoolng.tar.bz2"
+		cd "${basedir}/crosstool-ng-${CROSSTOOLNG_VERSION}"
 
 		if [ ! -e "configure" ]
 		then
 			./bootstrap
 		fi
 
-		./configure --prefix ${crosstoolngDir}
+		./configure --prefix ${CROSSTOOLNG_DIR}
 
 		make
 		make install
 		cd ${basedir}
-		rm -rf ${basedir}/crosstool-ng
+		
+		# eglibc 2.13 config patch for make 4.0+ support
+		mkdir -p "${CROSSTOOLNG_DIR}/lib/ct-ng.${CROSSTOOLNG_VERSION}/patches/eglibc/2_13"
+		cp "${basedir}/eglibc_2_13_make_4.patch" "${CROSSTOOLNG_DIR}/lib/ct-ng.${CROSSTOOLNG_VERSION}/patches/eglibc/2_13/eglibc_2_13_make_4.patch"
+		chmod 755 "${CROSSTOOLNG_DIR}/lib/ct-ng.${CROSSTOOLNG_VERSION}/patches/eglibc"
+		chmod 755 "${CROSSTOOLNG_DIR}/lib/ct-ng.${CROSSTOOLNG_VERSION}/patches/eglibc/2_13"
+		chmod 644 "${CROSSTOOLNG_DIR}/lib/ct-ng.${CROSSTOOLNG_VERSION}/patches/eglibc/2_13/eglibc_2_13_make_4.patch"
+		
+		# Install "sample" config
+		mkdir -p "${CROSSTOOLNG_DIR}/lib/ct-ng.${CROSSTOOLNG_VERSION}/samples/arm-bcm2708hardfp-gnueabi"
+		cp "${basedir}/bcm2708hardfp-ct-ng.config" "${CROSSTOOLNG_DIR}/lib/ct-ng.${CROSSTOOLNG_VERSION}/samples/arm-bcm2708hardfp-gnueabi/crosstool.config"
+		echo "reporter_name=\"Julien vaslet\"
+reporter_url=\"http://www.julienvaslet.fr/\"
+reporter_comment=\"Toolchain for the Raspberry Pi (ARMv6), with hard-float.\"" > "${CROSSTOOLNG_DIR}/lib/ct-ng.${CROSSTOOLNG_VERSION}/samples/arm-bcm2708hardfp-gnueabi/reported.by"
+		
+		chmod 755 "${CROSSTOOLNG_DIR}/lib/ct-ng.${CROSSTOOLNG_VERSION}/samples/arm-bcm2708hardfp-gnueabi"
+		chmod 644 "${CROSSTOOLNG_DIR}/lib/ct-ng.${CROSSTOOLNG_VERSION}/samples/arm-bcm2708hardfp-gnueabi/crosstool.config"
+		chmod 644 "${CROSSTOOLNG_DIR}/lib/ct-ng.${CROSSTOOLNG_VERSION}/samples/arm-bcm2708hardfp-gnueabi/reported.by"
+		
+		rm -f "${basedir}/crosstoolng.tar.bz2"
+		rm -f "${basedir}/crosstoolng.tar.bz2.sha1"
+		rm -rf "${basedir}/crosstool-ng-${CROSSTOOLNG_VERSION}"
 	else
 		echo "Crosstool-ng is not installed but \"${basedir}/crosstool-ng\" exists."
 		echo "Please remove it before continue."
@@ -278,9 +328,81 @@ else
 	echo "Crosstool-ng is installed."
 fi
 
-#cp .....config in /tmp/arm-pi/.config
-#then ct-ng build
+title "Cross-compiler installation check"
+if [ ! -e "${PI_BINARIES_DIR}/arm-rpi-linux-gnueabi/bin/g++" ]
+then
+	title "Cross-compiler installation"
+	if [ -e "${basedir}/ctngpi.build/" ]
+	then
+		echo "Directory \"${basedir}/ctngpi.build\" already exists."
+		echo "Please remove it to continue compilation."
+		exit 1
+	fi
+	
+	mkdir -p "${basedir}/ctngpi.build"
+	
+	cd "${basedir}/ctngpi.build"
+	${CROSSTOOLNG_DIR}/bin/ct-ng arm-bcm2708hardfp-gnueabi
 
-#CT_BINUTILS="binutils"
-#CT_PREFIX_DIR="${HOME}/tools/arm-bcm2708/${CT_TARGET}" > CT_PREFIX_DIR="/opt/arm-pi/${CT_TARGET}"
+	# Patch installation directory path
+	sed -i "s|^CT_PREFIX_DIR=.*|CT_PREFIX_DIR=\"${PI_BINARIES_DIR}/\${CT_TARGET}\"|g" "${basedir}/ctngpi.build/.config"
+
+	# Patch parallel jobs
+	sed -i "s|^CT_PARALLEL_JOBS=.*|CT_PARALLEL_JOBS=${PARALLEL_THREADS}|g" "${basedir}/ctngpi.build/.config"
+
+	${CROSSTOOLNG_DIR}/bin/ct-ng build
+	
+	if [ "$?" != "0" ]
+	then
+		echo "Compiler compilation seems to fail."
+		echo "For futher information, read logs in \"${basedir}/ctngpi.build/build.log\""
+		exit 1
+	fi
+	
+	cd ${basedir}
+	rm -rf "${basedir}/ctngpi.build"
+	echo "Installed."
+else
+	echo "Directory ${PI_BINARIES_DIR} already exists."
+fi
+
+title "Raspberry Pi headers & libraries installation check"
+if [ ! -e "${PI_BINARIES_DIR}/RPI" ]
+then
+	title "Raspberry Pi headers & libraries installation"
+	mkdir -p "${PI_BINARIES_DIR}/RPI/"
+	
+	mount_image_partition "${basedir}/${RPI_VERSION}/arch-linux-devel.img" 2 "${basedir}/mnt_hlibs_copy"
+	
+	cp -R "${basedir}/mnt_hlibs_copy/"{opt,lib,usr} "${PI_BINARIES_DIR}/RPI/"
+	chown -R root:root "${PI_BINARIES_DIR}/RPI"
+	find "${PI_BINARIES_DIR}/RPI" -type d -print0 | xargs -0 -n1 -I'{}' chmod 755 {}
+	find "${PI_BINARIES_DIR}/RPI" -type f -print0 | xargs -0 -n1 -I'{}' chmod 644 {}
+	
+	umount_image_partition "${basedir}/mnt_hlibs_copy"
+
+	echo "Headers & libraries copied in \"${PI_BINARIES_DIR}/RPI\"."
+	
+	title "Symbolic links remapping"
+	
+	OLDIFS=${IFS}
+	IFS=$'\n'
+	
+	for link in $(find "${PI_BINARIES_DIR}/RPI" -type l)
+	do
+		if [ "$(ls -l "${link}" | grep "\-> /" | wc -l)" != "0" ]
+		then
+			destination=$(ls -l "${link}" | grep -o "\->.*" | sed 's/^->\s*//g')
+			rm -f "${link}"
+			ln -s "${PI_BINARIES_DIR}/RPI${destination}" "${link}"
+			echo "${link} remapped."
+		fi
+	done
+	
+	IFS=${OLDIFS}
+	
+else
+	echo "Directory \"${PI_BINARIES_DIR}/RPI\" already exists."
+	echo "Headers & libraries seems to be installed."
+fi
 

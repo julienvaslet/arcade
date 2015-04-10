@@ -1,0 +1,11 @@
+--- a/configure	2015-04-08 19:52:00.363673893 +0200
++++ b/configure	2015-04-08 19:53:00.980258637 +0200
+@@ -5347,7 +5347,7 @@ $as_echo_n "checking version of $MAKE...
+   ac_prog_version=`$MAKE --version 2>&1 | sed -n 's/^.*GNU Make[^0-9]*\([0-9][0-9.]*\).*$/\1/p'`
+   case $ac_prog_version in
+     '') ac_prog_version="v. ?.??, bad"; ac_verc_fail=yes;;
+-    3.79* | 3.[89]*)
++    3.79* | 3.[89]* | 4.0*)
+        ac_prog_version="$ac_prog_version, ok"; ac_verc_fail=no;;
+     *) ac_prog_version="$ac_prog_version, bad"; ac_verc_fail=yes;;
+

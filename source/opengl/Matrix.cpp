@@ -1,7 +1,7 @@
 #include <SDL2/SDL.h>
 #include <cmath>
 #include <iostream>
-#include <GL/glu.h>
+//#include <GL/glu.h>
 
 #include <opengl/Matrix.h>
 #include <opengl/Vector.h>
