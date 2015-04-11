@@ -6,3 +6,4 @@ lib/
 tools/arm-pi
 tools/RPI
 tools/RPI2
+remote-hosts.conf

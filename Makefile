@@ -3,27 +3,6 @@ for = linux
 
 include targets/$(for)/config
 
-# Are we on a Pidora Raspberry Pi ?
-ifneq (,$(filter $(for),pi pi-prod))
-isRaspberryPi := $(shell if [ $(shell grep "^Pidora" /etc/redhat-release | wc -l) = "1" ] ; then echo true ; else echo false; fi)
-else
-isRasberryPi = true
-endif
-
-# If we are not on a Raspberry Pi, we launch QEMU
-ifeq ($(isRaspberryPi),false)
-
-all:
-	sudo TARGET=$(for) ./tools/compile.sh $(shell ls -1 $(applicationDirectory) | grep '\.cpp$$' | sed 's/\.cpp$$//g')
-
-%:
-	sudo TARGET=$(for) ./tools/compile.sh $@
-	
-run:
-	
-
-else
-
 all:
 
 $(binariesDirectory):
@@ -72,8 +51,30 @@ run: $(application)
 	@( if [ ! -z "$(application)" ] ; then \
 		$(application) ; \
 	fi )
-
-endif
+	
+run_%: $(application)
+	@( if [ ! -z "$(application)" ] ; then \
+		remoteName="$@" ; \
+		remoteName=$${remoteName#run_} ; \
+		if [ -e "remote-hosts.conf" ] ; then \
+			if [ "`grep "^$${remoteName}\s\+" remote-hosts.conf | wc -l`" != "0" ] ; then \
+				address=`grep "^$${remoteName}\s\+" remote-hosts.conf | awk '{print $$2}'` ; \
+				applicationName=`basename "$(application)"` ; \
+				scp $(application) $${address}:arcade/$${applicationName} ; \
+				ssh -t $${address} "cd arcade ; ./$${applicationName}" ; \
+			else \
+				echo "Remote host \"$${remoteName}\" could not be found in \"remote-hosts.conf\"." ; \
+			fi ; \
+		else \
+			echo "File \"remote-hosts.conf\" is absent." ; \
+			echo "Please create it with name-ip association like:" ; \
+			echo "example   1.2.3.4" ; \
+			echo "example2  example.com" ; \
+			echo "" ; \
+			echo "Then call \"run_example\" target to remotely execute specified application." ; \
+			exit 1 ; \
+		fi ; \
+	fi )
 
 cleanlib:
 	rm -rf $(librariesDirectory)/*
