@@ -1,7 +1,10 @@
 #include <SDL2/SDL.h>
 #include <cmath>
 #include <iostream>
-//#include <GL/glu.h>
+
+#ifndef __PI__
+#include <GL/glu.h>
+#endif
 
 #include <opengl/Matrix.h>
 #include <opengl/Vector.h>

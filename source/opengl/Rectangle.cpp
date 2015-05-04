@@ -60,10 +60,28 @@ namespace opengl
 		this->height += deltaHeight;
 	}
 	
-	bool Rectangle::isInCollision( Rectangle& rectangle )
+	bool Rectangle::isInCollision( const Rectangle& rectangle ) const
 	{
-		// TODO
-		return false;
+		bool hasCollision = false;
+		
+		// X axis collision
+		if( ( this->origin.getX() <= rectangle.origin.getX() && this->origin.getX() + this->width > rectangle.origin.getX() )
+		 || ( rectangle.origin.getX() <= this->origin.getX() && rectangle.origin.getX() + rectangle.width > this->origin.getX() )
+		 || ( this->origin.getX() >= rectangle.origin.getX() && this->origin.getX() + this->width <= rectangle.origin.getX() + rectangle.width ) )
+		{
+			// Y axis collision
+			if( ( this->origin.getY() <= rectangle.origin.getY() && this->origin.getY() + this->height > rectangle.origin.getY() )
+			 || ( rectangle.origin.getY() <= this->origin.getY() && rectangle.origin.getY() + rectangle.height > this->origin.getY() )
+	 		 || ( this->origin.getY() >= rectangle.origin.getY() && this->origin.getY() + this->height <= rectangle.origin.getY() + rectangle.height ))
+			{
+				// Z axis collision
+				// No depth for rectangle, simply compare Z axis
+				if( this->origin.getZ() == rectangle.origin.getZ() )
+					hasCollision = true;
+			}
+		}
+		
+		return hasCollision;
 	}
 	
 	void Rectangle::prepareRendering( vector<Point3D>& vertices, vector<unsigned short int>& indices, bool clockwise ) const
