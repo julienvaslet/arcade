@@ -37,7 +37,7 @@ function getIncludedFiles ()
 	then
 		log "Parsing files: $*"
 		
-		includes=$(grep -o "^#include\s*<[^>]\+" $* | sed 's/^[^<]\+<//g')
+		includes=$(grep -o "^#include\s*<[^>]\+" $* 2>/dev/null | sed 's/^[^<]\+<//g')
 	
 		files=""
 		for file in $*
@@ -65,16 +65,19 @@ function getIncludedFiles ()
 			
 			if [ -e "${includeDirectory}/${include}" ]
 			then
-				if [ $(echo -n "${includedFiles}" | grep "${include}" | wc -l) = "0" -a -e "${sourceDirectory}/${include%.h}.cpp" ]
+				if [ $(echo -n "${includedFiles}" | grep "${include}" | wc -l) = "0" ]
 				then
-					if [ -z "${includedFiles}" ]
+					if [ -e "${sourceDirectory}/${include%.h}.cpp" -o -e "${sourceDirectory}/${include%.h}.c" ]
 					then
-						includedFiles="${include}"
-					else
-						includedFiles="${includedFiles}\n${include}"
-					fi
+						if [ -z "${includedFiles}" ]
+						then
+							includedFiles="${include}"
+						else
+							includedFiles="${includedFiles}\n${include}"
+						fi
 
-					getIncludedFiles ${includeDirectory}/${include} ${sourceDirectory}/${include%.h}.cpp
+						getIncludedFiles ${includeDirectory}/${include} ${sourceDirectory}/${include%.h}.c{pp,}
+					fi
 				fi
 			fi
 			

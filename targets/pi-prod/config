@@ -2,7 +2,7 @@ xToolsPath=/opt/x-tools
 binariesPrefix=$(xToolsPath)/bin/arm-rpi-linux-gnueabi-
 sysroot=$(xToolsPath)/RPI
 target=__PI__
-compileFlags = -D__NO_X_WINDOW__ -DHAVE_LIBBCM_HOST -DUSE_EXTERNAL_LIBBCM_HOST -DUSE_VCHIQ_ARM
+compileFlags = -D__NO_X_WINDOW__ -DHAVE_LIBBCM_HOST -DUSE_EXTERNAL_LIBBCM_HOST -DUSE_VCHIQ_ARM -DHAVE_LIBOPENMAX=2 -DOMX -DOMX_SKIP64BIT -DUSE_EXTERNAL_OMX
 librariesDirectory := $(shell pwd)/lib/pi
 includesDirectory := $(shell pwd)/include
 sourcesDirectory := $(shell pwd)/source
@@ -13,4 +13,4 @@ binariesDirectory := $(shell pwd)/bin/pi
 compiler = $(binariesPrefix)g++
 compilerOptions = --sysroot=$(sysroot) -Wall -std=c++11 -I$(includesDirectory) -c -D_REENTRANT $(compileFlags) -D$(target) -I$(sysroot)/opt/vc/include -I$(sysroot)/opt/vc/include/interface/vcos/pthreads -I$(sysroot)/opt/vc/include/interface/vmcs_host/linux
 linker = $(binariesPrefix)g++
-linkerOptions = --sysroot=$(sysroot) -lSDL2 -L$(sysroot)/opt/vc/lib -lGLESv2 -lbcm_host -lEGL -lvcos -lvchiq_arm -lpthread -lrt
+linkerOptions = --sysroot=$(sysroot) -lSDL2 -L$(sysroot)/opt/vc/lib -lGLESv2 -lbcm_host -lEGL -lvcos -lvchiq_arm -lopenmaxil -lpthread -lrt

@@ -24,6 +24,9 @@ getdependencies_%: get-dependencies.sh
 $(binariesDirectory)/%: $(librariesDirectory)/%.o $(binariesDirectory) libraries_%
 	$(linker) -o $@$(applicationSuffix) $< $(libraries) $(linkerOptions)
 
+$(librariesDirectory)/%.o: $(applicationDirectory)/%.c
+	$(compiler) -x c $(compilerOptions) $< -o $@
+
 $(librariesDirectory)/%.o: $(applicationDirectory)/%.cpp
 	$(compiler) $(compilerOptions) $< -o $@
 	
@@ -32,7 +35,23 @@ $(librariesDirectory)/%.o: $(sourceDirectory)/%.cpp
 	$(compiler) $(compilerOptions) $< -o $@
 
 libraries_%: $(librariesDirectory) getdependencies_%
-	@( for source in `cd $(sourcesDirectory); find . -name '*.cpp' -type f`; \
+	@( echo "C libraries compilation..." ; \
+	for source in `cd $(sourcesDirectory); find . -type f -name '*.c'`; \
+	do \
+		library=$$(echo $${source%.c}.o | sed "s|^\.|$(librariesDirectory)|g") ; \
+		if [ $$(echo -n "$(libraries)" | grep "$${library}" | wc -l) = "1" ] ; then \
+			mkdir -p $(librariesDirectory)/`dirname $$source` ; \
+			if [ ! -e $(librariesDirectory)/$${source%.c}.o -o $(sourcesDirectory)/$$source -nt $(librariesDirectory)/$${source%.c}.o ] ; then \
+				echo "$(compiler) -x c $(compilerOptions) $(sourcesDirectory)/$$source -o $(librariesDirectory)/$${source%.c}.o" ; \
+				$(compiler) -x c $(compilerOptions) $(sourcesDirectory)/$$source -o $(librariesDirectory)/$${source%.c}.o ; \
+				if [ $$? -eq 1 ] ; then \
+					exit 1 ; \
+				fi ; \
+			fi ; \
+		fi ; \
+	done )
+	@( echo "C++ libraries compilation..." ; \
+	for source in `cd $(sourcesDirectory); find . -type f -name '*.cpp'`; \
 	do \
 		library=$$(echo $${source%.cpp}.o | sed "s|^\.|$(librariesDirectory)|g") ; \
 		if [ $$(echo -n "$(libraries)" | grep "$${library}" | wc -l) = "1" ] ; then \
