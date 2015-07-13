@@ -8,12 +8,17 @@
 #include <semaphore.h>
 
 #include <opengl/Screen.h>
+#include <audio/Song.h>
+#include <audio/instrument/Sine.h>
+#include <audio/MixerThread.h>
 
 extern "C" {
 #include <audio/broadcom/ilclient.h>
 }
 
 using namespace tools::logger;
+using namespace audio;
+using namespace audio::instrument;
 
 short Sinewave[] = {
    0,    201,    402,    603,    804,   1005,   1206,   1406,
@@ -171,10 +176,81 @@ typedef struct {
    uint32_t bytes_per_sample;
 } AUDIOPLAY_STATE_T;
 
-static void input_buffer_callback(void *data, COMPONENT_T *comp)
+
+// Callbacks         
+static void empty_buffer_done_callback(void *data, COMPONENT_T *comp)
 {
-   // do nothing - could add a callback to the user
-   // to indicate more buffers may be available.
+	//Logger::get() << "[empty_buffer_done_callback]." << Logger::endl;
+}
+
+static void fill_buffer_done_callback(void *data, COMPONENT_T *comp)
+{
+	//Logger::get() << "[fill_buffer_done_callback]." << Logger::endl;
+}
+
+
+static void configchanged_callback(void *userdata, COMPONENT_T *comp, OMX_U32 data)
+{
+	//Logger::get() << "[configchanged_callback]." << Logger::endl;
+}
+
+static void error_callback(void *userdata, COMPONENT_T *comp, OMX_U32 data)
+{
+	string errorStr;
+	
+	switch( data )
+	{
+    	case OMX_ErrorInsufficientResources: errorStr = "OMX_ErrorInsufficientResources";
+	    case OMX_ErrorUndefined: errorStr = "OMX_ErrorUndefined";
+		case OMX_ErrorInvalidComponentName: errorStr = "OMX_ErrorInvalidComponentName";
+		case OMX_ErrorComponentNotFound: errorStr = "OMX_ErrorComponentNotFound";
+		case OMX_ErrorInvalidComponent: errorStr = "OMX_ErrorInvalidComponent";
+		case OMX_ErrorBadParameter: errorStr = "OMX_ErrorBadParameter";
+		case OMX_ErrorNotImplemented: errorStr = "OMX_ErrorNotImplemented";
+		case OMX_ErrorUnderflow: errorStr = "OMX_ErrorUnderflow";
+		case OMX_ErrorOverflow: errorStr = "OMX_ErrorOverflow";
+		case OMX_ErrorHardware: errorStr = "OMX_ErrorHardware";
+		case OMX_ErrorInvalidState: errorStr = "OMX_ErrorInvalidState";
+		case OMX_ErrorStreamCorrupt: errorStr = "OMX_ErrorStreamCorrupt";
+		case OMX_ErrorPortsNotCompatible: errorStr = "OMX_ErrorPortsNotCompatible";
+		case OMX_ErrorResourcesLost: errorStr = "OMX_ErrorResourcesLost";
+		case OMX_ErrorNoMore: errorStr = "OMX_ErrorNoMore";
+		case OMX_ErrorVersionMismatch: errorStr = "OMX_ErrorVersionMismatch";
+		case OMX_ErrorNotReady: errorStr = "OMX_ErrorNotReady";
+		case OMX_ErrorTimeout: errorStr = "OMX_ErrorTimeout";
+		case OMX_ErrorSameState: errorStr = "OMX_ErrorSameState";
+		case OMX_ErrorResourcesPreempted: errorStr = "OMX_ErrorResourcesPreempted";
+		case OMX_ErrorPortUnresponsiveDuringAllocation: errorStr = "OMX_ErrorPortUnresponsiveDuringAllocation";
+		case OMX_ErrorPortUnresponsiveDuringDeallocation: errorStr = "OMX_ErrorPortUnresponsiveDuringDeallocation";
+		case OMX_ErrorPortUnresponsiveDuringStop: errorStr = "OMX_ErrorPortUnresponsiveDuringStop";
+		case OMX_ErrorIncorrectStateTransition: errorStr = "OMX_ErrorIncorrectStateTransition";
+		case OMX_ErrorIncorrectStateOperation: errorStr = "OMX_ErrorIncorrectStateOperation";
+		case OMX_ErrorUnsupportedSetting: errorStr = "OMX_ErrorUnsupportedSetting";
+		case OMX_ErrorUnsupportedIndex: errorStr = "OMX_ErrorUnsupportedIndex";
+		case OMX_ErrorBadPortIndex: errorStr = "OMX_ErrorBadPortIndex";
+		case OMX_ErrorPortUnpopulated: errorStr = "OMX_ErrorPortUnpopulated";
+		case OMX_ErrorComponentSuspended: errorStr = "OMX_ErrorComponentSuspended";
+		case OMX_ErrorDynamicResourcesUnavailable: errorStr = "OMX_ErrorDynamicResourcesUnavailable";
+		case OMX_ErrorMbErrorsInFrame: errorStr = "OMX_ErrorMbErrorsInFrame";
+		case OMX_ErrorFormatNotDetected: errorStr = "OMX_ErrorFormatNotDetected";
+		case OMX_ErrorContentPipeOpenFailed: errorStr = "OMX_ErrorContentPipeOpenFailed";
+		case OMX_ErrorContentPipeCreationFailed: errorStr = "OMX_ErrorContentPipeCreationFailed";
+		case OMX_ErrorSeperateTablesUsed: errorStr = "OMX_ErrorSeperateTablesUsed";
+		case OMX_ErrorTunnelingUnsupported: errorStr = "OMX_ErrorTunnelingUnsupported";
+		default: errorStr = "unknown error";
+	}
+	
+	Logger::get() << "[error_callback] " << errorStr << "." << Logger::endl;
+}
+
+static void eos_callback(void *userdata, COMPONENT_T *comp, OMX_U32 data)
+{
+	//Logger::get() << "[eos_callback]." << Logger::endl;
+}
+
+static void port_settings_callback(void *userdata, COMPONENT_T *comp, OMX_U32 data)
+{
+	//Logger::get() << "[port_settings_callback]." << Logger::endl;
 }
 
 int32_t audioplay_create(AUDIOPLAY_STATE_T **handle,
@@ -223,7 +299,12 @@ int32_t audioplay_create(AUDIOPLAY_STATE_T **handle,
          st->client = ilclient_init();
          assert(st->client != NULL);
 
-         ilclient_set_empty_buffer_done_callback(st->client, input_buffer_callback, st);
+         ilclient_set_empty_buffer_done_callback(st->client, empty_buffer_done_callback, st);
+         ilclient_set_fill_buffer_done_callback(st->client, fill_buffer_done_callback, st);
+         ilclient_set_configchanged_callback(st->client, configchanged_callback, st);
+         ilclient_set_error_callback(st->client, error_callback, st);
+         ilclient_set_eos_callback(st->client, eos_callback, st);
+         ilclient_set_port_settings_callback(st->client, port_settings_callback, st);
 
          error = OMX_Init();
          assert(error == OMX_ErrorNone);
@@ -454,7 +535,18 @@ int main( int argc, char ** argv )
 	// Initialize standard-output logger
 	new Stdout( "stdout", true );
 	
-	Logger::get() << "Ok." << Logger::endl;
+	// Thread test
+	MixerThread * th = new MixerThread();
+	th->start();
+	
+	usleep( 1000000 );
+	th->stop();
+	
+	th->join();
+	
+	delete th;
+	
+	return 0;
 	
 	// Not needed when Screen is used.
 	bcm_host_init();
@@ -463,7 +555,7 @@ int main( int argc, char ** argv )
 	int dest = 0;
 	int samplerate = 48000;
 	int nchannels = 2;
-	int bitdepth = 16;
+	int bitdepth = 32;
 	
 	AUDIOPLAY_STATE_T *st;
 	int32_t ret;
@@ -477,12 +569,73 @@ int main( int argc, char ** argv )
 
 	ret = audioplay_create(&st, samplerate, nchannels, bitdepth, 10, buffer_size);
 	assert(ret == 0);
+	
+	Logger::get() << "Audio initialized ("<< OUT_CHANNELS(nchannels) << " channels, " << samplerate << " Hz, " << bitdepth << " bits)" << Logger::endl;
+	Logger::get() << "Buffer size is " << buffer_size << Logger::endl;
 
 	ret = audioplay_set_dest(st, audio_dest[dest]);
 	assert(ret == 0);
+	
+	Logger::get() << "Selected output is " << audio_dest[dest] << "." << Logger::endl;
+	
+	// see http://jan.newmarch.name/RPi/OpenMAX/Audio/
+	// see http://www.yolinux.com/TUTORIALS/LinuxTutorialPosixThreads.html for threads
+
+	// Create sound.
+	Logger::get() << "Creating sound." << Logger::endl;
+	Song * song = new Song( 80, samplerate, OUT_CHANNELS(nchannels) );
+	Sine sine( samplerate, OUT_CHANNELS(nchannels) );
+	
+	song->mixNote( sine, Note::getFrequency( 'A', false, 3 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'B', false, 3 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'C', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'D', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'E', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'F', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'G', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'F', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'E', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'D', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'C', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'B', false, 3 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'A', false, 3 ), Note::Croche );
+	
+	// Play sound.
+	Logger::get() << "Sending sound packets..." << Logger::endl;
+	
+	unsigned int toread = song->getRawLength();
+	unsigned int position = 0;
+	Logger::get() << "Song size : " << toread << " (" << (toread / static_cast<double>(buffer_size)) << " packets)" << Logger::endl;
+	
+	while( position < toread )
+	{
+		uint32_t latency;
+		uint8_t * buffer8 = audioplay_get_buffer( st );
+		
+		if( buffer8 != NULL )
+		{
+			uint32_t * buffer32 = (uint32_t *) buffer8;
+			
+			for( unsigned int i = 0 ; i < BUFFER_SIZE_SAMPLES * OUT_CHANNELS(nchannels) ; i++, position++ )
+				buffer32[i] = song->getRawData( position );
+			
+			while((latency = audioplay_get_latency(st)) > (samplerate * (MIN_LATENCY_TIME + CTTW_SLEEP_TIME) / 1000))
+				usleep(CTTW_SLEEP_TIME*1000);
+				
+			ret = audioplay_play_buffer( st, buffer8, buffer_size );
+			assert(ret == 0);
+		}
+	}
+	
+	Logger::get() << "Waiting while audio is playing..." << Logger::endl;
+	
+	while( audioplay_get_latency( st ) > 0 )
+		usleep( CTTW_SLEEP_TIME * 1000 );
+	
+	Logger::get() << "Audio played." << Logger::endl;
 
 	// iterate for 5 seconds worth of packets
-	for (n=0; n<((samplerate * 1000)/ BUFFER_SIZE_SAMPLES); n++)
+	/*for (n=0; n<((samplerate * 1000)/ BUFFER_SIZE_SAMPLES); n++)
 	{
 		uint8_t *buf;
 		int16_t *p;
@@ -519,10 +672,10 @@ int main( int argc, char ** argv )
 
 		ret = audioplay_play_buffer(st, buf, buffer_size);
 		assert(ret == 0);
-	}
+	}*/
 
 	audioplay_delete(st);
-	
+	delete song;
 	
 	/* audioplay_create
 	 * init semaphore
