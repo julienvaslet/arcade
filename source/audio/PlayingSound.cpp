@@ -1,5 +1,6 @@
 #include <audio/PlayingSound.h>
 #include <audio/Mixer.h>
+#include <tools/time/Time.h>
 
 #include <cmath>
 
@@ -7,6 +8,8 @@
 #include <tools/logger/Logger.h>
 using namespace tools::logger;
 #endif
+
+using namespace tools::time;
 
 namespace audio
 {
@@ -59,7 +62,7 @@ namespace audio
 	
 	void PlayingSound::play( unsigned int ticks )
 	{
-		this->startDate = ( ticks == 0 ) ? Mixer::getTicks() : ticks;
+		this->startDate = ( ticks == 0 ) ? Time::getTicks() : ticks;
 		this->playing = true;
 		this->timesToRepeat = this->getRepeatedTimes() - 1;
 	}

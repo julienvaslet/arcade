@@ -8,7 +8,7 @@ using namespace tools::logger;
 
 namespace audio
 {
-	MixerThread::MixerThread() : Thread()
+	MixerThread::MixerThread( Mixer * mixer ) : Thread(), mixer(mixer)
 	{
 	}
 	

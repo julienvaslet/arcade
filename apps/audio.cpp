@@ -1,4 +1,5 @@
 #include <tools/logger/Stdout.h>
+#include <tools/time/Time.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -10,15 +11,17 @@
 #include <opengl/Screen.h>
 #include <audio/Song.h>
 #include <audio/instrument/Sine.h>
-#include <audio/MixerThread.h>
+#include <audio/Mixer.h>
 
+using namespace tools::logger;
+using namespace tools::time;
+using namespace audio;
+using namespace audio::instrument;
+
+#ifdef __NO_X_WINDOW__
 extern "C" {
 #include <audio/broadcom/ilclient.h>
 }
-
-using namespace tools::logger;
-using namespace audio;
-using namespace audio::instrument;
 
 short Sinewave[] = {
    0,    201,    402,    603,    804,   1005,   1206,   1406,
@@ -530,26 +533,53 @@ uint32_t audioplay_get_latency(AUDIOPLAY_STATE_T *st)
 #define MIN_LATENCY_TIME 20
 
 static const char *audio_dest[] = {"local", "hdmi"};
+
+#endif
+
 int main( int argc, char ** argv )
 {
 	// Initialize standard-output logger
 	new Stdout( "stdout", true );
 	
-	// Thread test
-	MixerThread * th = new MixerThread();
-	th->start();
+	#ifdef __NO_X_WINDOW__
+	// Not needed when Screen is used.
+	bcm_host_init();
+	#endif
 	
-	usleep( 1000000 );
-	th->stop();
+	new Mixer( 44100, 2, 512 );
 	
-	th->join();
+	/*Song * song = new Song( 80, samplerate, OUT_CHANNELS(nchannels) );
+	Sine sine( samplerate, OUT_CHANNELS(nchannels) );
 	
-	delete th;
+	song->mixNote( sine, Note::getFrequency( 'A', false, 3 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'B', false, 3 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'C', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'D', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'E', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'F', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'G', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'F', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'E', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'D', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'C', false, 4 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'B', false, 3 ), Note::Croche );
+	song->mixNote( sine, Note::getFrequency( 'A', false, 3 ), Note::Croche );
+	
+	Mixer::get()->add( "song", song );
+	delete song;
+	
+	Mixer::get()->play( "song" );
+	while( Mixer::get()->isPlaying() );*/
+	
+	SDL_Delay( 2000 );
+		
+	Mixer::destroy();
+	Logger::destroy();
 	
 	return 0;
 	
-	// Not needed when Screen is used.
-	bcm_host_init();
+#ifdef __NO_X_WINDOW__
+	// TEST 0
 	
 	// Variables
 	int dest = 0;
@@ -714,5 +744,7 @@ int main( int argc, char ** argv )
 	Logger::destroy();
 	
 	return 0;
+#endif	
+
 }
 

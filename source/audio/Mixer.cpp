@@ -2,13 +2,325 @@
 #include <climits>
 
 #ifdef DEBUG0
+#include <cstring>
+#include <errno.h>
+extern int errno;
+
 #include <tools/logger/Logger.h>
 using namespace tools::logger;
 #endif
 
+
 namespace audio
 {
 	Mixer * Mixer::instance = NULL;
+	
+	#ifdef __NO_X_WINDOW__
+	
+	/*
+	 * RaspberryPi BCM implementation
+	 */
+	
+	Mixer::Mixer( unsigned int samplingFrequency, unsigned short int channels, unsigned int samples ) : thread(NULL), samplingFrequency(samplingFrequency), channels(channels), samples(samples)
+	{
+		#ifdef DEBUG0
+		Logger::get() << "[Mixer] Initializing (" << static_cast<int>( this->channels ) << " channels, " << this->samplingFrequency << " Hz, " << this->samples << " samples)." << Logger::endl;
+		#endif
+		
+		// Sanity checks
+		if( this->samplingFrequency < 8000 || this->samplingFrequency > 192000 ) this->samplingFrequency = 48000;
+		
+		if( this->channels < 1 || this->channels > 8 )
+			this->channels = 2;
+		else
+			this->channels = this->channels > 4 ? 8 : (this->channels > 2 ? 4 : this->channels);
+			
+		if( this->samples < 1 ) this->samples = 1024;
+		
+		unsigned int bitDepth = 32; // Could be 16 or 32
+		this->numBuffers = 10;
+		this->bytesPerSample = (bitDepth * this->channels) >> 3;
+		
+		if( sem_init( &(this->semaphore), 0, 1 ) == 0 )
+		{
+			this->client = ilclient_init();
+			
+			if( this->client != NULL )
+			{
+				OMX_ERRORTYPE error;
+				
+				// Register callback for errors
+				ilclient_set_error_callback( this->client, Mixer::errorCallback, this );
+				
+				error = OMX_Init();
+				
+				if( error == OMX_ErrorNone )
+				{
+					char sAudioRender[] = "audio_render";
+					ilclient_create_component( this->client, &(this->audioRender), sAudioRender, static_cast<ILCLIENT_CREATE_FLAGS_T>( ILCLIENT_ENABLE_INPUT_BUFFERS | ILCLIENT_DISABLE_ALL_PORTS ) );
+
+					if( this->audioRender != NULL )
+					{
+						this->list[0] = this->audioRender;
+						
+						// Set up number/size of buffers
+						OMX_PARAM_PORTDEFINITIONTYPE param;
+						memset( &param, 0, sizeof(OMX_PARAM_PORTDEFINITIONTYPE) );
+						param.nSize = sizeof(OMX_PARAM_PORTDEFINITIONTYPE);
+						param.nVersion.nVersion = OMX_VERSION;
+						param.nPortIndex = 100;
+						
+						if( OMX_GetParameter( ILC_GET_HANDLE(this->audioRender), OMX_IndexParamPortDefinition, &param ) == OMX_ErrorNone )
+						{
+							unsigned int bufferSize = (this->samples * bitDepth * this->channels) >> 3;
+							
+							// Buffer length must be 16-byte aligned for VCHI
+							int size = (bufferSize + 15) & ~15;
+							
+							param.nBufferSize = size;
+							param.nBufferCountActual = this->numBuffers;
+							
+							if( OMX_SetParameter( ILC_GET_HANDLE(this->audioRender), OMX_IndexParamPortDefinition, &param ) == OMX_ErrorNone )
+							{
+								// Set up PCM parameters
+								OMX_AUDIO_PARAM_PCMMODETYPE pcm;
+								memset( &pcm, 0, sizeof(OMX_AUDIO_PARAM_PCMMODETYPE) );
+								pcm.nSize = sizeof(OMX_AUDIO_PARAM_PCMMODETYPE);
+								pcm.nVersion.nVersion = OMX_VERSION;
+								pcm.nPortIndex = 100;
+								pcm.nChannels = this->channels;
+								pcm.eNumData = OMX_NumericalDataSigned;
+								pcm.eEndian = OMX_EndianLittle;
+								pcm.nSamplingRate = this->samplingFrequency;
+								pcm.bInterleaved = OMX_TRUE;
+								pcm.nBitPerSample = bitDepth;
+								pcm.ePCMMode = OMX_AUDIO_PCMModeLinear;
+								
+								switch( this->channels )
+								{
+									case 1:
+										pcm.eChannelMapping[0] = OMX_AUDIO_ChannelCF;
+										break;
+										
+									case 3:
+										pcm.eChannelMapping[2] = OMX_AUDIO_ChannelCF;
+										pcm.eChannelMapping[1] = OMX_AUDIO_ChannelRF;
+										pcm.eChannelMapping[0] = OMX_AUDIO_ChannelLF;
+										break;
+										
+									case 8:
+										pcm.eChannelMapping[7] = OMX_AUDIO_ChannelRS;
+										
+									case 7:
+										pcm.eChannelMapping[6] = OMX_AUDIO_ChannelLS;
+										
+									case 6:
+										pcm.eChannelMapping[5] = OMX_AUDIO_ChannelRR;
+										
+									case 5:
+										pcm.eChannelMapping[4] = OMX_AUDIO_ChannelLR;
+										
+									case 4:
+										pcm.eChannelMapping[3] = OMX_AUDIO_ChannelLFE;
+										pcm.eChannelMapping[2] = OMX_AUDIO_ChannelCF;
+										
+									case 2:
+										pcm.eChannelMapping[1] = OMX_AUDIO_ChannelRF;
+										pcm.eChannelMapping[0] = OMX_AUDIO_ChannelLF;
+										break;
+								}
+								
+								if( OMX_SetParameter( ILC_GET_HANDLE(this->audioRender), OMX_IndexParamAudioPcm, &pcm ) == OMX_ErrorNone )
+								{
+									ilclient_change_component_state( this->audioRender, OMX_StateIdle );
+									
+									if( ilclient_enable_port_buffers( this->audioRender, 100, NULL, NULL, NULL ) == 0 )
+									{
+										// Initialization successful, starting MixerThread
+										ilclient_change_component_state( this->audioRender, OMX_StateExecuting );
+		
+										#ifdef DEBUG0
+										Logger::get() << "[Mixer] Initialized (" << static_cast<int>( this->channels ) << " channels, " << this->samplingFrequency << " Hz, " << this->samples << " samples)." << Logger::endl;
+										#endif
+										
+										// Set audio destination to local (jack)
+										this->setDestination( 0 );
+										
+										this->thread = new MixerThread( this );
+										this->thread->start();
+									}
+									else
+									{
+										ilclient_change_component_state( this->audioRender, OMX_StateLoaded );
+										
+										#ifdef DEBUG0
+										Logger::get() << "[Mixer] Unable to enable port buffers." << Logger::endl;
+										#endif
+									}
+								}
+								#ifdef DEBUG0
+								else
+									Logger::get() << "[Mixer] Unable to set PCM parameters." << Logger::endl;
+								#endif
+							}
+							#ifdef DEBUG0
+							else
+								Logger::get() << "[Mixer] Unable to set OMX port definition." << Logger::endl;
+							#endif
+						}
+						#ifdef DEBUG0
+						else
+							Logger::get() << "[Mixer] Unable to get OMX port definition." << Logger::endl;
+						#endif
+					}
+					#ifdef DEBUG0
+					else
+						Logger::get() << "[Mixer] Unable to create \"" << sAudioRender << "\" component." << Logger::endl;
+					#endif
+				}
+				#ifdef DEBUG0
+				else
+					Logger::get() << "[Mixer] Unable to initialize OMX." << Logger::endl;
+				#endif
+			}
+			#ifdef DEBUG0
+			else
+				Logger::get() << "[Mixer] Unable to initialize IL Client." << Logger::endl;
+			#endif
+		}
+		#ifdef DEBUG0
+		else
+			Logger::get() << "[Mixer] Unable to initialize semaphore: " << strerror(errno) << Logger::endl;
+		#endif
+	}
+	
+	Mixer::~Mixer()
+	{
+		if( this->audioRender != NULL )
+		{
+			ilclient_change_component_state( this->audioRender, OMX_StateIdle );
+		
+			if( this->thread != NULL )
+			{
+				this->thread->stop();
+				delete this->thread;
+			}
+			
+			OMX_SendCommand( ILC_GET_HANDLE(this->audioRender), OMX_CommandStateSet, OMX_StateLoaded, NULL );
+			
+			ilclient_disable_port_buffers( this->audioRender, 100, this->userBufferList, NULL, NULL );
+			ilclient_change_component_state( this->audioRender, OMX_StateLoaded );
+			ilclient_cleanup_components( this->list );
+		}
+		
+		OMX_Deinit();
+
+		if( this->client != NULL )	
+			ilclient_destroy( this->client );
+	
+		sem_destroy( &this->semaphore );
+
+		this->clearSounds();
+	
+		#ifdef DEBUG0
+		Logger::get() << "[Mixer] Destroyed." << Logger::endl;
+		#endif
+	
+	}
+	
+	void Mixer::errorCallback( void * userdata, COMPONENT_T * comp, OMX_U32 data )
+	{
+		string errorStr;
+	
+		switch( data )
+		{
+			case OMX_ErrorInsufficientResources: errorStr = "OMX_ErrorInsufficientResources";
+			case OMX_ErrorUndefined: errorStr = "OMX_ErrorUndefined";
+			case OMX_ErrorInvalidComponentName: errorStr = "OMX_ErrorInvalidComponentName";
+			case OMX_ErrorComponentNotFound: errorStr = "OMX_ErrorComponentNotFound";
+			case OMX_ErrorInvalidComponent: errorStr = "OMX_ErrorInvalidComponent";
+			case OMX_ErrorBadParameter: errorStr = "OMX_ErrorBadParameter";
+			case OMX_ErrorNotImplemented: errorStr = "OMX_ErrorNotImplemented";
+			case OMX_ErrorUnderflow: errorStr = "OMX_ErrorUnderflow";
+			case OMX_ErrorOverflow: errorStr = "OMX_ErrorOverflow";
+			case OMX_ErrorHardware: errorStr = "OMX_ErrorHardware";
+			case OMX_ErrorInvalidState: errorStr = "OMX_ErrorInvalidState";
+			case OMX_ErrorStreamCorrupt: errorStr = "OMX_ErrorStreamCorrupt";
+			case OMX_ErrorPortsNotCompatible: errorStr = "OMX_ErrorPortsNotCompatible";
+			case OMX_ErrorResourcesLost: errorStr = "OMX_ErrorResourcesLost";
+			case OMX_ErrorNoMore: errorStr = "OMX_ErrorNoMore";
+			case OMX_ErrorVersionMismatch: errorStr = "OMX_ErrorVersionMismatch";
+			case OMX_ErrorNotReady: errorStr = "OMX_ErrorNotReady";
+			case OMX_ErrorTimeout: errorStr = "OMX_ErrorTimeout";
+			case OMX_ErrorSameState: errorStr = "OMX_ErrorSameState";
+			case OMX_ErrorResourcesPreempted: errorStr = "OMX_ErrorResourcesPreempted";
+			case OMX_ErrorPortUnresponsiveDuringAllocation: errorStr = "OMX_ErrorPortUnresponsiveDuringAllocation";
+			case OMX_ErrorPortUnresponsiveDuringDeallocation: errorStr = "OMX_ErrorPortUnresponsiveDuringDeallocation";
+			case OMX_ErrorPortUnresponsiveDuringStop: errorStr = "OMX_ErrorPortUnresponsiveDuringStop";
+			case OMX_ErrorIncorrectStateTransition: errorStr = "OMX_ErrorIncorrectStateTransition";
+			case OMX_ErrorIncorrectStateOperation: errorStr = "OMX_ErrorIncorrectStateOperation";
+			case OMX_ErrorUnsupportedSetting: errorStr = "OMX_ErrorUnsupportedSetting";
+			case OMX_ErrorUnsupportedIndex: errorStr = "OMX_ErrorUnsupportedIndex";
+			case OMX_ErrorBadPortIndex: errorStr = "OMX_ErrorBadPortIndex";
+			case OMX_ErrorPortUnpopulated: errorStr = "OMX_ErrorPortUnpopulated";
+			case OMX_ErrorComponentSuspended: errorStr = "OMX_ErrorComponentSuspended";
+			case OMX_ErrorDynamicResourcesUnavailable: errorStr = "OMX_ErrorDynamicResourcesUnavailable";
+			case OMX_ErrorMbErrorsInFrame: errorStr = "OMX_ErrorMbErrorsInFrame";
+			case OMX_ErrorFormatNotDetected: errorStr = "OMX_ErrorFormatNotDetected";
+			case OMX_ErrorContentPipeOpenFailed: errorStr = "OMX_ErrorContentPipeOpenFailed";
+			case OMX_ErrorContentPipeCreationFailed: errorStr = "OMX_ErrorContentPipeCreationFailed";
+			case OMX_ErrorSeperateTablesUsed: errorStr = "OMX_ErrorSeperateTablesUsed";
+			case OMX_ErrorTunnelingUnsupported: errorStr = "OMX_ErrorTunnelingUnsupported";
+			default: errorStr = "Unknown error";
+		}
+	
+		Logger::get() << "[Mixer][Error] " << errorStr << "." << Logger::endl;
+	}
+	
+	bool Mixer::setDestination( unsigned int destination )
+	{
+		bool success = false;
+		const char * destinations[] = { "local", "hdmi" };
+		
+		if( destination > 1 ) destination = 0;
+		
+		OMX_CONFIG_BRCMAUDIODESTINATIONTYPE ar_dest;
+		memset( &ar_dest, 0, sizeof(ar_dest) );
+		ar_dest.nSize = sizeof(OMX_CONFIG_BRCMAUDIODESTINATIONTYPE);
+		ar_dest.nVersion.nVersion = OMX_VERSION;
+		strcpy( (char *) ar_dest.sName, destinations[destination] );
+		
+		if( OMX_SetConfig( ILC_GET_HANDLE(this->audioRender), OMX_IndexConfigBrcmAudioDestination, &ar_dest ) == OMX_ErrorNone )
+		{
+			success = true;
+			
+			#ifdef DEBUG0
+			Logger::get() << "[Mixer] Audio destination set to \"" << destinations[destination] << "\"." << Logger::endl;
+			#endif
+		}
+		#ifdef DEBUG0
+		else
+			Logger::get() << "[Mixer] Unable to set destination to \"" << destinations[destination] << "\"." << Logger::endl;
+		#endif
+		
+		return success;
+	}
+	
+	void Mixer::lockAudio()
+	{
+		sem_wait( &this->semaphore );
+	}
+	
+	void Mixer::unlockAudio()
+	{
+		sem_post( &this->semaphore );
+	}
+	
+	#else
+	
+	/*
+	 * SDL Mixer implementation
+	 */
 	
 	Mixer::Mixer( unsigned int samplingFrequency, unsigned short int channels, unsigned int samples ) : device(0), format(0), samplingFrequency(samplingFrequency), channels(channels), samples(samples)
 	{
@@ -59,16 +371,7 @@ namespace audio
 		if( this->device > 0 )
 			SDL_PauseAudioDevice( this->device, 1 );
 		
-		for( map<string, PlayingSound *>::iterator it = this->sounds.begin() ; it != this->sounds.end() ; it++ )
-		{
-			delete it->second;
-			
-			#ifdef DEBUG0
-			Logger::get() << "[Mixer] Deleted sound \"" << it->first << "\"." << Logger::endl;
-			#endif
-		}
-		
-		this->sounds.clear();
+		this->clearSounds();
 
 		if( this->device > 0 )
 		{		
@@ -81,196 +384,6 @@ namespace audio
 			#ifdef DEBUG0
 			Logger::get() << "[Mixer] Destroyed." << Logger::endl;
 			#endif
-		}
-	}
-
-	unsigned int Mixer::getSamplingFrequency() const
-	{
-		return this->samplingFrequency;
-	}
-	
-	unsigned short int Mixer::getChannels() const
-	{
-		return this->channels;
-	}
-	
-	SDL_AudioFormat Mixer::getAudioFormat() const
-	{
-		return this->format;
-	}
-
-	void Mixer::add( const string& name, Sound * sound, bool oneTimePlaying )
-	{
-		if( this->device > 0 )
-		{
-			SDL_LockAudioDevice( this->device );
-		
-			map<string, PlayingSound *>::iterator it = this->sounds.find( name );
-		
-			if( it != this->sounds.end() )
-				delete it->second;
-				
-			PlayingSound * playingSound = new PlayingSound( sound, this->samplingFrequency, this->channels );
-			playingSound->setOneTimePlaying( oneTimePlaying );
-		
-			this->sounds[name] = playingSound;
-		
-			#ifdef DEBUG0
-			Logger::get() << "[Mixer] Added sound \"" << name << "\" (" << (sound->getDuration() / 1000.0f ) << "s)." << Logger::endl;
-			#endif
-		
-			SDL_UnlockAudioDevice( this->device );
-		}
-	}
-	
-	void Mixer::play( const string& name, unsigned int ticks )
-	{
-		if( this->device > 0 )
-		{
-			SDL_LockAudioDevice( this->device );
-		
-			map<string, PlayingSound *>::iterator it = this->sounds.find( name );
-		
-			if( it != this->sounds.end() )
-			{
-				#ifdef DEBUG0
-				Logger::get() << "[Mixer] Playing sound \"" << name << "\"." << Logger::endl;
-				#endif
-			
-				it->second->play( ticks );
-			}
-			#ifdef DEBUG0
-			else
-			{
-				Logger::get() << "[Mixer] Can not find sound \"" << name << "\" ; sound will not be played." << Logger::endl;
-			}
-			#endif
-		
-			SDL_UnlockAudioDevice( this->device );
-		}
-	}
-	
-	void Mixer::stop( const string& name )
-	{
-		if( this->device > 0 )
-		{
-			SDL_LockAudioDevice( this->device );
-		
-			map<string, PlayingSound *>::iterator it = this->sounds.find( name );
-		
-			if( it != this->sounds.end() )
-			{
-				#ifdef DEBUG0
-				Logger::get() << "[Mixer] Stopping sound \"" << name << "\"." << Logger::endl;
-				#endif
-			
-				it->second->stop();
-			}
-			#ifdef DEBUG0
-			else
-			{
-				Logger::get() << "[Mixer] Can not find sound \"" << name << "\" ; sound will not be stopped." << Logger::endl;
-			}
-			#endif
-		
-			SDL_UnlockAudioDevice( this->device );
-		}
-	}
-	
-	void Mixer::setRepeat( const string& name, bool repeat, unsigned int times )
-	{
-		if( this->device > 0 )
-		{
-			SDL_LockAudioDevice( this->device );
-		
-			map<string, PlayingSound *>::iterator it = this->sounds.find( name );
-		
-			if( it != this->sounds.end() )
-			{
-				it->second->setRepeat( repeat, times );
-				
-				#ifdef DEBUG0
-				if( repeat )
-				{
-					if( times > 0 )
-						Logger::get() << "[Mixer] Enabled repeat for sound \"" << name << "\" for " << times << " times." << Logger::endl;
-					else
-						Logger::get() << "[Mixer] Enabled unlimited repeat for sound \"" << name << "\"." << Logger::endl;
-				}
-				else
-					Logger::get() << "[Mixer] Repeat disabled for sound \"" << name << "\"." << Logger::endl;
-				#endif
-			}
-			
-			SDL_UnlockAudioDevice( this->device );
-		}
-	}
-	
-	void Mixer::setPitch( const string& name, double pitch )
-	{
-		if( this->device > 0 )
-		{
-			SDL_LockAudioDevice( this->device );
-		
-			map<string, PlayingSound *>::iterator it = this->sounds.find( name );
-		
-			if( it != this->sounds.end() )
-			{
-				it->second->setPitch( pitch );
-				
-				#ifdef DEBUG0
-				Logger::get() << "[Mixer] Pitch set to " << pitch << " for sound \"" << name << "\"." << Logger::endl;
-				#endif
-			}
-			
-			SDL_UnlockAudioDevice( this->device );
-		}
-	}
-	
-	bool Mixer::isPlaying()
-	{
-		bool playing = false;
-		
-		if( this->device > 0 )
-		{
-			SDL_LockAudioDevice( this->device );
-		
-			for( map<string, PlayingSound *>::iterator it = this->sounds.begin() ; it != this->sounds.end() ; it++ )
-			{
-				if( it->second->isPlaying() )
-				{
-					playing = true;
-					break;
-				}
-			}
-		
-			SDL_UnlockAudioDevice( this->device );
-		}
-
-		return playing;
-	}
-	
-	void Mixer::clean()
-	{
-		if( this->device > 0 )
-		{
-			SDL_LockAudioDevice( this->device );
-		
-			vector<string> soundsToErase;
-		
-			for( map<string, PlayingSound *>::iterator it = this->sounds.begin() ; it != this->sounds.end() ; it++ )
-			{
-				if( it->second->hasPlayedOneTime() )
-					soundsToErase.push_back( it->first );
-			}
-			
-			for( vector<string>::iterator it = soundsToErase.begin() ; it != soundsToErase.end(); it++ )
-			{
-				delete (this->sounds[*it]);
-				this->sounds.erase( *it );
-			}
-		
-			SDL_UnlockAudioDevice( this->device );
 		}
 	}
 	
@@ -327,6 +440,211 @@ namespace audio
 			stream[i] = inStream[i];
 	}
 	
+	SDL_AudioFormat Mixer::getAudioFormat() const
+	{
+		return this->format;
+	}
+	
+	void Mixer::lockAudio()
+	{
+		if( this->device > 0 )
+			SDL_LockAudioDevice( this->device );
+	}
+	
+	void Mixer::unlockAudio()
+	{
+		if( this->device > 0 )
+			SDL_UnlockAudioDevice( this->device );
+	}
+	
+	#endif
+	
+	/*
+	 * Common functions
+	 */
+	 
+	void Mixer::clearSounds()
+	{
+		this->lockAudio();
+		
+		for( map<string, PlayingSound *>::iterator it = this->sounds.begin() ; it != this->sounds.end() ; it++ )
+		{
+			delete it->second;
+			
+			#ifdef DEBUG0
+			Logger::get() << "[Mixer] Deleted sound \"" << it->first << "\"." << Logger::endl;
+			#endif
+		}
+		
+		this->sounds.clear();
+		
+		this->unlockAudio();
+	}
+
+	unsigned int Mixer::getSamplingFrequency() const
+	{
+		return this->samplingFrequency;
+	}
+	
+	unsigned short int Mixer::getChannels() const
+	{
+		return this->channels;
+	}
+
+	void Mixer::add( const string& name, Sound * sound, bool oneTimePlaying )
+	{
+		this->lockAudio();
+	
+		map<string, PlayingSound *>::iterator it = this->sounds.find( name );
+	
+		if( it != this->sounds.end() )
+			delete it->second;
+			
+		PlayingSound * playingSound = new PlayingSound( sound, this->samplingFrequency, this->channels );
+		playingSound->setOneTimePlaying( oneTimePlaying );
+	
+		this->sounds[name] = playingSound;
+	
+		#ifdef DEBUG0
+		Logger::get() << "[Mixer] Added sound \"" << name << "\" (" << (sound->getDuration() / 1000.0f ) << "s)." << Logger::endl;
+		#endif
+		
+		this->unlockAudio();
+	}
+	
+	void Mixer::play( const string& name, unsigned int ticks )
+	{
+		this->lockAudio();
+	
+		map<string, PlayingSound *>::iterator it = this->sounds.find( name );
+	
+		if( it != this->sounds.end() )
+		{
+			#ifdef DEBUG0
+			Logger::get() << "[Mixer] Playing sound \"" << name << "\"." << Logger::endl;
+			#endif
+		
+			it->second->play( ticks );
+		}
+		#ifdef DEBUG0
+		else
+		{
+			Logger::get() << "[Mixer] Can not find sound \"" << name << "\" ; sound will not be played." << Logger::endl;
+		}
+		#endif
+	
+		this->unlockAudio();
+	}
+	
+	void Mixer::stop( const string& name )
+	{
+		this->lockAudio();
+	
+		map<string, PlayingSound *>::iterator it = this->sounds.find( name );
+	
+		if( it != this->sounds.end() )
+		{
+			#ifdef DEBUG0
+			Logger::get() << "[Mixer] Stopping sound \"" << name << "\"." << Logger::endl;
+			#endif
+		
+			it->second->stop();
+		}
+		#ifdef DEBUG0
+		else
+		{
+			Logger::get() << "[Mixer] Can not find sound \"" << name << "\" ; sound will not be stopped." << Logger::endl;
+		}
+		#endif
+	
+		this->unlockAudio();
+	}
+	
+	void Mixer::setRepeat( const string& name, bool repeat, unsigned int times )
+	{
+		this->lockAudio();
+	
+		map<string, PlayingSound *>::iterator it = this->sounds.find( name );
+	
+		if( it != this->sounds.end() )
+		{
+			it->second->setRepeat( repeat, times );
+			
+			#ifdef DEBUG0
+			if( repeat )
+			{
+				if( times > 0 )
+					Logger::get() << "[Mixer] Enabled repeat for sound \"" << name << "\" for " << times << " times." << Logger::endl;
+				else
+					Logger::get() << "[Mixer] Enabled unlimited repeat for sound \"" << name << "\"." << Logger::endl;
+			}
+			else
+				Logger::get() << "[Mixer] Repeat disabled for sound \"" << name << "\"." << Logger::endl;
+			#endif
+		}
+		
+		this->unlockAudio();
+	}
+	
+	void Mixer::setPitch( const string& name, double pitch )
+	{
+		this->lockAudio();
+	
+		map<string, PlayingSound *>::iterator it = this->sounds.find( name );
+	
+		if( it != this->sounds.end() )
+		{
+			it->second->setPitch( pitch );
+			
+			#ifdef DEBUG0
+			Logger::get() << "[Mixer] Pitch set to " << pitch << " for sound \"" << name << "\"." << Logger::endl;
+			#endif
+		}
+		
+		this->unlockAudio();
+	}
+	
+	bool Mixer::isPlaying()
+	{
+		bool playing = false;
+		
+		this->lockAudio();
+	
+		for( map<string, PlayingSound *>::iterator it = this->sounds.begin() ; it != this->sounds.end() ; it++ )
+		{
+			if( it->second->isPlaying() )
+			{
+				playing = true;
+				break;
+			}
+		}
+	
+		this->unlockAudio();
+
+		return playing;
+	}
+	
+	void Mixer::clean()
+	{
+		this->lockAudio();
+	
+		vector<string> soundsToErase;
+	
+		for( map<string, PlayingSound *>::iterator it = this->sounds.begin() ; it != this->sounds.end() ; it++ )
+		{
+			if( it->second->hasPlayedOneTime() )
+				soundsToErase.push_back( it->first );
+		}
+		
+		for( vector<string>::iterator it = soundsToErase.begin() ; it != soundsToErase.end(); it++ )
+		{
+			delete (this->sounds[*it]);
+			this->sounds.erase( *it );
+		}
+	
+		this->unlockAudio();
+	}
+	
 	Mixer * Mixer::get()
 	{
 		return Mixer::instance;
@@ -339,11 +657,6 @@ namespace audio
 			delete Mixer::instance;
 			Mixer::instance = NULL;
 		}
-	}
-	
-	unsigned int Mixer::getTicks()
-	{
-		return SDL_GetTicks();
 	}
 }
 

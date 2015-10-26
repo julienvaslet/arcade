@@ -1,3 +1,5 @@
+#ifdef __NO_X_WINDOW__
+
 /*
 Copyright (c) 2012, Broadcom Europe Ltd
 All rights reserved.
@@ -302,6 +304,7 @@ OMX_ERRORTYPE OMX_GetDebugInformation (
    return vcil_out_get_debug_information(ilcs_get_common(ilcs_service), debugInfo, pLen);
 }
 
+#endif
 
 /* File EOF */
 

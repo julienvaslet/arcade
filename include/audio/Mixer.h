@@ -3,7 +3,25 @@
 
 #include <audio/PlayingSound.h>
 
+#ifdef __NO_X_WINDOW__
+
+extern "C" {
+#include <audio/broadcom/ilclient.h>
+}
+
+namespace audio
+{
+	class Mixer;
+}
+
+#include <audio/MixerThread.h>
+
+#else
+
 #include <SDL2/SDL.h>
+
+#endif
+
 #include <string>
 #include <map>
 
@@ -12,27 +30,61 @@ using namespace std;
 namespace audio
 {
 	class Mixer
-	{	
+	{		
 		protected:
 			static Mixer * instance;
+			
+			#ifdef __NO_X_WINDOW__
+			
+			/* Raspberry PI BCM implementation */
+			
+			static void errorCallback( void * userdata, COMPONENT_T * comp, OMX_U32 data );
+			bool setDestination( unsigned int destination );
+			
+			MixerThread * thread;
+			ILCLIENT_T * client;
+			COMPONENT_T * audioRender;
+			COMPONENT_T * list[2];
+			OMX_BUFFERHEADERTYPE * userBufferList;
+			sem_t semaphore;
+			unsigned int numBuffers;
+			unsigned int bytesPerSample;
+			
+			#else
+			
+			/* SDL implementation */
+			
 			static void convertStream( const vector<int>& inStream, Uint8 * outStream, SDL_AudioFormat format );
 			static unsigned int getRealSamples( unsigned int samples, SDL_AudioFormat format );
 			static void callback( void * userdata, Uint8 * stream, int len );
 			
-			SDL_AudioDeviceID device;
+			SDL_AudioFormat getAudioFormat() const;
+			
 			SDL_AudioFormat format;
+			SDL_AudioDeviceID device;
+			
+			#endif
+			
+			/* Common attributes */
+			
 			unsigned int samplingFrequency;
 			unsigned short int channels;
 			unsigned int samples;
 			
 			map<string, PlayingSound *> sounds;
 			
+			void lockAudio();
+			void unlockAudio();
+			void clearSounds();
+			
 		public:
+			static Mixer * get();
+			static void destroy();
+			
 			Mixer( unsigned int samplingFrequency, unsigned short int channels, unsigned int samples );
 			virtual ~Mixer();
 			
 			unsigned int getSamplingFrequency() const;
-			SDL_AudioFormat getAudioFormat() const;
 			unsigned short int getChannels() const;
 			
 			void add( const string& name, Sound * sound, bool oneTimePlaying = false );
@@ -43,10 +95,6 @@ namespace audio
 			bool isPlaying();
 			
 			void clean();
-			
-			static Mixer * get();
-			static void destroy();
-			static unsigned int getTicks();
 	};
 }
 

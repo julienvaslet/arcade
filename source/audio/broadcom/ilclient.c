@@ -1,3 +1,5 @@
+#ifdef __NO_X_WINDOW__
+
 /*
 Copyright (c) 2012, Broadcom Europe Ltd
 All rights reserved.
@@ -1833,4 +1835,6 @@ unsigned int ilclient_stack_size(void)
 {
    return ILCLIENT_THREAD_DEFAULT_STACK_SIZE;
 }
+
+#endif
 
