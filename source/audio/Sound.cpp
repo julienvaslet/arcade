@@ -117,6 +117,15 @@ namespace audio
 		this->setRawData( (position * this->channels) + channel, value );
 	}
 	
+	void Sound::fill( int value, unsigned int length )
+	{
+		if( this->data.size() < length )
+			this->data.resize( length );
+	
+		for( unsigned int i = 0 ; i < length ; i++ )
+			this->data[i] = value;
+	}
+	
 	void Sound::rawMix( const Sound * sound, unsigned int startPosition, float volume, unsigned int fromPosition, unsigned int toPosition, double pitch )
 	{
 		// TODO: Convert input sound format

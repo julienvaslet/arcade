@@ -30,22 +30,26 @@ using namespace std;
 namespace audio
 {
 	class Mixer
-	{		
-		protected:
+	{
+		friend class MixerThread;
+			
+		public:
 			static Mixer * instance;
 			
 			#ifdef __NO_X_WINDOW__
 			
 			/* Raspberry PI BCM implementation */
 			
+			static string errorToString( OMX_ERRORTYPE error );
 			static void errorCallback( void * userdata, COMPONENT_T * comp, OMX_U32 data );
 			bool setDestination( unsigned int destination );
+			unsigned int getLatency();
 			
 			MixerThread * thread;
 			ILCLIENT_T * client;
 			COMPONENT_T * audioRender;
-			COMPONENT_T * list[2];
 			OMX_BUFFERHEADERTYPE * userBufferList;
+			COMPONENT_T * list[2];
 			sem_t semaphore;
 			unsigned int numBuffers;
 			unsigned int bytesPerSample;
@@ -73,9 +77,10 @@ namespace audio
 			
 			map<string, PlayingSound *> sounds;
 			
+			void clearSounds();
 			void lockAudio();
 			void unlockAudio();
-			void clearSounds();
+			Sound * fillBuffer( unsigned int bufferLength );
 			
 		public:
 			static Mixer * get();

@@ -18,6 +18,7 @@ namespace audio
 	{
 		protected:
 			Mixer * mixer;
+			unsigned int allowedLatency;
 		
 			virtual int life();
 		

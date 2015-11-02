@@ -117,6 +117,14 @@ namespace audio
 			 */
 			void setChannelData( unsigned int position, unsigned int short channel, int value );
 			
+			/*
+			 * Fill the sound with the specified value.
+			 * If the specified length is bigger than the data, the sound is growed.
+			 * @param value	the value to set.
+			 * @param length the length.
+			 */
+			void fill( int value, unsigned int length );
+			
 			/**
 			 * Mix the specified sound into this sound's data.
 			 * @param sound the specified sound to mix.

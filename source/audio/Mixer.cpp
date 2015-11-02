@@ -21,8 +21,10 @@ namespace audio
 	 * RaspberryPi BCM implementation
 	 */
 	
-	Mixer::Mixer( unsigned int samplingFrequency, unsigned short int channels, unsigned int samples ) : thread(NULL), samplingFrequency(samplingFrequency), channels(channels), samples(samples)
+	Mixer::Mixer( unsigned int samplingFrequency, unsigned short int channels, unsigned int samples ) : thread(NULL), audioRender(NULL), userBufferList(NULL), numBuffers(0), bytesPerSample(0), samplingFrequency(samplingFrequency), channels(channels), samples(samples)
 	{
+		Mixer::destroy();
+		
 		#ifdef DEBUG0
 		Logger::get() << "[Mixer] Initializing (" << static_cast<int>( this->channels ) << " channels, " << this->samplingFrequency << " Hz, " << this->samples << " samples)." << Logger::endl;
 		#endif
@@ -40,6 +42,9 @@ namespace audio
 		unsigned int bitDepth = 32; // Could be 16 or 32
 		this->numBuffers = 10;
 		this->bytesPerSample = (bitDepth * this->channels) >> 3;
+		
+		this->list[0] = NULL;
+		this->list[1] = NULL;
 		
 		if( sem_init( &(this->semaphore), 0, 1 ) == 0 )
 		{
@@ -137,7 +142,8 @@ namespace audio
 									if( ilclient_enable_port_buffers( this->audioRender, 100, NULL, NULL, NULL ) == 0 )
 									{
 										// Initialization successful, starting MixerThread
-										ilclient_change_component_state( this->audioRender, OMX_StateExecuting );
+										ilclient_change_component_state( this->audioRender, OMX_StateExecuting );			
+										Mixer::instance = this;
 		
 										#ifdef DEBUG0
 										Logger::get() << "[Mixer] Initialized (" << static_cast<int>( this->channels ) << " channels, " << this->samplingFrequency << " Hz, " << this->samples << " samples)." << Logger::endl;
@@ -203,6 +209,8 @@ namespace audio
 			if( this->thread != NULL )
 			{
 				this->thread->stop();
+				this->thread->join();
+				
 				delete this->thread;
 			}
 			
@@ -228,53 +236,63 @@ namespace audio
 	
 	}
 	
-	void Mixer::errorCallback( void * userdata, COMPONENT_T * comp, OMX_U32 data )
+	string Mixer::errorToString( OMX_ERRORTYPE error )
 	{
 		string errorStr;
-	
-		switch( data )
+		
+		switch( error )
 		{
-			case OMX_ErrorInsufficientResources: errorStr = "OMX_ErrorInsufficientResources";
-			case OMX_ErrorUndefined: errorStr = "OMX_ErrorUndefined";
-			case OMX_ErrorInvalidComponentName: errorStr = "OMX_ErrorInvalidComponentName";
-			case OMX_ErrorComponentNotFound: errorStr = "OMX_ErrorComponentNotFound";
-			case OMX_ErrorInvalidComponent: errorStr = "OMX_ErrorInvalidComponent";
-			case OMX_ErrorBadParameter: errorStr = "OMX_ErrorBadParameter";
-			case OMX_ErrorNotImplemented: errorStr = "OMX_ErrorNotImplemented";
-			case OMX_ErrorUnderflow: errorStr = "OMX_ErrorUnderflow";
-			case OMX_ErrorOverflow: errorStr = "OMX_ErrorOverflow";
-			case OMX_ErrorHardware: errorStr = "OMX_ErrorHardware";
-			case OMX_ErrorInvalidState: errorStr = "OMX_ErrorInvalidState";
-			case OMX_ErrorStreamCorrupt: errorStr = "OMX_ErrorStreamCorrupt";
-			case OMX_ErrorPortsNotCompatible: errorStr = "OMX_ErrorPortsNotCompatible";
-			case OMX_ErrorResourcesLost: errorStr = "OMX_ErrorResourcesLost";
-			case OMX_ErrorNoMore: errorStr = "OMX_ErrorNoMore";
-			case OMX_ErrorVersionMismatch: errorStr = "OMX_ErrorVersionMismatch";
-			case OMX_ErrorNotReady: errorStr = "OMX_ErrorNotReady";
-			case OMX_ErrorTimeout: errorStr = "OMX_ErrorTimeout";
-			case OMX_ErrorSameState: errorStr = "OMX_ErrorSameState";
-			case OMX_ErrorResourcesPreempted: errorStr = "OMX_ErrorResourcesPreempted";
-			case OMX_ErrorPortUnresponsiveDuringAllocation: errorStr = "OMX_ErrorPortUnresponsiveDuringAllocation";
-			case OMX_ErrorPortUnresponsiveDuringDeallocation: errorStr = "OMX_ErrorPortUnresponsiveDuringDeallocation";
-			case OMX_ErrorPortUnresponsiveDuringStop: errorStr = "OMX_ErrorPortUnresponsiveDuringStop";
-			case OMX_ErrorIncorrectStateTransition: errorStr = "OMX_ErrorIncorrectStateTransition";
-			case OMX_ErrorIncorrectStateOperation: errorStr = "OMX_ErrorIncorrectStateOperation";
-			case OMX_ErrorUnsupportedSetting: errorStr = "OMX_ErrorUnsupportedSetting";
-			case OMX_ErrorUnsupportedIndex: errorStr = "OMX_ErrorUnsupportedIndex";
-			case OMX_ErrorBadPortIndex: errorStr = "OMX_ErrorBadPortIndex";
-			case OMX_ErrorPortUnpopulated: errorStr = "OMX_ErrorPortUnpopulated";
-			case OMX_ErrorComponentSuspended: errorStr = "OMX_ErrorComponentSuspended";
-			case OMX_ErrorDynamicResourcesUnavailable: errorStr = "OMX_ErrorDynamicResourcesUnavailable";
-			case OMX_ErrorMbErrorsInFrame: errorStr = "OMX_ErrorMbErrorsInFrame";
-			case OMX_ErrorFormatNotDetected: errorStr = "OMX_ErrorFormatNotDetected";
-			case OMX_ErrorContentPipeOpenFailed: errorStr = "OMX_ErrorContentPipeOpenFailed";
-			case OMX_ErrorContentPipeCreationFailed: errorStr = "OMX_ErrorContentPipeCreationFailed";
-			case OMX_ErrorSeperateTablesUsed: errorStr = "OMX_ErrorSeperateTablesUsed";
-			case OMX_ErrorTunnelingUnsupported: errorStr = "OMX_ErrorTunnelingUnsupported";
-			default: errorStr = "Unknown error";
+			case OMX_ErrorInsufficientResources: errorStr = "OMX_ErrorInsufficientResources"; break;
+			case OMX_ErrorUndefined: errorStr = "OMX_ErrorUndefined"; break;
+			case OMX_ErrorInvalidComponentName: errorStr = "OMX_ErrorInvalidComponentName"; break;
+			case OMX_ErrorComponentNotFound: errorStr = "OMX_ErrorComponentNotFound"; break;
+			case OMX_ErrorInvalidComponent: errorStr = "OMX_ErrorInvalidComponent"; break;
+			case OMX_ErrorBadParameter: errorStr = "OMX_ErrorBadParameter"; break;
+			case OMX_ErrorNotImplemented: errorStr = "OMX_ErrorNotImplemented"; break;
+			case OMX_ErrorUnderflow: errorStr = "OMX_ErrorUnderflow"; break;
+			case OMX_ErrorOverflow: errorStr = "OMX_ErrorOverflow"; break;
+			case OMX_ErrorHardware: errorStr = "OMX_ErrorHardware"; break;
+			case OMX_ErrorInvalidState: errorStr = "OMX_ErrorInvalidState"; break;
+			case OMX_ErrorStreamCorrupt: errorStr = "OMX_ErrorStreamCorrupt"; break;
+			case OMX_ErrorPortsNotCompatible: errorStr = "OMX_ErrorPortsNotCompatible"; break;
+			case OMX_ErrorResourcesLost: errorStr = "OMX_ErrorResourcesLost"; break;
+			case OMX_ErrorNoMore: errorStr = "OMX_ErrorNoMore"; break;
+			case OMX_ErrorVersionMismatch: errorStr = "OMX_ErrorVersionMismatch"; break;
+			case OMX_ErrorNotReady: errorStr = "OMX_ErrorNotReady"; break;
+			case OMX_ErrorTimeout: errorStr = "OMX_ErrorTimeout"; break;
+			case OMX_ErrorSameState: errorStr = "OMX_ErrorSameState"; break;
+			case OMX_ErrorResourcesPreempted: errorStr = "OMX_ErrorResourcesPreempted"; break;
+			case OMX_ErrorPortUnresponsiveDuringAllocation: errorStr = "OMX_ErrorPortUnresponsiveDuringAllocation"; break;
+			case OMX_ErrorPortUnresponsiveDuringDeallocation: errorStr = "OMX_ErrorPortUnresponsiveDuringDeallocation"; break;
+			case OMX_ErrorPortUnresponsiveDuringStop: errorStr = "OMX_ErrorPortUnresponsiveDuringStop"; break;
+			case OMX_ErrorIncorrectStateTransition: errorStr = "OMX_ErrorIncorrectStateTransition"; break;
+			case OMX_ErrorIncorrectStateOperation: errorStr = "OMX_ErrorIncorrectStateOperation"; break;
+			case OMX_ErrorUnsupportedSetting: errorStr = "OMX_ErrorUnsupportedSetting"; break;
+			case OMX_ErrorUnsupportedIndex: errorStr = "OMX_ErrorUnsupportedIndex"; break;
+			case OMX_ErrorBadPortIndex: errorStr = "OMX_ErrorBadPortIndex"; break;
+			case OMX_ErrorPortUnpopulated: errorStr = "OMX_ErrorPortUnpopulated"; break;
+			case OMX_ErrorComponentSuspended: errorStr = "OMX_ErrorComponentSuspended"; break;
+			case OMX_ErrorDynamicResourcesUnavailable: errorStr = "OMX_ErrorDynamicResourcesUnavailable"; break;
+			case OMX_ErrorMbErrorsInFrame: errorStr = "OMX_ErrorMbErrorsInFrame"; break;
+			case OMX_ErrorFormatNotDetected: errorStr = "OMX_ErrorFormatNotDetected"; break;
+			case OMX_ErrorContentPipeOpenFailed: errorStr = "OMX_ErrorContentPipeOpenFailed"; break;
+			case OMX_ErrorContentPipeCreationFailed: errorStr = "OMX_ErrorContentPipeCreationFailed"; break;
+			case OMX_ErrorSeperateTablesUsed: errorStr = "OMX_ErrorSeperateTablesUsed"; break;
+			case OMX_ErrorTunnelingUnsupported: errorStr = "OMX_ErrorTunnelingUnsupported"; break;
+			
+			default:
+				stringstream ss;
+				ss << "Unknown error (" << static_cast<unsigned int>( error ) << ")";
+				errorStr = ss.str();
+				break;
 		}
+		
+		return errorStr;
+	}
 	
-		Logger::get() << "[Mixer][Error] " << errorStr << "." << Logger::endl;
+	void Mixer::errorCallback( void * userdata, COMPONENT_T * comp, OMX_U32 data )
+	{
+		Logger::get() << "[Mixer][Error] " << Mixer::errorToString( (OMX_ERRORTYPE) data ) << "." << Logger::endl;
 	}
 	
 	bool Mixer::setDestination( unsigned int destination )
@@ -304,6 +322,21 @@ namespace audio
 		#endif
 		
 		return success;
+	}
+	
+	unsigned int Mixer::getLatency()
+	{
+		OMX_PARAM_U32TYPE param;
+
+		memset( &param, 0, sizeof(OMX_PARAM_U32TYPE) );
+		param.nSize = sizeof(OMX_PARAM_U32TYPE);
+		param.nVersion.nVersion = OMX_VERSION;
+		param.nPortIndex = 100;
+
+		if( OMX_GetConfig( ILC_GET_HANDLE(this->audioRender), OMX_IndexConfigAudioRenderingLatency, &param ) == OMX_ErrorNone )
+			return param.nU32;
+		else
+			return 0;
 	}
 	
 	void Mixer::lockAudio()
@@ -391,36 +424,14 @@ namespace audio
 	{
 		Mixer * mixer = static_cast<Mixer *>( userdata );
 		unsigned int realLength = Mixer::getRealSamples( len, mixer->getAudioFormat() );
-		bool firstSound = true;
-		vector<int> waves( realLength, 0.0 );
-		
-		Sound sound( mixer->samplingFrequency, mixer->channels );
-		sound.setRawData( waves );
 
 		if( mixer != NULL )
 		{
-			for( map<string, PlayingSound *>::iterator it = mixer->sounds.begin() ; it != mixer->sounds.end() ; it++ )
-			{
-				if( it->second->isPlaying() )
-				{
-					unsigned int position = it->second->getPosition();
-					unsigned int pitchedLength = realLength * it->second->getPitch();
-					unsigned int tocopy = ( position + pitchedLength > it->second->getSound()->getRawLength() ) ? it->second->getSound()->getRawLength() - position : pitchedLength;
-
-					if( firstSound )
-					{
-						sound.rawMix( it->second->getSound(), 0, 2.0f, position, position + tocopy, it->second->getPitch() );
-						firstSound = false;
-					}
-					else
-						sound.rawMix( it->second->getSound(), 0, 1.0f, position, position + tocopy, it->second->getPitch() );
-					
-					it->second->setPosition( tocopy, true );
-				}
-			}
-
-			vector<int> waves = sound.getRawData();
-			Mixer::convertStream( waves, stream, mixer->getAudioFormat() );			
+			Sound * sound = mixer->fillBuffer( realLength );
+			vector<int> waves = sound->getRawData();
+			delete sound;
+			
+			Mixer::convertStream( waves, stream, mixer->getAudioFormat() );
 		}
 	}
 	
@@ -489,6 +500,36 @@ namespace audio
 	unsigned short int Mixer::getChannels() const
 	{
 		return this->channels;
+	}
+	
+	Sound * Mixer::fillBuffer( unsigned int bufferLength )
+	{
+		bool firstSound = true;
+		
+		Sound * sound = new Sound( this->samplingFrequency, this->channels );
+		sound->fill( 0, bufferLength );
+	
+		// Mixing sounds
+		for( map<string, PlayingSound *>::iterator it = this->sounds.begin() ; it != this->sounds.end() ; it++ )
+		{
+			if( it->second->isPlaying() )
+			{
+				unsigned int position = it->second->getPosition();
+				unsigned int tocopy = ( position > it->second->getSound()->getRawLength() - bufferLength ) ? it->second->getSound()->getRawLength() - position : bufferLength;
+		
+				if( firstSound )
+				{
+					sound->rawMix( it->second->getSound(), 0, 2.0f, position, position + tocopy );
+					firstSound = false;
+				}
+				else
+					sound->rawMix( it->second->getSound(), 0, 1.0f, position, position + tocopy );
+			
+				it->second->setPosition( tocopy, true );
+			}
+		}
+		
+		return sound;
 	}
 
 	void Mixer::add( const string& name, Sound * sound, bool oneTimePlaying )
@@ -618,6 +659,11 @@ namespace audio
 				break;
 			}
 		}
+		
+		#ifdef __NO_X_WINDOW__
+		if( !playing && this->getLatency() > 0 )
+			playing = true;
+		#endif
 	
 		this->unlockAudio();
 

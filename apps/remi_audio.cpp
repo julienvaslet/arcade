@@ -1,5 +1,6 @@
 #include <tools/logger/Stdout.h>
 
+#include <opengl/Screen.h>
 #include <audio/Mixer.h>
 #include <audio/Song.h>
 #include <audio/instrument/Sine.h>
@@ -20,7 +21,12 @@ int main( int argc, char ** argv )
 	// Initialize standard-output logger
 	new Stdout( "stdout", true );
 	
+	// Not needed when Screen is used.
+	#ifdef __NO_X_WINDOW__
+	bcm_host_init();
+	#else
 	SDL_Init( SDL_INIT_AUDIO );
+	#endif
 	
 	new Mixer( 44100, 1, 1024 );
 
@@ -144,7 +150,12 @@ int main( int argc, char ** argv )
 		
 	Mixer::destroy();
 	
+	// Not needed when Screen is used.
+	#ifdef __NO_X_WINDOW__
+	
+	#else
 	SDL_Quit();
+	#endif
 	
 	Logger::destroy();
 	
