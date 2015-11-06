@@ -12,10 +12,10 @@
 
 #include <controller/Controller.h>
 
-/*#include <audio/Mixer.h>
+#include <audio/Mixer.h>
 #include <audio/Song.h>
 #include <audio/instrument/Sine.h>
-#include <audio/instrument/Silence.h>*/
+#include <audio/instrument/Silence.h>
 
 #include <cstdlib>
 #include <ctime>
@@ -27,8 +27,8 @@ using namespace tools::logger;
 
 using namespace opengl;
 using namespace controller;
-/*using namespace audio;
-using namespace audio::instrument;*/
+using namespace audio;
+using namespace audio::instrument;
 
 namespace blockgame
 {
@@ -52,7 +52,7 @@ namespace blockgame
 		srand( time(NULL) );
 		
 		// Creating game song
-		/*Sine instrument( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
+		Sine instrument( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 		Silence silence( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 		Song * song = new Song( 120, Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 	
@@ -102,7 +102,7 @@ namespace blockgame
 		
 		Mixer::get()->add( "BlockgameSong", song );
 		delete song;
-		Mixer::get()->setRepeat( "BlockgameSong", true );*/
+		Mixer::get()->setRepeat( "BlockgameSong", true );
 		
 		// Creating grid
 		this->blocks = new Grid( GRID_WIDTH, GRID_HEIGHT );
@@ -135,13 +135,13 @@ namespace blockgame
 		this->updateLabels();
 		this->lastBlockMove = SDL_GetTicks();
 		
-		//Mixer::get()->play( "BlockgameSong" );
+		Mixer::get()->play( "BlockgameSong" );
 	}
 	
 	PlayScene::~PlayScene()
 	{
 		// Stopping song
-		//Mixer::get()->stop( "BlockgameSong" );
+		Mixer::get()->stop( "BlockgameSong" );
 		
 		if( this->fallingBlock != NULL )
 			delete this->fallingBlock;

@@ -11,8 +11,8 @@ namespace audio
 	namespace instrument
 	{
 		class Instrument
-		{		
-			protected:
+		{
+			protected:			
 				unsigned int samplingFrequency;
 				unsigned short int channels;
 			

@@ -383,7 +383,7 @@ namespace audio
 			this->format = obtainedFormat.format;
 			
 			#ifdef DEBUG0
-			Logger::get() << "[Mixer] Initialized (" << static_cast<int>( this->channels ) << " channels, " << this->samplingFrequency << " Hz, " << this->samples << " samples)." << Logger::endl;
+			Logger::get() << "[Mixer] Initialized (" << static_cast<int>( this->channels ) << " channels, " << this->samplingFrequency << " Hz, " << this->samples << " samples per channel)." << Logger::endl;
 			#endif
 			
 			Mixer::instance = this;

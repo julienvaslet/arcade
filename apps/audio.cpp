@@ -17,7 +17,7 @@ using namespace audio::instrument;
 using namespace std;
 
 #define SAMPLINGFREQ	48000
-#define CHANNELS		1
+#define CHANNELS		2
 #define BUFFERSIZE		1024
 
 int main( int argc, char ** argv )
@@ -35,13 +35,13 @@ int main( int argc, char ** argv )
 	new Mixer( SAMPLINGFREQ, CHANNELS, BUFFERSIZE );
 	
 	Sine si( SAMPLINGFREQ, CHANNELS );
-	Song * s0 = new Song( 80, SAMPLINGFREQ, CHANNELS );
+	Song * s0 = new Song( 60, SAMPLINGFREQ, CHANNELS );
 	s0->mixNote( si, Note::getFrequency( 'C', false, 3 ), Note::Noire );
 	
-	Song * s1 = new Song( 80, SAMPLINGFREQ, CHANNELS );
+	Song * s1 = new Song( 60, SAMPLINGFREQ, CHANNELS );
 	s1->mixNote( si, Note::getFrequency( 'E', false, 3 ), Note::Noire );
 	
-	Song * s2 = new Song( 80, SAMPLINGFREQ, CHANNELS );
+	Song * s2 = new Song( 60, SAMPLINGFREQ, CHANNELS );
 	s2->mixNote( si, Note::getFrequency( 'G', false, 3 ), Note::Noire );
 	
 	Mixer::get()->add( "song0", s0 );
