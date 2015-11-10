@@ -39,8 +39,7 @@ int main( int argc, char ** argv )
 	Triangle triangle( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 	Silence silence( Mixer::get()->getSamplingFrequency(), Mixer::get()->getChannels() );
 
-	
-	/*song->mixNote( sine, Note::getFrequency( 'B', false, 2 ), Note::DoubleCroche, false );
+	song->mixNote( sine, Note::getFrequency( 'B', false, 2 ), Note::DoubleCroche, false );
 	song->mixNote( silence, Note::getFrequency( 'B', false, 3 ), Note::DoubleCroche, false );
 	song->mixNote( sine, Note::getFrequency( 'B', false, 2 ), Note::DoubleCroche, false );
 	song->mixNote( silence, Note::getFrequency( 'B', false, 3 ), Note::DoubleCroche, false );
@@ -82,11 +81,11 @@ int main( int argc, char ** argv )
 	song->mixNote( sine, Note::getFrequency( 'B', false, 3 ), Note::DoubleCroche, true );
 	song->mixNote( sine, Note::getFrequency( 'F', false, 3 ), Note::DoubleCroche, true );
 	song->mixNote( sine, Note::getFrequency( 'G', false, 2 ), Note::DoubleCroche, true );
-	song->mixNote( sine, Note::getFrequency( 'C', true, 4 ), Note::Blanche, true );*/
+	song->mixNote( sine, Note::getFrequency( 'C', true, 4 ), Note::Blanche, true );
 	
 	//----------------------
 	
-	song->mixNote( sawtooth, Note::getFrequency( 'A', false, 1 ), Note::Noire, false );
+	/*song->mixNote( sawtooth, Note::getFrequency( 'A', false, 1 ), Note::Noire, false );
 	song->mixNote( sawtooth, Note::getFrequency( 'A', false, 2 ), Note::Croche, false );
 	song->mixNote( sawtooth, Note::getFrequency( 'A', false, 1 ), Note::Noire, false );
 	song->mixNote( sawtooth, Note::getFrequency( 'A', false, 2 ), Note::Croche, false );
@@ -116,7 +115,7 @@ int main( int argc, char ** argv )
 	song2->mixNote( sine, Note::getFrequency( 'A', false, 4 ), Note::Croche, false );
 
 	song->rawMix( song2 );
-	delete song2;
+	delete song2;*/
 	
 	//----------------------
 	
@@ -140,7 +139,22 @@ int main( int argc, char ** argv )
 	song->mixNote( sine, Note::getFrequency( 'A', false, 3 ), Note::Croche, false );
 	song->mixNote( sine, Note::getFrequency( 'B', false, 3 ), Note::Croche, false );
 	song->mixNote( sine, Note::getFrequency( 'A', false, 3 ), Note::Croche, false );
-	song->mixNote( silence, Note::getFrequency( 'E', false, 3 ), Note::Croche, false );*/
+	song->mixNote( silence, Note::getFrequency( 'E', false, 3 ), Note::Croche, false );
+	
+	song2->mixNote( sawtooth, Note::getFrequency( 'E', false, 2 ), Note::Noire, true );
+	song2->mixNote( silence, Note::getFrequency( 'E', false, 2 ), Note::Croche );
+	song2->mixNote( sawtooth, Note::getFrequency( 'C', false, 2 ), Note::Noire, true );
+	song2->mixNote( silence, Note::getFrequency( 'E', false, 2 ), Note::Croche );
+	
+	song2->mixNote( sawtooth, Note::getFrequency( 'E', false, 2 ), Note::Noire, true );
+	song2->mixNote( silence, Note::getFrequency( 'E', false, 2 ), Note::Croche );
+	song2->mixNote( sawtooth, Note::getFrequency( 'G', false, 2 ), Note::Noire, true );
+	song2->mixNote( silence, Note::getFrequency( 'E', false, 2 ), Note::Croche );
+
+	song->rawMix( song2 );
+	delete song2;*/
+	
+	// ------------
 	
 	Mixer::get()->add( "song", song );
 	delete song;

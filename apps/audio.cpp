@@ -4,6 +4,7 @@
 #include <opengl/Screen.h>
 #include <audio/Song.h>
 #include <audio/instrument/Sine.h>
+#include <audio/instrument/Silence.h>
 #include <audio/instrument/Triangle.h>
 #include <audio/instrument/Square.h>
 #include <audio/Mixer.h>
@@ -17,7 +18,7 @@ using namespace audio::instrument;
 using namespace std;
 
 #define SAMPLINGFREQ	48000
-#define CHANNELS		2
+#define CHANNELS		1
 #define BUFFERSIZE		1024
 
 int main( int argc, char ** argv )
@@ -35,14 +36,17 @@ int main( int argc, char ** argv )
 	new Mixer( SAMPLINGFREQ, CHANNELS, BUFFERSIZE );
 	
 	Sine si( SAMPLINGFREQ, CHANNELS );
+	Silence sil( SAMPLINGFREQ, CHANNELS );
 	Song * s0 = new Song( 60, SAMPLINGFREQ, CHANNELS );
-	s0->mixNote( si, Note::getFrequency( 'C', false, 3 ), Note::Noire );
+	s0->mixNote( si, Note::getFrequency( 'C', false, 3 ), Note::Ronde );
 	
 	Song * s1 = new Song( 60, SAMPLINGFREQ, CHANNELS );
-	s1->mixNote( si, Note::getFrequency( 'E', false, 3 ), Note::Noire );
+	s1->mixNote( sil, Note::getFrequency( 'C', false, 3 ), Note::Noire );
+	s1->mixNote( si, Note::getFrequency( 'C', false, 3 ) * 1.618, Note::Blanche, true );
 	
 	Song * s2 = new Song( 60, SAMPLINGFREQ, CHANNELS );
-	s2->mixNote( si, Note::getFrequency( 'G', false, 3 ), Note::Noire );
+	s2->mixNote( sil, Note::getFrequency( 'C', false, 3 ), Note::Blanche );
+	s2->mixNote( si, Note::getFrequency( 'C', false, 3 ) * 1.618 * 1.618, Note::Blanche );
 	
 	Mixer::get()->add( "song0", s0 );
 	delete s0;

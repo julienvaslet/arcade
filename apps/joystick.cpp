@@ -13,6 +13,9 @@ using namespace opengl;
 using namespace tools::logger;
 using namespace controller;
 
+#define SCREEN_WIDTH	800
+#define SCREEN_HEIGHT	600
+
 int main( int argc, char ** argv )
 {
 	// Initialize standard-output logger
@@ -23,6 +26,9 @@ int main( int argc, char ** argv )
 		cout << "Unable to initialize screen. Exiting." << endl;
 		return 1;
 	}
+	
+	// Set the orthogonal origin at the top-left corner
+	Matrix::projection = Matrix::ortho( 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, -1, 1 );
 	
 	new BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
 	
@@ -130,7 +136,7 @@ int main( int argc, char ** argv )
 		if( ticks - lastDrawTicks > 15 )
 		{
 			Screen::get()->clear();
-			Point2D origin( 0.0f, 0.0f );
+			Point2D origin( 10.0f, 10.0f );
 			text.str( "" );
 			
 			if( controller == NULL )
@@ -156,8 +162,8 @@ int main( int argc, char ** argv )
 					text << "\nPress any button to quit.";
 			}
 			
-			Font::get("bitmap")->render( origin, text.str() );
-			
+			Font::get("bitmap")->write( origin, text.str() );
+			Font::get("bitmap")->render();
 			Screen::get()->render();
 			
 			lastDrawTicks = ticks;
