@@ -16,6 +16,7 @@ namespace data
 				vector<string> symbols;
 				vector<string>::iterator pointer;
 				stack<vector<string>::iterator> pointers;
+				vector<unsigned int> lines;
 	
 				bool eop();
 				bool findSymbol( const string& symbol );
@@ -30,6 +31,10 @@ namespace data
 				int eatSpaces();
 				
 				vector<string> readSymbols( const string& content, const string& separators, const string& spaces );
+				
+				unsigned int getLinesCount();
+				unsigned int getCurrentLine();
+				string getCurrentLineText();
 	
 			public:
 				Parser();

@@ -1,6 +1,7 @@
 #include <data/parser/Parser.h>
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 using namespace std;
 
 namespace data
@@ -25,6 +26,10 @@ namespace data
 	
 			for( unsigned int index = 0 ; index < content.length() ; index++ )
 			{
+				// Count lines
+				if( content[index] == '\n' )
+					this->lines.push_back( parsedSymbols.size() );
+			
 				if( separators.find( content[index] ) != string::npos || spaces.find( content[index] ) != string::npos )
 				{
 					if( index > lastIndex )
@@ -53,6 +58,10 @@ namespace data
 				}
 			}
 			
+			// Add the last line end position
+			if( parsedSymbols.size() != this->lines.back() )
+				this->lines.push_back( parsedSymbols.size() );
+			
 			return parsedSymbols;
 		}
 
@@ -65,7 +74,6 @@ namespace data
 		{
 			this->pointer = this->symbols.begin();
 		}
-		
 		
 		void Parser::pushPointer()
 		{
@@ -114,6 +122,49 @@ namespace data
 		string Parser::read()
 		{
 			return *(this->pointer);
+		}
+		
+		unsigned int Parser::getLinesCount()
+		{
+			return this->lines.size();
+		}
+		
+		unsigned int Parser::getCurrentLine()
+		{
+			unsigned int currentLine = 1;
+			unsigned int currentSymbol = this->pointer - this->symbols.begin();
+			
+			for( vector<unsigned int>::iterator it = this->lines.begin() ; it != this->lines.end() ; it++, currentLine++ )
+			{
+				if( currentSymbol <= *it )
+					break;
+			}
+			
+			return currentLine;
+		}
+		
+		string Parser::getCurrentLineText()
+		{
+			string line;
+			stringstream ss;
+			
+			unsigned int currentLine = this->getCurrentLine();
+			unsigned int firstSymbol = 0;
+			unsigned int lastSymbol = this->lines[currentLine - 1];
+			
+			if( currentLine > 1 )
+				firstSymbol = this->lines[currentLine - 2];
+				
+			for( unsigned int i = firstSymbol ; i <= lastSymbol ; i++ )
+			{
+				// Ignoring leading spaces
+				if( this->symbols[i] == " " && ss.rdbuf()->in_avail() == 0 )
+					continue;
+					
+				ss << this->symbols[i];
+			}
+			
+			return ss.str();
 		}
 	}
 }
