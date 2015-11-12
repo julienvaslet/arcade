@@ -10,13 +10,14 @@ namespace data
 	{
 		JsonParser::JsonParser( const string& content )
 		{
-			vector<string> parsedSymbols = this->readSymbols( content, "{}[]\\\"':,-.", " \t\n\r" );
+			vector<string> combinations;
+			combinations.push_back( "\\\"" );
+			combinations.push_back( "\\'" );
+		
+			this->readSymbols( content, "{}[]\\\"':,-.", " \t\n\r" );
+			this->packSymbols( combinations );
 			
-			#ifdef DEBUG0
-			cout << "[JsonParser] Loaded (" << parsedSymbols.size() << " symbols)." << endl;
-			#endif
-			
-			// Packing symbols
+			/*// Packing symbols
 			for( vector<string>::iterator it = parsedSymbols.begin() ; it != parsedSymbols.end() ; it++ )
 			{
 				bool symbolAppended = false;
@@ -40,10 +41,10 @@ namespace data
 		
 				if( !symbolAppended )
 					this->symbols.push_back( *it );
-			}
+			}*/
 	
 			#ifdef DEBUG0
-			cout << "[JsonParser] Packed (" << this->symbols.size() << " symbols)." << endl;
+			cout << "[JsonParser] Loaded (" << this->symbols.size() << " symbols)." << endl;
 			#endif
 		}
 		

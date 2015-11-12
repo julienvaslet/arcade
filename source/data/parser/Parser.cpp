@@ -16,10 +16,8 @@ namespace data
 		{
 		}
 		
-		vector<string> Parser::readSymbols( const string& content, const string& separators, const string& spaces )
-		{
-			vector<string> parsedSymbols;
-	
+		void Parser::readSymbols( const string& content, const string& separators, const string& spaces )
+		{	
 			// Parsing symbols
 			unsigned int lastIndex = 0;
 			bool parsingSpaces = false;
@@ -28,25 +26,25 @@ namespace data
 			{
 				// Count lines
 				if( content[index] == '\n' )
-					this->lines.push_back( parsedSymbols.size() );
+					this->lines.push_back( this->symbols.size() );
 			
 				if( separators.find( content[index] ) != string::npos || spaces.find( content[index] ) != string::npos )
 				{
 					if( index > lastIndex )
 					{
 						parsingSpaces = false;
-						parsedSymbols.push_back( content.substr( lastIndex, index - lastIndex ) );
+						this->symbols.push_back( content.substr( lastIndex, index - lastIndex ) );
 					}
 			
 					if( spaces.find( content[index] ) == string::npos )
 					{
 						parsingSpaces = false;
-						parsedSymbols.push_back( string(1, content[index]) );
+						this->symbols.push_back( string(1, content[index]) );
 					}
 					else if( !parsingSpaces )
 					{
 						parsingSpaces = true;
-						parsedSymbols.push_back( " " );
+						this->symbols.push_back( " " );
 					}
 			
 					lastIndex = index + 1;
@@ -54,15 +52,65 @@ namespace data
 				else if( index + 1 == content.length() )
 				{
 					parsingSpaces = false;
-					parsedSymbols.push_back( content.substr( lastIndex, index - lastIndex + 1 ) );
+					this->symbols.push_back( content.substr( lastIndex, index - lastIndex + 1 ) );
 				}
 			}
 			
 			// Add the last line end position
-			if( parsedSymbols.size() != this->lines.back() )
-				this->lines.push_back( parsedSymbols.size() );
+			if( this->symbols.size() != this->lines.back() )
+				this->lines.push_back( this->symbols.size() );
+		}
+		
+		void Parser::packSymbols( const vector<string>& combinations )
+		{
+			vector<string> packedSymbols;
+			unsigned int currentLine = 0;
+			unsigned int currentDeletedSymbols = 0;
 			
-			return parsedSymbols;
+			for( vector<string>::iterator it = this->symbols.begin() ; it != this->symbols.end() ; it++ )
+			{
+				bool symbolAppended = false;
+				
+				// Only lonely symbols are processed. (faster)
+				if( (*it).length() == 1 )
+				{
+					for( vector<string>::const_iterator combination = combinations.begin() ; combination != combinations.end() ; combination++ )
+					{
+						unsigned int i = 0;
+						bool combinationFound = true;
+					
+						for( i = 0 ; i < (*combination).length() ; i++, it++ )
+						{
+							if( it == this->symbols.end() || (*it).length() != 1 || (*combination).at(i) != (*it).at(0) )
+							{
+								combinationFound = false;
+								break;
+							}
+						}
+					
+						if( combinationFound )
+						{
+							packedSymbols.push_back( *combination );
+							currentDeletedSymbols += (*combination).length() - 1;
+						}
+						else
+							it -= i;
+					}
+				}
+				
+				if( !symbolAppended )
+				{
+					packedSymbols.push_back( *it );
+					
+					if( it - this->symbols.begin() >= this->lines[currentLine] )
+					{
+						this->lines[currentLine++] -= currentDeletedSymbols;
+						currentDeletedSymbols = 0;
+					}
+				}
+			}
+			
+			this->symbols.swap( packedSymbols );
 		}
 
 		bool Parser::eop()

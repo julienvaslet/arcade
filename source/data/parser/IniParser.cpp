@@ -15,12 +15,11 @@ namespace data
 	{
 		IniParser::IniParser( const string& content )
 		{
-			string charSymbols = ";=[]\n";
-			vector<string> parsedSymbols = this->readSymbols( content, charSymbols.c_str(), " \t\r" );
+			// this should not be useful
+			//this->symbols.push_back( "\n" );
 			
-			this->symbols.push_back( "\n" );
-			for( vector<string>::iterator it = parsedSymbols.begin() ; it != parsedSymbols.end() ; it++ )
-				this->symbols.push_back( *it );
+			string charSymbols = ";=[]\n";
+			this->readSymbols( content, charSymbols.c_str(), " \t\r" );
 			
 			#ifdef DEBUG0
 			Logger::get() << "[IniParser] Loaded (" << this->symbols.size() << " symbols)." << Logger::endl;

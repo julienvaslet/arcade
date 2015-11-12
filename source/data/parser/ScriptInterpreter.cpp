@@ -25,36 +25,29 @@ namespace data
 			}
 		
 			string charSymbols = ";+-/*=(),.{}[]&|\"':\\/";
-			vector<string> parsedSymbols = this->readSymbols( content, charSymbols.c_str(), " \t\r\n" );
+			this->readSymbols( content, charSymbols.c_str(), " \t\r\n" );
 			
-			// repack functions todo (in order to keep good lines markers)
-			// \" \' && ++ -- += -= *= /= == != <= >= || // /* */
+			vector<string> combinations;
+			combinations.push_back( "\\\"" );
+			combinations.push_back( "\\'" );
+			combinations.push_back( "&&" );
+			combinations.push_back( "||" );
+			combinations.push_back( "++" );
+			combinations.push_back( "--" );
+			combinations.push_back( "+=" );
+			combinations.push_back( "-=" );
+			combinations.push_back( "*=" );
+			combinations.push_back( "/=" );
+			combinations.push_back( "==" );
+			combinations.push_back( "!=" );
+			combinations.push_back( "<=" );
+			combinations.push_back( ">=" );
+			combinations.push_back( "//" );
+			combinations.push_back( "/*" );
+			combinations.push_back( "*/" );
 			
-			// Packing symbols
-			for( vector<string>::iterator it = parsedSymbols.begin() ; it != parsedSymbols.end() ; it++ )
-			{
-				bool symbolAppended = false;
-		
-				// Symbols: \" & \'
-				if( *it == "\\" )
-				{
-					if( *(++it) == "\"" )
-					{
-						this->symbols.push_back( "\\\"" );
-						symbolAppended = true;
-					}
-					else if( *(++it) == "'" )
-					{
-						this->symbols.push_back( "\\'" );
-						symbolAppended = true;
-					}
-					else
-					 it -= 1;
-				}
-		
-				if( !symbolAppended )
-					this->symbols.push_back( *it );
-			}
+			// This packing method should be tested.
+			this->packSymbols( combinations );
 	
 			#ifdef DEBUG0
 			Logger::get() << "[Script][" << this->getScriptName() << "] Loaded (" << this->symbols.size() << " symbols, " << this->getLinesCount() << " lines)." << Logger::endl;

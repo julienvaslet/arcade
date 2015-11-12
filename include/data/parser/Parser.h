@@ -30,7 +30,8 @@ namespace data
 				string read();
 				int eatSpaces();
 				
-				vector<string> readSymbols( const string& content, const string& separators, const string& spaces );
+				void readSymbols( const string& content, const string& separators, const string& spaces );
+				void packSymbols( const vector<string>& combinations );
 				
 				unsigned int getLinesCount();
 				unsigned int getCurrentLine();
