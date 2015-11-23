@@ -11,12 +11,15 @@ int main( int argc, char ** argv )
 	// Initialize standard-output logger
 	new Stdout( "stdout", true );
 	
-	string sScript = "var a = 1;\nb = 23;\nvar c = a + b;";
+	Script * script = Script::load( "data/scripts/variables.js" );
 	
-	Script * script = new Script( sScript );
-	script->run();
-	
-	delete script;
+	if( script != NULL )
+	{
+		script->run();
+		Logger::get() << "DOM status:" << Logger::endl << script->getDOM()->toString() << Logger::endl;
+		
+		delete script;
+	}
 	
 	Logger::destroy();
 	

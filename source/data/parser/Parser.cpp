@@ -4,6 +4,11 @@
 #include <sstream>
 using namespace std;
 
+#ifdef DEBUG0
+#include <tools/logger/Logger.h>
+using namespace tools::logger;
+#endif
+
 namespace data
 {
 	namespace parser
@@ -56,9 +61,17 @@ namespace data
 				}
 			}
 			
-			// Add the last line end position
-			if( this->symbols.size() != this->lines.back() )
-				this->lines.push_back( this->symbols.size() );
+			unsigned lastNonSpaceSymbol = this->symbols.size();
+			for( vector<string>::reverse_iterator it = this->symbols.rbegin() ; it != this->symbols.rend(); it++ )
+			{
+				if( *it == " " )
+					lastNonSpaceSymbol--;
+				else
+					break;
+			}
+			
+			if( this->lines.empty() || lastNonSpaceSymbol != this->lines.back() )
+				this->lines.push_back( lastNonSpaceSymbol );
 		}
 		
 		void Parser::packSymbols( const vector<string>& combinations )
@@ -130,7 +143,7 @@ namespace data
 		
 		void Parser::popPointer( bool setActive )
 		{
-			if( ! this->pointers.empty() )
+			if( !this->pointers.empty() )
 			{
 				if( setActive )
 					this->pointer = this->pointers.top();
@@ -209,8 +222,13 @@ namespace data
 				if( this->symbols[i] == " " && ss.rdbuf()->in_avail() == 0 )
 					continue;
 					
+				if( i == this->pointer - this->symbols.begin() )
+					ss << "\033[s";
+					
 				ss << this->symbols[i];
 			}
+			
+			ss << "\n\033[u\033[1B^";
 			
 			return ss.str();
 		}

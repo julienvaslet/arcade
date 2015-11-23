@@ -17,7 +17,6 @@ namespace data
 		
 		class Json
 		{
-			
 			private:
 				static unsigned int currentUId;
 				

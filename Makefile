@@ -66,6 +66,11 @@ libraries_%: $(librariesDirectory) getdependencies_%
 		fi ; \
 	done )
 
+debug: $(application)
+	@( if [ ! -z "$(application)" ] ; then \
+		ddd $(application) ; \
+	fi )
+
 run: $(application)
 	@( if [ ! -z "$(application)" ] ; then \
 		$(application) ; \
