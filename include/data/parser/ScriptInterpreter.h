@@ -53,6 +53,8 @@ namespace data
 				bool null();
 				bool boolean();
 				bool text();
+				bool array();
+				bool object();
 				
 				bool operation();
 				bool sum();

@@ -40,6 +40,8 @@ namespace data
 			public:
 				Parser();
 				~Parser();
+				
+				string getParsedSource( bool showLines = false );
 		};
 	}
 }

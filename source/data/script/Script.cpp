@@ -49,6 +49,11 @@ namespace data
 			return this->interpreter->run( true );
 		}
 		
+		string Script::getSource()
+		{
+			return this->interpreter->getParsedSource( true );
+		}
+		
 		Script * Script::load( const string& filename )
 		{
 			Script * script = NULL;

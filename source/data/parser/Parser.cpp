@@ -22,16 +22,16 @@ namespace data
 		}
 		
 		void Parser::readSymbols( const string& content, const string& separators, const string& spaces )
-		{	
+		{
 			// Parsing symbols
 			unsigned int lastIndex = 0;
 			bool parsingSpaces = false;
 	
 			for( unsigned int index = 0 ; index < content.length() ; index++ )
 			{
-				// Count lines
+				// Count lines, (symbols.size() +1 because '\n' is not yet added)
 				if( content[index] == '\n' )
-					this->lines.push_back( this->symbols.size() );
+					this->lines.push_back( this->symbols.size() + 1 );
 			
 				if( separators.find( content[index] ) != string::npos || spaces.find( content[index] ) != string::npos )
 				{
@@ -46,7 +46,7 @@ namespace data
 						parsingSpaces = false;
 						this->symbols.push_back( string(1, content[index]) );
 					}
-					else if( !parsingSpaces )
+					else if( !parsingSpaces || content[index] == '\n' )
 					{
 						parsingSpaces = true;
 						this->symbols.push_back( " " );
@@ -116,10 +116,7 @@ namespace data
 					packedSymbols.push_back( *it );
 					
 					if( it - this->symbols.begin() >= this->lines[currentLine] )
-					{
 						this->lines[currentLine++] -= currentDeletedSymbols;
-						currentDeletedSymbols = 0;
-					}
 				}
 			}
 			
@@ -197,7 +194,7 @@ namespace data
 			
 			for( vector<unsigned int>::iterator it = this->lines.begin() ; it != this->lines.end() ; it++, currentLine++ )
 			{
-				if( currentSymbol <= *it )
+				if( currentSymbol < *it )
 					break;
 			}
 			
@@ -231,6 +228,35 @@ namespace data
 			ss << "\n\033[u\033[1B^";
 			
 			return ss.str();
+		}
+		
+		string Parser::getParsedSource( bool showLines )
+		{
+			stringstream source;
+			
+			bool printLineNumber = showLines;
+			unsigned int currentLine = 0;
+			
+			for( unsigned int i = 0 ; i < this->symbols.size() ; i++ )
+			{
+				if( printLineNumber )
+				{
+					printLineNumber = false;
+					source << (currentLine+1) << ":\t";
+				}
+				
+				source << this->symbols[i];
+				
+				if( i == this->lines[currentLine] )
+				{
+					source << "\n";
+					currentLine++;
+					
+					printLineNumber = showLines;
+				}
+			}
+			
+			return source.str();
 		}
 	}
 }

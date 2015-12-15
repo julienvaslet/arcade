@@ -37,6 +37,7 @@ namespace data
 				bool run();
 				bool check();
 				DOM * getDOM();
+				string getSource();
 				
 				static Script * load( const string& filename );
 		};
