@@ -34,6 +34,7 @@ namespace data
 				vector<string> reservedNames;
 				
 				bool noop;
+				bool aborted;
 			
 				const string& getScriptName();
 				void initStacks();

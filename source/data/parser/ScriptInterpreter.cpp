@@ -15,7 +15,7 @@ namespace data
 	{
 		unsigned int ScriptInterpreter::noNameScriptIncrement = 1;
 		
-		ScriptInterpreter::ScriptInterpreter( const string& content, Script * script, const string& name ) : scriptName(name), script(script), currentValue(NULL), noop(false)
+		ScriptInterpreter::ScriptInterpreter( const string& content, Script * script, const string& name ) : scriptName(name), script(script), currentValue(NULL), noop(false), aborted(false)
 		{
 			if( this->scriptName.length() == 0 )
 			{
@@ -122,6 +122,7 @@ namespace data
 		void ScriptInterpreter::pushValue()
 		{
 			this->stackedValues.push( this->currentValue );
+			this->currentValue = NULL;
 		}
 		
 		void ScriptInterpreter::popValue( bool setActive )
@@ -135,6 +136,14 @@ namespace data
 						delete this->currentValue;
 					
 					this->currentValue = this->stackedValues.top();
+				}
+				else
+				{
+					// Delete the top-stacked value if it not handled by a DOM
+					json::Json * value = this->stackedValues.top();
+					
+					if( value != NULL && value->getDOM() == NULL )
+						delete value;
 				}
 		
 				this->stackedValues.pop();
@@ -167,27 +176,31 @@ namespace data
 		
 		void ScriptInterpreter::handleError( const string& message, bool abort )
 		{
-			if( false )
+			if( !this->aborted )
 			{
-				// Get the previous non-space symbol
-				do { this->prevSymbol(); }
-				while( this->findSymbol( " " ) );
+				if( false )
+				{
+					// Get the previous non-space symbol
+					do { this->prevSymbol(); }
+					while( this->findSymbol( " " ) );
 			
-				// Point the next symbol only if it is a space
-				this->nextSymbol();
-				if( !this->findSymbol( " " ) )
-					this->prevSymbol();
-			}
+					// Point the next symbol only if it is a space
+					this->nextSymbol();
+					if( !this->findSymbol( " " ) )
+						this->prevSymbol();
+				}
 		
-			Logger::get() << "[Script][" << this->getScriptName() << "][Error] " << message << " on line " << this->getCurrentLine() << ": " << this->getCurrentLineText() << Logger::endl;
+				Logger::get() << "[Script][" << this->getScriptName() << "][Error] " << message << " on line " << this->getCurrentLine() << ": " << this->getCurrentLineText() << Logger::endl;
 			
-			if( abort )
-			{
-				this->pointer = this->symbols.end();
+				if( abort )
+				{
+					this->aborted = true;
+					this->pointer = this->symbols.end();
 				
-				// Cleaning pointers stack
-				while( !this->pointers.empty() )
-					this->pointers.pop();
+					// Cleaning pointers stack
+					while( !this->pointers.empty() )
+						this->pointers.pop();
+				}
 			}
 		}
 		
@@ -195,6 +208,7 @@ namespace data
 		{
 			this->initPointer();
 			this->initStacks();
+			this->aborted = false;
 			
 			while( !this->eop() )
 			{				
@@ -259,10 +273,10 @@ namespace data
 						this->handleError( "Expecting valid expression on right side of operator \"=\"", true );
 					}
 				}
-				else if( this->findSymbol( "*=" ) )
+				else if( this->findSymbol( "+=" ) )
 				{
 				}
-				else if( this->findSymbol( "+=" ) )
+				else if( this->findSymbol( "*=" ) )
 				{
 				}
 				else if( this->findSymbol( "-=" ) )
@@ -576,11 +590,7 @@ namespace data
 					json::Array * array = json::Array::create();
 					
 					while( count-- > 0 )
-					{
-						// Set currentValue to NULL in order to keep it alive
-						// popValue() auto-delete values if not associated to a DOM
-						this->currentValue = NULL;
-						
+					{						
 						this->popValue();
 						array->unshift( this->currentValue );
 					}
@@ -590,7 +600,16 @@ namespace data
 					bReturn = true;
 				}
 				else
+				{
+					if( count > 0 )
+					{
+						// Clean value stack
+						while( count-- > 0 )
+							this->popValue( false );
+					}
+					
 					this->handleError( "Expecting \"]\" at the end of array definition.", true );
+				}
 			}
 			
 			this->popPointer( !bReturn );
@@ -652,6 +671,8 @@ namespace data
 								}
 								else
 								{
+									this->handleError( "Expecting \":\" after object's element name definition.", true );
+									
 									cleanSyntax = false;
 									break;
 								}
@@ -683,8 +704,6 @@ namespace data
 						
 						while( count-- > 0 )
 						{
-							// Set currentValue to NULL in order to not trigger its deletion
-							this->currentValue = NULL;
 							this->popName();
 							this->popValue();
 							
@@ -697,6 +716,16 @@ namespace data
 					}
 					else
 						this->handleError( "Expecting \"}\" at the end of object definition.", true );
+				}
+				
+				// Clean stacked values & names if object has not been created
+				if( !bReturn )
+				{
+					while( count-- > 0 )
+					{
+						this->popName( false );
+						this->popValue( false );
+					}
 				}
 			}
 			

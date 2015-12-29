@@ -213,7 +213,7 @@ namespace data
 			if( currentLine > 1 )
 				firstSymbol = this->lines[currentLine - 2];
 				
-			for( unsigned int i = firstSymbol ; i <= lastSymbol ; i++ )
+			for( unsigned int i = firstSymbol ; i <= lastSymbol && i < this->symbols.size() ; i++ )
 			{
 				// Ignoring leading spaces
 				if( this->symbols[i] == " " && ss.rdbuf()->in_avail() == 0 )
