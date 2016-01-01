@@ -250,6 +250,7 @@ namespace data
 			
 			if( this->name() )
 			{
+				this->pushName();
 				this->eatSpaces();
 				
 				if( this->findSymbol( "=" ) )
@@ -263,6 +264,7 @@ namespace data
 						if( this->findSymbol( ";" ) )
 						{
 							this->nextSymbol();
+							this->popName();
 							
 							//if( !this->noop )
 								this->script->dom->set( this->currentName, this->currentValue );
@@ -296,9 +298,10 @@ namespace data
 					if( this->findSymbol( ";" ) )
 					{
 						this->nextSymbol();
+						this->popName();
 					
 						//if( !this->noop )
-							this->script->dom->set( currentName, json::Null::create() );
+							this->script->dom->set( this->currentName, json::Null::create() );
 					
 						bReturn = true;
 					}
@@ -312,6 +315,9 @@ namespace data
 			{
 				this->handleError( "Incorrect variable name", true );
 			}
+			
+			if( !bReturn )
+				this->popName( false );
 			
 			this->popPointer( !bReturn );
 			return bReturn;

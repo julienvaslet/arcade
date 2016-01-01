@@ -26,10 +26,11 @@ else\
 Json * getVariable( Script * script, const string& variable );
 bool variableExists( Script * script, const string& variable );
 bool isNullValue( Script * script, const string& variable );
+
 bool checkValue( Script * script, const string& variable, int value );
 bool checkValue( Script * script, const string& variable, double value );
 bool checkValue( Script * script, const string& variable, bool value );
-bool checkValue( Script * script, const string& variable, const string& value );
+bool checkValue( Script * script, const string& variable, const char * value );
 
 bool checkArrayLength( Script * script, const string& variable, unsigned int length );
 
@@ -52,7 +53,8 @@ int main( int argc, char ** argv )
 	TEST( "NullVariableInitialization", "var variable = null;", true, (isNullValue(script, "variable")) );
 	TEST( "BooleanTrueVariableInitialization", "var variable = true;", true, (checkValue(script, "variable", true)) );
 	TEST( "BooleanFalseVariableInitialization", "var variable = false;", true, (checkValue(script, "variable", false)) );
-	TEST( "ArrayVariableInitialization", "var variable = [ 1, 2 ];", true, (checkValue(script, "variable[0]", 1) && checkValue(script, "variable[1]", 2)) );
+	TEST( "StringVariableInitialization", "var variable = \"Hello\";", true, (checkValue(script, "variable", "Hello")) );
+	TEST( "ArrayVariableInitialization", "var variable = [ 1, 2 ];", true, (checkArrayLength(script, "variable", 2 ) && checkValue(script, "variable[0]", 1) && checkValue(script, "variable[1]", 2)) );
 	TEST( "ObjectVariableInitialization", "var variable = { \"a\": 1, \"b\": 2 };", true, (checkValue(script, "variable.a", 1) && checkValue(script, "variable.b", 2)) );
 	
 	// Malformed variable initialization
@@ -292,6 +294,40 @@ bool checkValue( Script * script, const string& variable, bool value )
 	return bReturn;
 }
 
-//bool checkValue( Script * script, const string& variable, const string& value );
+bool checkValue( Script * script, const string& variable, const char * value )
+{
+	bool bReturn = false;
+	Json * json = getVariable( script, variable );
+		
+	if( json != NULL )
+	{
+		String * text = json->asString();
+		
+		if( text != NULL )
+		{	
+			if( text->getValue() == value )
+				bReturn = true;
+		}
+	}
+	
+	return bReturn;
+}
 
-//bool checkArrayLength( Script * script, const string& variable, unsigned int length );
+bool checkArrayLength( Script * script, const string& variable, unsigned int length )
+{
+	bool bReturn = false;
+	Json * json = getVariable( script, variable );
+		
+	if( json != NULL )
+	{
+		Array * array = json->asArray();
+		
+		if( array != NULL )
+		{
+			if( array->length() == length )
+				bReturn = true;
+		}
+	}
+	
+	return bReturn;
+}
