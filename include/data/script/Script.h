@@ -34,10 +34,12 @@ namespace data
 				Script( const string& code, const string& name );
 				virtual ~Script();
 				
-				bool run();
+				bool run( bool silent = false );
 				bool check();
 				DOM * getDOM();
 				string getSource();
+				void setSource( const string& code );
+				void setSource( const string& code, const string& name );
 				
 				static Script * load( const string& filename );
 		};

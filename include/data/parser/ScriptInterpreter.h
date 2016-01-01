@@ -35,8 +35,10 @@ namespace data
 				
 				bool noop;
 				bool aborted;
+				bool silent;
 			
 				const string& getScriptName();
+				
 				void initStacks();
 				void pushValue();
 				void popValue( bool setActive = true );
@@ -46,10 +48,12 @@ namespace data
 				void handleError( const string& message, bool abort = false );
 			
 				bool assignation();
-				bool name();
 				bool expression();
 				
+				/* Values */
 				bool value();
+				
+				bool name();
 				bool number();
 				bool null();
 				bool boolean();
@@ -67,7 +71,7 @@ namespace data
 				ScriptInterpreter( const string& content, Script * script, const string& name = "" );
 				~ScriptInterpreter();
 		
-				bool run( bool noop = false );
+				bool run( bool noop = false, bool silent = false );
 		};
 	}
 }

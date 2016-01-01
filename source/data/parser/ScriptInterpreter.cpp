@@ -15,7 +15,7 @@ namespace data
 	{
 		unsigned int ScriptInterpreter::noNameScriptIncrement = 1;
 		
-		ScriptInterpreter::ScriptInterpreter( const string& content, Script * script, const string& name ) : scriptName(name), script(script), currentValue(NULL), noop(false), aborted(false)
+		ScriptInterpreter::ScriptInterpreter( const string& content, Script * script, const string& name ) : scriptName(name), script(script), currentValue(NULL), noop(false), aborted(false), silent(false)
 		{
 			if( this->scriptName.length() == 0 )
 			{
@@ -178,20 +178,23 @@ namespace data
 		{
 			if( !this->aborted )
 			{
-				if( false )
+				if( !this->silent )
 				{
-					// Get the previous non-space symbol
-					do { this->prevSymbol(); }
-					while( this->findSymbol( " " ) );
+					if( false )
+					{
+						// Get the previous non-space symbol
+						do { this->prevSymbol(); }
+						while( this->findSymbol( " " ) );
 			
-					// Point the next symbol only if it is a space
-					this->nextSymbol();
-					if( !this->findSymbol( " " ) )
-						this->prevSymbol();
-				}
+						// Point the next symbol only if it is a space
+						this->nextSymbol();
+						if( !this->findSymbol( " " ) )
+							this->prevSymbol();
+					}
 		
-				Logger::get() << "[Script][" << this->getScriptName() << "][Error] " << message << " on line " << this->getCurrentLine() << ": " << this->getCurrentLineText() << Logger::endl;
-			
+					Logger::get() << "[Script][" << this->getScriptName() << "][Error] " << message << " on line " << this->getCurrentLine() << ": " << this->getCurrentLineText() << Logger::endl;
+				}
+					
 				if( abort )
 				{
 					this->aborted = true;
@@ -204,11 +207,14 @@ namespace data
 			}
 		}
 		
-		bool ScriptInterpreter::run( bool noop )
+		bool ScriptInterpreter::run( bool noop, bool silent )
 		{
 			this->initPointer();
 			this->initStacks();
+			
 			this->aborted = false;
+			this->noop = noop;
+			this->silent = silent;
 			
 			while( !this->eop() )
 			{				
@@ -219,7 +225,7 @@ namespace data
 				this->eatSpaces();
 			}
 			
-			return this->eop();
+			return !this->aborted;
 		}
 		
 		/*
@@ -311,6 +317,40 @@ namespace data
 			return bReturn;
 		}
 		
+		bool ScriptInterpreter::expression()
+		{
+			bool bReturn = false;
+			this->pushPointer();
+			
+			if( this->operation() || this->value() )
+				bReturn = true;
+			
+			this->popPointer( !bReturn );
+			return bReturn;
+		}
+		
+		/*
+		 * Values
+		 */
+		
+		bool ScriptInterpreter::value()
+		{
+			bool bReturn = false;
+			this->pushPointer();
+			
+			this->eatSpaces();
+			
+			//add parenthesis expression + name()'s value
+			
+			if( this->null() || this->boolean() || this->text() || this->array() || this->object() || this->number() )
+			{
+				bReturn = true;
+			}
+			
+			this->popPointer( !bReturn );
+			return bReturn;
+		}
+		
 		bool ScriptInterpreter::name()
 		{
 			bool bReturn = false;
@@ -336,39 +376,6 @@ namespace data
 				this->nextSymbol();
 				this->currentName = name;
 				
-				bReturn = true;
-			}
-			
-			this->popPointer( !bReturn );
-			return bReturn;
-		}
-		
-		bool ScriptInterpreter::expression()
-		{
-			bool bReturn = false;
-			this->pushPointer();
-			
-			if( this->value() )
-			//if( this->operation() || this->value() )
-				bReturn = true;
-			
-			this->popPointer( !bReturn );
-			return bReturn;
-		}
-		
-		/*
-		 * Values
-		 */
-		
-		bool ScriptInterpreter::value()
-		{
-			bool bReturn = false;
-			this->pushPointer();
-			
-			this->eatSpaces();
-			
-			if( this->null() || this->boolean() || this->text() || this->array() || this->object() || this->number() )
-			{
 				bReturn = true;
 			}
 			
@@ -743,10 +750,10 @@ namespace data
 			bool bReturn = false;
 			this->pushPointer();
 			
-			/*if( this->sum() || this->substract() || this->divide() || this->multiply() )
+			if( this->sum() || this->substract() || this->divide() || this->multiply() )
 			{
 				bReturn = true;
-			}*/
+			}
 			
 			this->popPointer( !bReturn );
 			return bReturn;

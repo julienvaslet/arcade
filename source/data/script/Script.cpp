@@ -32,14 +32,30 @@ namespace data
 				delete this->dom;
 		}
 		
+		void Script::setSource( const string& code )
+		{
+			if( this->interpreter != NULL )
+				delete this->interpreter;
+				
+			this->interpreter = new ScriptInterpreter( code, this );
+		}
+		
+		void Script::setSource( const string& code, const string& name )
+		{
+			if( this->interpreter != NULL )
+				delete this->interpreter;
+				
+			this->interpreter = new ScriptInterpreter( code, this, name );
+		}
+		
 		DOM * Script::getDOM()
 		{
 			return this->dom;
 		}
 	
-		bool Script::run()
+		bool Script::run( bool silent )
 		{
-			bool bReturn = this->interpreter->run();
+			bool bReturn = this->interpreter->run( false, silent );
 			
 			return bReturn;
 		}
