@@ -4,6 +4,7 @@
 #include <data/json/Json.h>
 #include <string>
 #include <vector>
+#include <queue>
 #include <map>
 using namespace std;
 
@@ -18,7 +19,8 @@ namespace data
 			protected:
 				map<string, Json *> variables;
 				
-				static void free( Json * value = NULL );
+				void free( const string& path );
+				bool pathAnalysis( const string& path, queue<string>& names, queue<int>& indices );
 			
 			public:
 				DOM( Object * object = NULL );
@@ -26,12 +28,12 @@ namespace data
 				
 				//bool exists( const string& path ) const;
 				
-				void set( const string& path, Json * value );
-				void set( const string& path, const string& value );
-				void set( const string& path, const char * value );
-				void set( const string& path, int value );
-				void set( const string& path, double value );
-				void set( const string& path, bool value );
+				bool set( const string& path, Json * value );
+				bool set( const string& path, const string& value );
+				bool set( const string& path, const char * value );
+				bool set( const string& path, int value );
+				bool set( const string& path, double value );
+				bool set( const string& path, bool value );
 				
 				Json * get( const string& path );
 				

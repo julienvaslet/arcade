@@ -5,6 +5,8 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <cstdio>
+#include <cstdarg>
 
 using namespace std;
 
@@ -25,6 +27,8 @@ namespace tools
 				virtual ~Logger();
 			
 			public:
+				void printf( const char * format, ... );
+			
 				static Logger& get();
 				static Logger& get( const string& name );
 				static void destroy();

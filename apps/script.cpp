@@ -33,6 +33,7 @@ bool checkValue( Script * script, const string& variable, bool value );
 bool checkValue( Script * script, const string& variable, const char * value );
 
 bool checkArrayLength( Script * script, const string& variable, unsigned int length );
+bool checkObjectLength( Script * script, const string& variable, unsigned int length );
 
 
 int main( int argc, char ** argv )
@@ -55,7 +56,9 @@ int main( int argc, char ** argv )
 	TEST( "BooleanFalseVariableInitialization", "var variable = false;", true, (checkValue(script, "variable", false)) );
 	TEST( "StringVariableInitialization", "var variable = \"Hello\";", true, (checkValue(script, "variable", "Hello")) );
 	TEST( "ArrayVariableInitialization", "var variable = [ 1, 2 ];", true, (checkArrayLength(script, "variable", 2 ) && checkValue(script, "variable[0]", 1) && checkValue(script, "variable[1]", 2)) );
+	TEST( "EmptyArrayVariableInitialization", "var variable = [];", true, (checkArrayLength(script, "variable", 0 )) );
 	TEST( "ObjectVariableInitialization", "var variable = { \"a\": 1, \"b\": 2 };", true, (checkValue(script, "variable.a", 1) && checkValue(script, "variable.b", 2)) );
+	TEST( "EmptyObjectVariableInitialization", "var variable = {};", true, (checkObjectLength(script, "variable", 0 )) );
 	
 	// Malformed variable initialization
 	TEST( "MissingSemicolonOnVariableInitialization", "var variable = 4", false, (true) );
@@ -67,6 +70,10 @@ int main( int argc, char ** argv )
 	TEST( "MissingClosingBraceOnObjectInitialization", "var variable = { \"element\": 1, \"value\": true ;", false, (true) );
 	TEST( "MissingCommaOnObjectInitialization", "var variable = { \"element\": 1 \"value\": true };", false, (true) );
 	TEST( "MissingColonOnObjectInitialization", "var variable = { \"element\" 1, \"value\": true };", false, (true) );
+	
+	// Variable modification
+	TEST( "ArrayElementModification", "var variable = [ 1 ]; variable[0] = 2;", true, (checkValue(script, "variable[0]", 2)) );
+	TEST( "ObjectElementModification", "var variable = { \"a\": 1 }; variable.a = 2;", true, (checkValue(script, "variable.a", 2)) );
 	
 	delete script;
 	
@@ -331,3 +338,23 @@ bool checkArrayLength( Script * script, const string& variable, unsigned int len
 	
 	return bReturn;
 }
+
+bool checkObjectLength( Script * script, const string& variable, unsigned int length )
+{
+	bool bReturn = false;
+	Json * json = getVariable( script, variable );
+		
+	if( json != NULL )
+	{
+		Object * object = json->asObject();
+		
+		if( object != NULL )
+		{
+			if( object->length() == length )
+				bReturn = true;
+		}
+	}
+	
+	return bReturn;
+}
+

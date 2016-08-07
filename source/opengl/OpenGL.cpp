@@ -90,6 +90,7 @@ namespace opengl
 		
 		if( error != GL_NO_ERROR )
 		{
+			status = false;
 			Logger::get() << "[OpenGL][Error#" << error << "]";
 			
 			if( function != NULL )

@@ -10,4 +10,4 @@ sdlconfig = sdl2-config
 compiler = g++
 compilerOptions = -Wall -std=c++11 -I$(includesDirectory) -c `$(sdlconfig) --cflags` $(debugFlag) -D$(target)
 linker = g++
-linkerOptions = `$(sdlconfig) --libs` -lGL -lGLU
+linkerOptions = `$(sdlconfig) --libs` -lGL -lGLU `gphoto2-config --libs` -lpthread

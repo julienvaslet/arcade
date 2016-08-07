@@ -103,6 +103,18 @@ namespace tools
 			Logger::instances.clear();
 		}
 		
+		void Logger::printf( const char * format, ... )
+		{
+			char buffer[512];
+			
+			va_list args;
+			va_start( args, format );
+			vsprintf( buffer, format, args );
+			va_end( args );
+			
+			Logger::get() << buffer;
+		}
+		
 		Logger& Logger::operator<<( bool value )
 		{
 			stringstream ss;
