@@ -2,6 +2,7 @@
 #include <algorithm>
 
 #include <data/image/Targa.h>
+#include <data/image/Jpeg.h>
 
 #ifdef DEBUG0
 #include <tools/logger/Logger.h>
@@ -73,6 +74,9 @@ namespace data
 			
 			if( extension == "tga" )
 				image = Targa::load( filename );
+				
+			else if( extension == "jpg" || extension == "jpeg" )
+				image = Jpeg::load( filename );
 
 			#ifdef DEBUG0
 			else
