@@ -15,8 +15,9 @@ namespace data
 	{
 		IniParser::IniParser( const string& content )
 		{
-			// this should not be useful
-			//this->symbols.push_back( "\n" );
+			// Add a new line as first symbol do the trick to
+			// make this parser working
+			this->symbols.push_back( "\n" );
 			
 			string charSymbols = ";=[]\n";
 			this->readSymbols( content, charSymbols.c_str(), " \t\r" );
