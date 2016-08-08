@@ -9,6 +9,8 @@
 #include <tools/logger/Stdout.h>
 #include <tools/camera/GphotoCamera.h>
 
+#include <opengl/ui/Element.h>
+
 #define SCREEN_WIDTH	800
 #define SCREEN_HEIGHT	600
 
