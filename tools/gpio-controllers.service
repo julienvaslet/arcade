@@ -3,7 +3,7 @@ Description=Start Joysticks driver
 
 [Service]
 Type=simple
-ExecStart=/opt/controllers/gpio-controllers
+ExecStart=cd /opt/controllers && ./gpio-controllers
 Restart=always
 RestartSec=10
 
