@@ -53,8 +53,6 @@ int main( int argc, char ** argv )
 	}
 	
 	vector<int> ports;
-	ports.push_back( 2 );
-	ports.push_back( 3 );
 	ports.push_back( 4 );
 	ports.push_back( 17 );
 	ports.push_back( 27 );
