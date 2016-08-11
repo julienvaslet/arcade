@@ -209,31 +209,31 @@ int main( int argc, char ** argv )
 			
 			for( vector<GpioAction>::iterator action = it->second.begin() ; action != it->second.end() ; action++ )
 			{
-				if( status != action.pushed )
+				if( status != (*action).pushed )
 				{
-					action.pushed = status;
+					(*action).pushed = status;
 				
-					if( action.pushed )
+					if( (*action).pushed )
 					{
 						#ifdef DEBUG0
 						Logger::get() << "GPIO#" << it->first << " pushed." << Logger::endl;
 						#endif
 					
 						// Warning: It may provide two event press & release for axis
-						if( action.event != ABS_X && action.event != ABS_Y )
+						if( (*action).event != ABS_X && (*action).event != ABS_Y )
 						{
-							action.device->pressKey( action.event, false );
+							(*action).device->pressKey( (*action).event, false );
 						
 							#ifdef DEBUG0
-							Logger::get() << "Joystick \"" << action.device->getName() << " pressed " << action.event << " button." << Logger::endl;
+							Logger::get() << "Joystick \"" << (*action).device->getName() << " pressed " << (*action).event << " button." << Logger::endl;
 							#endif
 						}
 						else
 						{
-							action.device->sendAbsoluteAxis( action.event, 32767 * action.eventModifier, false );
+							(*action).device->sendAbsoluteAxis( (*action).event, 32767 * (*action).eventModifier, false );
 						
 							#ifdef DEBUG0
-							Logger::get() << "Joystick \"" << action.device->getName() << " pressed " << action.event << " axis with modifier " << action.eventModifier << "." << Logger::endl;
+							Logger::get() << "Joystick \"" << (*action).device->getName() << " pressed " << (*action).event << " axis with modifier " << (*action).eventModifier << "." << Logger::endl;
 							#endif
 						}
 					}
@@ -244,20 +244,20 @@ int main( int argc, char ** argv )
 						#endif
 					
 						// Warning: It may provide two event press & release for axis
-						if( action.event != ABS_X && action.event != ABS_Y )
+						if( (*action).event != ABS_X && (*action).event != ABS_Y )
 						{
-							action.device->releaseKey( action.event );
+							(*action).device->releaseKey( (*action).event );
 					
 							#ifdef DEBUG0
-							Logger::get() << "Joystick \"" << action.device->getName() << " released " << action.event << " button." << Logger::endl;
+							Logger::get() << "Joystick \"" << (*action).device->getName() << " released " << (*action).event << " button." << Logger::endl;
 							#endif
 						}
 						else
 						{
-							action.device->sendAbsoluteAxis( action.event, 0, false );
+							(*action).device->sendAbsoluteAxis( (*action).event, 0, false );
 						
 							#ifdef DEBUG0
-							Logger::get() << "Joystick \"" << action.device->getName() << " pressed " << action.event << " axis with modifier " << action.eventModifier << "." << Logger::endl;
+							Logger::get() << "Joystick \"" << (*action).device->getName() << " pressed " << (*action).event << " axis with modifier " << (*action).eventModifier << "." << Logger::endl;
 							#endif
 						}
 					}
