@@ -53,32 +53,32 @@ int main( int argc, char ** argv )
 	}
 	
 	vector<int> ports;
-	port.push_back( 2 );
-	port.push_back( 3 );
-	port.push_back( 4 );
-	port.push_back( 17 );
-	port.push_back( 27 );
-	port.push_back( 22 );
-	port.push_back( 10 );
-	port.push_back( 9 );
-	port.push_back( 11 );
-	port.push_back( 5 );
-	port.push_back( 6 );
-	port.push_back( 13 );
-	port.push_back( 19 );
-	port.push_back( 26 );
-	port.push_back( 14 );
-	port.push_back( 15 );
-	port.push_back( 18 );
-	port.push_back( 23 );
-	port.push_back( 24 );
-	port.push_back( 25 );
-	port.push_back( 8 );
-	port.push_back( 7 );
-	port.push_back( 12 );
-	port.push_back( 16 );
-	port.push_back( 20 );
-	port.push_back( 21 );
+	ports.push_back( 2 );
+	ports.push_back( 3 );
+	ports.push_back( 4 );
+	ports.push_back( 17 );
+	ports.push_back( 27 );
+	ports.push_back( 22 );
+	ports.push_back( 10 );
+	ports.push_back( 9 );
+	ports.push_back( 11 );
+	ports.push_back( 5 );
+	ports.push_back( 6 );
+	ports.push_back( 13 );
+	ports.push_back( 19 );
+	ports.push_back( 26 );
+	ports.push_back( 14 );
+	ports.push_back( 15 );
+	ports.push_back( 18 );
+	ports.push_back( 23 );
+	ports.push_back( 24 );
+	ports.push_back( 25 );
+	ports.push_back( 8 );
+	ports.push_back( 7 );
+	ports.push_back( 12 );
+	ports.push_back( 16 );
+	ports.push_back( 20 );
+	ports.push_back( 21 );
 
 	GPIO::initialize();
 	
