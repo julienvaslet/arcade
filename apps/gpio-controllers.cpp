@@ -135,6 +135,34 @@ int main( int argc, char ** argv )
 				gpioActions[toInt( conf->getValue( "SouthButton", *it ) )] = { device, BTN_SOUTH, 1, false };
 		}
 		
+		// LeftTrigger
+		if( conf->hasKey( "LeftTrigger", *it ) )
+		{
+			if( device->enableKey( BTN_TL ) )
+				gpioActions[toInt( conf->getValue( "LeftTrigger", *it ) )] = { device, BTN_TL, 1, false };
+		}
+		
+		// RightTrigger
+		if( conf->hasKey( "RightTrigger", *it ) )
+		{
+			if( device->enableKey( BTN_TR ) )
+				gpioActions[toInt( conf->getValue( "RightTrigger", *it ) )] = { device, BTN_TR, 1, false };
+		}
+		
+		// SelectButton
+		if( conf->hasKey( "SelectButton", *it ) )
+		{
+			if( device->enableKey( BTN_SELECT ) )
+				gpioActions[toInt( conf->getValue( "SelectButton", *it ) )] = { device, BTN_SELECT, 1, false };
+		}
+		
+		// StartButton
+		if( conf->hasKey( "StartButton", *it ) )
+		{
+			if( device->enableKey( BTN_START ) )
+				gpioActions[toInt( conf->getValue( "StartButton", *it ) )] = { device, BTN_START, 1, false };
+		}
+		
 		// UpAxis
 		if( conf->hasKey( "UpAxis", *it ) )
 		{
@@ -236,8 +264,8 @@ int main( int argc, char ** argv )
 		for( vector<VirtualDevice *>::iterator it = devices.begin() ; it != devices.end() ; it++ )
 			(*it)->flush();
 		
-		// Wait 50 ms
-		usleep( 50000 );
+		// Wait 25 ms
+		usleep( 25000 );
 	}
 	
 	for( vector<VirtualDevice *>::iterator it = devices.begin() ; it != devices.end() ; it++ )
