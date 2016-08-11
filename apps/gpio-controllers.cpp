@@ -8,6 +8,7 @@
 #include <signal.h>
 
 #include <map>
+#include <vector>
 #include <set>
 #include <sstream>
 #include <fstream>
@@ -81,7 +82,7 @@ int main( int argc, char ** argv )
 	}
 	
 	vector<VirtualDevice *> devices;
-	map<int, GpioAction> gpioActions;
+	map<int, vector<GpioAction>> gpioActions;
 	
 	ifstream iniFile( GPIO_CONFIGURATION_FILE );
 
@@ -111,84 +112,84 @@ int main( int argc, char ** argv )
 		if( conf->hasKey( "NorthButton", *it ) )
 		{		
 			if( device->enableKey( BTN_NORTH ) )
-				gpioActions[toInt( conf->getValue( "NorthButton", *it ) )] = { device, BTN_NORTH, 1, false };
+				gpioActions[toInt( conf->getValue( "NorthButton", *it ) )].push_back( { device, BTN_NORTH, 1, false } );
 		}
 		
 		// WestButton
 		if( conf->hasKey( "WestButton", *it ) )
 		{
 			if( device->enableKey( BTN_WEST ) )
-				gpioActions[toInt( conf->getValue( "WestButton", *it ) )] = { device, BTN_WEST, 1, false };
+				gpioActions[toInt( conf->getValue( "WestButton", *it ) )].push_back(  { device, BTN_WEST, 1, false } );
 		}
 		
 		// EastButton
 		if( conf->hasKey( "EastButton", *it ) )
 		{
 			if( device->enableKey( BTN_EAST ) )
-				gpioActions[toInt( conf->getValue( "EastButton", *it ) )] = { device, BTN_EAST, 1, false };
+				gpioActions[toInt( conf->getValue( "EastButton", *it ) )].push_back( { device, BTN_EAST, 1, false } );
 		}
 		
 		// SouthButton
 		if( conf->hasKey( "SouthButton", *it ) )
 		{
 			if( device->enableKey( BTN_SOUTH ) )
-				gpioActions[toInt( conf->getValue( "SouthButton", *it ) )] = { device, BTN_SOUTH, 1, false };
+				gpioActions[toInt( conf->getValue( "SouthButton", *it ) )].push_back( { device, BTN_SOUTH, 1, false } );
 		}
 		
 		// LeftTrigger
 		if( conf->hasKey( "LeftTrigger", *it ) )
 		{
 			if( device->enableKey( BTN_TL ) )
-				gpioActions[toInt( conf->getValue( "LeftTrigger", *it ) )] = { device, BTN_TL, 1, false };
+				gpioActions[toInt( conf->getValue( "LeftTrigger", *it ) )].push_back( { device, BTN_TL, 1, false } );
 		}
 		
 		// RightTrigger
 		if( conf->hasKey( "RightTrigger", *it ) )
 		{
 			if( device->enableKey( BTN_TR ) )
-				gpioActions[toInt( conf->getValue( "RightTrigger", *it ) )] = { device, BTN_TR, 1, false };
+				gpioActions[toInt( conf->getValue( "RightTrigger", *it ) )].push_back( { device, BTN_TR, 1, false } );
 		}
 		
 		// SelectButton
 		if( conf->hasKey( "SelectButton", *it ) )
 		{
 			if( device->enableKey( BTN_SELECT ) )
-				gpioActions[toInt( conf->getValue( "SelectButton", *it ) )] = { device, BTN_SELECT, 1, false };
+				gpioActions[toInt( conf->getValue( "SelectButton", *it ) )].push_back( { device, BTN_SELECT, 1, false } );
 		}
 		
 		// StartButton
 		if( conf->hasKey( "StartButton", *it ) )
 		{
 			if( device->enableKey( BTN_START ) )
-				gpioActions[toInt( conf->getValue( "StartButton", *it ) )] = { device, BTN_START, 1, false };
+				gpioActions[toInt( conf->getValue( "StartButton", *it ) )].push_back( { device, BTN_START, 1, false } );
 		}
 		
 		// UpAxis
 		if( conf->hasKey( "UpAxis", *it ) )
 		{
 			if( device->enableAbsoluteAxis( ABS_Y ) )
-				gpioActions[toInt( conf->getValue( "UpAxis", *it ) )] = { device, ABS_Y, -1, false };
+				gpioActions[toInt( conf->getValue( "UpAxis", *it ) )].push_back( { device, ABS_Y, -1, false } );
 		}
 		
 		// DownAxis
 		if( conf->hasKey( "DownAxis", *it ) )
 		{
 			if( device->enableAbsoluteAxis( ABS_Y ) )
-				gpioActions[toInt( conf->getValue( "DownAxis", *it ) )] = { device, ABS_Y, 1, false };
+				gpioActions[toInt( conf->getValue( "DownAxis", *it ) )].push_back( { device, ABS_Y, 1, false } );
 		}
 		
 		// LeftAxis
 		if( conf->hasKey( "LeftAxis", *it ) )
 		{
 			if( device->enableAbsoluteAxis( ABS_X ) )
-				gpioActions[toInt( conf->getValue( "LeftAxis", *it ) )] = { device, ABS_X, -1, false };
+				gpioActions[toInt( conf->getValue( "LeftAxis", *it ) )].push_back( { device, ABS_X, -1, false } );
 		}
 		
 		// RightAxis
 		if( conf->hasKey( "RightAxis", *it ) )
 		{
 			if( device->enableAbsoluteAxis( ABS_X ) )
-				gpioActions[toInt( conf->getValue( "RightAxis", *it ) )] = { device, ABS_X, 1, false };
+				gpioActions[toInt( conf->getValue( "RightAxis", *it ) )].push_back( { device, ABS_X, 1, false } );
 		}
 		
 		device->create();
@@ -197,65 +198,68 @@ int main( int argc, char ** argv )
 	delete conf;
 	GPIO::initialize();
 	
-	for( map<int, GpioAction>::iterator it = gpioActions.begin() ; it != gpioActions.end() ; it++ )
+	for( map<int, vector<GpioAction>>::iterator it = gpioActions.begin() ; it != gpioActions.end() ; it++ )
 		GPIO::get()->open( it->first, GPIO::In );
 
 	while( running )
 	{
-		for( map<int, GpioAction>::iterator it = gpioActions.begin() ; it != gpioActions.end() ; it++ )
+		for( map<int, vector<GpioAction>>::iterator it = gpioActions.begin() ; it != gpioActions.end() ; it++ )
 		{
 			bool status = GPIO::get()->read( it->first );
 			
-			if( status != it->second.pushed )
+			for( vector<GpioAction>::iterator action = it->second.begin() ; action != it->second.end() ; action++ )
 			{
-				it->second.pushed = status;
+				if( status != action.pushed )
+				{
+					action.pushed = status;
 				
-				if( it->second.pushed )
-				{
-					#ifdef DEBUG0
-					Logger::get() << "GPIO#" << it->first << " pushed." << Logger::endl;
-					#endif
-					
-					// Warning: It may provide two event press & release for axis
-					if( it->second.event != ABS_X && it->second.event != ABS_Y )
+					if( action.pushed )
 					{
-						it->second.device->pressKey( it->second.event, false );
-						
 						#ifdef DEBUG0
-						Logger::get() << "Joystick \"" << it->second.device->getName() << " pressed " << it->second.event << " button." << Logger::endl;
+						Logger::get() << "GPIO#" << it->first << " pushed." << Logger::endl;
 						#endif
+					
+						// Warning: It may provide two event press & release for axis
+						if( action.event != ABS_X && action.event != ABS_Y )
+						{
+							action.device->pressKey( action.event, false );
+						
+							#ifdef DEBUG0
+							Logger::get() << "Joystick \"" << action.device->getName() << " pressed " << action.event << " button." << Logger::endl;
+							#endif
+						}
+						else
+						{
+							action.device->sendAbsoluteAxis( action.event, 32767 * action.eventModifier, false );
+						
+							#ifdef DEBUG0
+							Logger::get() << "Joystick \"" << action.device->getName() << " pressed " << action.event << " axis with modifier " << action.eventModifier << "." << Logger::endl;
+							#endif
+						}
 					}
 					else
 					{
-						it->second.device->sendAbsoluteAxis( it->second.event, 32767 * it->second.eventModifier, false );
-						
 						#ifdef DEBUG0
-						Logger::get() << "Joystick \"" << it->second.device->getName() << " pressed " << it->second.event << " axis with modifier " << it->second.eventModifier << "." << Logger::endl;
+						Logger::get() << "GPIO#" << it->first << " released." << Logger::endl;
 						#endif
-					}
-				}
-				else
-				{
-					#ifdef DEBUG0
-					Logger::get() << "GPIO#" << it->first << " released." << Logger::endl;
-					#endif
 					
-					// Warning: It may provide two event press & release for axis
-					if( it->second.event != ABS_X && it->second.event != ABS_Y )
-					{
-						it->second.device->releaseKey( it->second.event );
+						// Warning: It may provide two event press & release for axis
+						if( action.event != ABS_X && action.event != ABS_Y )
+						{
+							action.device->releaseKey( action.event );
 					
-						#ifdef DEBUG0
-						Logger::get() << "Joystick \"" << it->second.device->getName() << " released " << it->second.event << " button." << Logger::endl;
-						#endif
-					}
-					else
-					{
-						it->second.device->sendAbsoluteAxis( it->second.event, 0, false );
+							#ifdef DEBUG0
+							Logger::get() << "Joystick \"" << action.device->getName() << " released " << action.event << " button." << Logger::endl;
+							#endif
+						}
+						else
+						{
+							action.device->sendAbsoluteAxis( action.event, 0, false );
 						
-						#ifdef DEBUG0
-						Logger::get() << "Joystick \"" << it->second.device->getName() << " pressed " << it->second.event << " axis with modifier " << it->second.eventModifier << "." << Logger::endl;
-						#endif
+							#ifdef DEBUG0
+							Logger::get() << "Joystick \"" << action.device->getName() << " pressed " << action.event << " axis with modifier " << action.eventModifier << "." << Logger::endl;
+							#endif
+						}
 					}
 				}
 			}
