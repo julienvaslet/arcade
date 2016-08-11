@@ -20,8 +20,6 @@ using namespace tools::pi;
 using namespace controller;
 using namespace overscan;
 
-//https://github.com/ukscone/set_overscan/blob/master/overscan.c
-
 int main( int argc, char ** argv )
 {
 	// Initialize standard-output logger

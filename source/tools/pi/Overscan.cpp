@@ -24,7 +24,8 @@ using namespace tools::logger;
 #define REQUEST_SUCCESS		0x80000000
 #define REQUEST_ERROR		0x80000001
 
-#define MAILBOX_FILE		"/dev/mailbox"
+#define MAILBOX_FILE		"/dev/vcio"
+//#define MAILBOX_FILE		"/dev/mailbox"
 #define DELTA_VALUE			32
 
 extern int errno;

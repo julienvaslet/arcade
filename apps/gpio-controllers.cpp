@@ -225,7 +225,7 @@ int main( int argc, char ** argv )
 							(*action).device->pressKey( (*action).event, false );
 						
 							#ifdef DEBUG0
-							Logger::get() << "Joystick \"" << (*action).device->getName() << " pressed " << (*action).event << " button." << Logger::endl;
+							Logger::get() << "Joystick \"" << (*action).device->getName() << "\" pressed " << (*action).event << " button." << Logger::endl;
 							#endif
 						}
 						else
@@ -233,7 +233,7 @@ int main( int argc, char ** argv )
 							(*action).device->sendAbsoluteAxis( (*action).event, 32767 * (*action).eventModifier, false );
 						
 							#ifdef DEBUG0
-							Logger::get() << "Joystick \"" << (*action).device->getName() << " pressed " << (*action).event << " axis with modifier " << (*action).eventModifier << "." << Logger::endl;
+							Logger::get() << "Joystick \"" << (*action).device->getName() << "\" pressed " << (*action).event << " axis with modifier " << (*action).eventModifier << "." << Logger::endl;
 							#endif
 						}
 					}
@@ -249,7 +249,7 @@ int main( int argc, char ** argv )
 							(*action).device->releaseKey( (*action).event );
 					
 							#ifdef DEBUG0
-							Logger::get() << "Joystick \"" << (*action).device->getName() << " released " << (*action).event << " button." << Logger::endl;
+							Logger::get() << "Joystick \"" << (*action).device->getName() << "\" released " << (*action).event << " button." << Logger::endl;
 							#endif
 						}
 						else
@@ -257,7 +257,7 @@ int main( int argc, char ** argv )
 							(*action).device->sendAbsoluteAxis( (*action).event, 0, false );
 						
 							#ifdef DEBUG0
-							Logger::get() << "Joystick \"" << (*action).device->getName() << " pressed " << (*action).event << " axis with modifier " << (*action).eventModifier << "." << Logger::endl;
+							Logger::get() << "Joystick \"" << (*action).device->getName() << "\" released " << (*action).event << " axis with modifier " << (*action).eventModifier << "." << Logger::endl;
 							#endif
 						}
 					}
