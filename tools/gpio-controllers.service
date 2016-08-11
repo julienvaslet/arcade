@@ -1,0 +1,11 @@
+[Unit]
+Description=Start Joysticks driver
+
+[Service]
+Type=simple
+ExecStart=/opt/controllers/gpio-controllers
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
