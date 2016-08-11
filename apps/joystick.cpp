@@ -51,6 +51,10 @@ int main( int argc, char ** argv )
 	buttons.push_back( "EastButton" );
 	buttons.push_back( "SouthButton" );
 	buttons.push_back( "WestButton" );
+	buttons.push_back( "LeftTrigger" );
+	buttons.push_back( "RightTrigger" );
+	buttons.push_back( "SelectButton" );
+	buttons.push_back( "StartButton" );
 	buttons.push_back( "HorizontalAxis" );
 	buttons.push_back( "VerticalAxis" );
 	
