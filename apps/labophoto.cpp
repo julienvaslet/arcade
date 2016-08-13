@@ -2,6 +2,7 @@
 #include <opengl/Screen.h>
 #include <opengl/OpenGL.h>
 #include <opengl/Matrix.h>
+#include <opengl/BitmapFont.h>
 #include <game/Resource.h>
 
 #include <opengl/TexturedRectangle.h>
@@ -9,7 +10,8 @@
 #include <tools/logger/Stdout.h>
 #include <tools/camera/GphotoCamera.h>
 
-#include <opengl/ui/Element.h>
+#include <opengl/ui/UserInterface.h>
+#include <opengl/ui/Label.h>
 
 #define SCREEN_WIDTH	800
 #define SCREEN_HEIGHT	600
@@ -29,86 +31,61 @@ int main( int argc, char ** argv )
 		Logger::get() << "Unable to initialize screen. Exiting.\n";
 		return 1;
 	}
+	
+	new BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
+	
+	ui::UserInterface * ui = new ui::UserInterface();
+	ui->setFont( "bitmap" );
+	ui->addElement( new ui::Label( "label1", "Message" ) );
 
 	// Set the orthogonal origin at the top-left corner
 	Matrix::projection = Matrix::ortho( 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, -1, 1 );
 	Color backgroundColor( "cccccc" );
 	Screen::get()->setClearColor( backgroundColor );
+		
+	bool running = true;
+	SDL_Event lastEvent;
+	unsigned int lastDrawTicks = 0;
 	
-	GphotoCamera * camera = NULL;
-	GphotoCamera::initializeContext();
-	
-	map<string,string> cameras;
-	GphotoCamera::list( cameras );
-	
-	if( cameras.size() > 0 )
+	while( running )
 	{
-		camera = GphotoCamera::getCamera( cameras.begin()->first );
-	}
-	else
-		Logger::get() << "No camera detected." << Logger::endl;
-		
-	if( camera != NULL )
-	{
-		camera->capture( "capture.jpg" );
-		
-		bool running = true;
-		SDL_Event lastEvent;
-		unsigned int lastDrawTicks = 0;
-	
-		Resource::loadTexture2D( "photo", "capture.jpg", true );
-		Texture2D * texture = (Texture2D *) Resource::get("photo");
-		
-		if( texture != NULL )
+		while( SDL_PollEvent( &lastEvent ) )
 		{
-			TexturedRectangle * photo = new TexturedRectangle( SCREEN_WIDTH, SCREEN_HEIGHT, texture );
-
-			vector<Point3D> vertices;
-			vector<Point2D> textureCoordinates;
-			vector<unsigned short int> indices;
-
-			photo->prepareRendering( vertices, textureCoordinates, indices );
-			
-			while( running )
+			switch( lastEvent.type )
 			{
-				while( SDL_PollEvent( &lastEvent ) )
+				case SDL_QUIT:
 				{
-					switch( lastEvent.type )
-					{
-						case SDL_QUIT:
-						{
-							running = false;
-							break;
-						}
-			
-						case SDL_KEYDOWN:
-						{
-							if( lastEvent.key.keysym.sym == SDLK_ESCAPE )
-								running = false;
-				
-							break;
-						}
-					}
+					running = false;
+					break;
 				}
-
-				unsigned int ticks = SDL_GetTicks();
-				
-				if( ticks - lastDrawTicks > 30 )
+	
+				case SDL_KEYDOWN:
 				{
-					Screen::get()->clear();
-
-					TexturedRectangle::render( vertices, textureCoordinates, indices, texture );
-					Screen::get()->render();
-					
-					lastDrawTicks = ticks;
+					if( lastEvent.key.keysym.sym == SDLK_ESCAPE )
+						running = false;
+		
+					break;
 				}
 			}
+		}
+
+		unsigned int ticks = SDL_GetTicks();
+		
+		if( ticks - lastDrawTicks > 30 )
+		{
+			Screen::get()->clear();
+
+			ui->render( ticks );
+			Screen::get()->render();
 			
-			delete photo;
+			lastDrawTicks = ticks;
 		}
 	}
 	
-	GphotoCamera::destroyContext();
+	delete ui;
+	
+	//GphotoCamera::destroyContext();
+	Font::destroy();
 	Resource::destroy();
 	Screen::destroy();
 	Logger::destroy();
