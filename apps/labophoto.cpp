@@ -34,13 +34,18 @@ int main( int argc, char ** argv )
 	
 	new BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
 	
+	glEnable( GL_BLEND );
+	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+	
 	ui::UserInterface * ui = new ui::UserInterface();
 	ui->setFont( "bitmap" );
-	ui->addElement( new ui::Label( "label1", "Message" ) );
+	
+	ui::Label * label1 = new ui::Label( "label1", "Message" );
+	ui->addElement( label1 );
 
 	// Set the orthogonal origin at the top-left corner
 	Matrix::projection = Matrix::ortho( 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, -1, 1 );
-	Color backgroundColor( "cccccc" );
+	Color backgroundColor( "444444" );
 	Screen::get()->setClearColor( backgroundColor );
 		
 	bool running = true;

@@ -59,6 +59,18 @@ namespace opengl
 			#endif
 		}
 		
+		Element * UserInterface::getElement( const string& name )
+		{
+			Element * element = NULL;
+			
+			map<string, Element *>::iterator it = this->elements.find( element->getName() );
+			
+			if( it != this->elements.end() )
+				element = it->second;
+				
+			return element;
+		}
+		
 		void UserInterface::render( unsigned int ticks )
 		{
 			for( map<string, Element *>::iterator it = this->elements.begin() ; it != this->elements.end() ; it++ )

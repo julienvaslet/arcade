@@ -39,7 +39,7 @@ namespace opengl
 				void addElement( Element * element, bool hidden = false );
 				//void showElement( const string& name );
 				//void hideElement( const string& name );
-				//Element * getElement( const string& name );
+				Element * getElement( const string& name );
 				
 				virtual void render( unsigned int ticks );
 				//bool dispatchEvent( const SDL_Event * event );

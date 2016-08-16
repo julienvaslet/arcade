@@ -34,6 +34,8 @@ namespace opengl
 				Label( const string& name, const string& value );
 				virtual ~Label();
 				
+				Color& getColor();
+				
 				virtual void prepareRendering( unsigned int ticks );
 				static void render( unsigned int ticks );
 		};

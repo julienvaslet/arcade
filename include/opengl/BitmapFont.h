@@ -19,10 +19,12 @@ namespace opengl
 		
 			ArrayBufferObject * vertices;
 			ArrayBufferObject * textureCoordinates;
+			ArrayBufferObject * colors;
 			ElementArrayBufferObject * indices;
 			
 			vector<Point3D> vVertices;
 			vector<Point2D> vTextureCoordinates;
+			vector<Color> vColors;
 			vector<unsigned short int> vIndices;
 			
 			TexturedRectangle * rectangle;

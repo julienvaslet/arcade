@@ -16,7 +16,7 @@ namespace opengl
 	Program * BitmapFont::program = NULL;
 	unsigned int BitmapFont::instances = 0;
 	
-	BitmapFont::BitmapFont( const string& filename, unsigned int characterWidth, unsigned int characterHeight, unsigned int marginWidth, unsigned marginHeight ) : Font(BitmapFont::getFontNameFromPath(filename)), vertices(NULL), textureCoordinates(NULL), indices(NULL), rectangle(NULL), charactersByLine(0), characterWidth(characterWidth), characterHeight(characterHeight), marginWidth(marginWidth), marginHeight(marginHeight)
+	BitmapFont::BitmapFont( const string& filename, unsigned int characterWidth, unsigned int characterHeight, unsigned int marginWidth, unsigned marginHeight ) : Font(BitmapFont::getFontNameFromPath(filename)), vertices(NULL), textureCoordinates(NULL), colors(NULL), indices(NULL), rectangle(NULL), charactersByLine(0), characterWidth(characterWidth), characterHeight(characterHeight), marginWidth(marginWidth), marginHeight(marginHeight)
 	{
 		BitmapFont::instances++;
 		
@@ -35,6 +35,7 @@ namespace opengl
 		
 		this->vertices = new ArrayBufferObject();
 		this->textureCoordinates = new ArrayBufferObject();
+		this->colors = new ArrayBufferObject();
 		this->indices = new ElementArrayBufferObject();
 		
 		stringstream sFontResourceName;
@@ -65,6 +66,9 @@ namespace opengl
 		if( this->textureCoordinates != NULL )
 			delete this->textureCoordinates;
 			
+		if( this->colors != NULL )
+			delete this->colors;
+			
 		if( this->indices != NULL )
 			delete this->indices;
 			
@@ -84,6 +88,7 @@ namespace opengl
 	{
 		this->vertices->setData( this->vVertices );
 		this->textureCoordinates->setData( this->vTextureCoordinates );
+		this->colors->setData( this->vColors );
 		this->indices->setData( this->vIndices );
 
 		BitmapFont::program->use( true );
@@ -92,16 +97,15 @@ namespace opengl
 		BitmapFont::program->sendUniform( "modelview_matrix", Matrix::modelview, false );
 		BitmapFont::program->sendUniform( "texture0", *(this->rectangle->getTile()->getTexture()), 0 );
 
-		Color color("ffffff");
-		BitmapFont::program->sendUniform( "color", color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
-		
 		BitmapFont::program->sendVertexPointer( "a_Vertex", this->vertices );
+		BitmapFont::program->sendColorPointer( "a_Color", this->colors );
 		BitmapFont::program->sendTextureCoordinatesPointer( "a_TexCoord0", this->textureCoordinates );
 
 		this->indices->draw( OpenGL::Triangles );
 		
 		this->vVertices.clear();
 		this->vTextureCoordinates.clear();
+		this->vColors.clear();
 		this->vIndices.clear();
 	}
 	
@@ -126,6 +130,9 @@ namespace opengl
 				
 					float x = static_cast<float>( text[i] % this->charactersByLine );
 					float y = static_cast<float>( text[i] / this->charactersByLine );
+					
+					for( unsigned int j = 0 ; j < 4 ; j++ )
+						this->vColors.push_back( color );
 					
 					this->rectangle->getTile()->setView( (x * this->characterWidth) + this->marginWidth, (y * this->characterHeight) + this->marginHeight, this->characterWidth - (2.0f * this->marginWidth), this->characterHeight - (2.0f * this->marginHeight) );
 					this->rectangle->prepareRendering( this->vVertices, this->vTextureCoordinates, this->vIndices );
