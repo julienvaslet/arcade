@@ -27,19 +27,57 @@ namespace opengl
 			#endif
 		}
 		
-		Color& Label::getColor()
+		const string& Label::getValue() const
+		{
+			return this->value;
+		}
+		
+		void Label::setValue( const string& value, bool resize )
+		{
+			this->value = value;
+			
+			if( resize )
+				this->autoResize();
+		}
+		
+		void Label::setColor( const string& color )
+		{
+			this->color.setColor( color );
+		}
+		
+		void Label::setColor( const Color& color )
+		{
+			this->color.setColor( color );
+		}
+		
+		const Color& Label::getColor() const
 		{
 			return this->color;
+		}
+		
+		void Label::autoResize()
+		{
+			Point2D size;
+			
+			if( this->ui != NULL )
+			{
+				Font * font = this->ui->getFont();
+				
+				if( font != NULL )
+					font->getTextSize( size, this->value, this->ui->getFontSize() );
+			}
+			
+			this->rectangle.resize( size.getX() + OPENGL_UI_LABEL_HORIZONTAL_PADDING * 2, size.getY() + OPENGL_UI_LABEL_VERTICAL_PADDING * 2 );
 		}
 		
 		void Label::prepareRendering( unsigned int ticks )
 		{
 			//Logger::get() << "[Label] Preparing rendering" << Logger::endl;
-			Point2D origin( this->rectangle.getOrigin().getX(), this->rectangle.getOrigin().getY() );
+			Point2D origin( this->rectangle.getOrigin().getX() + OPENGL_UI_LABEL_HORIZONTAL_PADDING, this->rectangle.getOrigin().getY() + OPENGL_UI_LABEL_VERTICAL_PADDING );
 			
-			this->ui->getFont()->write( origin, this->value, this->color, 0.5f );
+			this->ui->getFont()->write( origin, this->value, this->color, this->ui->getFontSize() );
 			
-			Element::renderFunctions.insert( &Label::render );
+			//Element::renderFunctions.insert( &Label::render );
 		}
 		
 		void Label::render( unsigned int ticks )

@@ -11,7 +11,7 @@
 #include <tools/camera/GphotoCamera.h>
 
 #include <opengl/ui/UserInterface.h>
-#include <opengl/ui/Label.h>
+#include <opengl/ui/Button.h>
 
 #define SCREEN_WIDTH	800
 #define SCREEN_HEIGHT	600
@@ -38,14 +38,14 @@ int main( int argc, char ** argv )
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 	
 	ui::UserInterface * ui = new ui::UserInterface();
-	ui->setFont( "bitmap" );
+	ui->setFont( "bitmap", 0.40f );
 	
-	ui::Label * label1 = new ui::Label( "label1", "Message" );
-	ui->addElement( label1 );
+	ui::Button * btn = new ui::Button( "btn", "Click me!" );
+	ui->addElement( btn );
 
 	// Set the orthogonal origin at the top-left corner
 	Matrix::projection = Matrix::ortho( 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, -1, 1 );
-	Color backgroundColor( "444444" );
+	Color backgroundColor( "888888" );
 	Screen::get()->setClearColor( backgroundColor );
 		
 	bool running = true;

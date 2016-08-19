@@ -10,18 +10,16 @@
 #include <vector>
 using namespace std;
 
+#define OPENGL_UI_LABEL_HORIZONTAL_PADDING	6
+#define OPENGL_UI_LABEL_VERTICAL_PADDING	3
+
 namespace opengl
 {
 	namespace ui
 	{
 		class Label : public Element
 		{
-			private:
-				static vector<unsigned int> renderingIndices;
-				static vector<Point3D> renderingPositions;
-				static vector<Point2D> renderingTextureCoordinates;
-				static vector<Color> renderingColors;
-				
+			private:				
 				// this boolean should be thinked again
 				// how to also manage global renderFunctions cache?
 				//static bool useRenderingCache;
@@ -29,12 +27,19 @@ namespace opengl
 			protected:
 				string value;
 				Color color;
+				
+				void autoResize();
 			
 			public:
 				Label( const string& name, const string& value );
 				virtual ~Label();
 				
-				Color& getColor();
+				const string& getValue() const;
+				void setValue( const string& value, bool resize = false );
+				
+				void setColor( const string& color );
+				void setColor( const Color& color );
+				const Color& getColor() const;
 				
 				virtual void prepareRendering( unsigned int ticks );
 				static void render( unsigned int ticks );

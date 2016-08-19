@@ -15,7 +15,7 @@ namespace opengl
 	{
 		set<ElementRenderFunction> Element::renderFunctions;
 		
-		Element::Element( const string& name ) : name(name)
+		Element::Element( const string& name ) : ui(NULL), name(name)
 		{
 		}
 		

@@ -9,7 +9,7 @@ namespace opengl
 {
 	namespace ui
 	{
-		UserInterface::UserInterface() : fontName(OPENGL_UI_DEFAULT_FONT)
+		UserInterface::UserInterface() : fontName(OPENGL_UI_DEFAULT_FONT), fontSize(0.0f)
 		{
 			#ifdef DEBUG0
 			Logger::get() << "[UserInterface] Created." << Logger::endl;
@@ -28,9 +28,22 @@ namespace opengl
 			#endif
 		}
 		
-		void UserInterface::setFont( const string& font )
+		void UserInterface::setFont( const string& font, float fontSize )
 		{
 			this->fontName = font;
+			this->fontSize = fontSize;
+			
+			#ifdef DEBUG0
+			Logger::get() << "[UserInterface] Interface font is \"" << this->fontName << "\" (size: " << this->fontSize << ")" << Logger::endl;
+			
+			if( this->getFont() == NULL )
+				Logger::get() << "[UserInterface] /!\\ Font \"" << this->fontName << "\" seems to not be loaded." << Logger::endl;
+			#endif
+		}
+		
+		float UserInterface::getFontSize()
+		{
+			return this->fontSize;
 		}
 		
 		Font * UserInterface::getFont()

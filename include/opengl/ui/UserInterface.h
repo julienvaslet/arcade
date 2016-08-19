@@ -28,13 +28,15 @@ namespace opengl
 				//set<string> mouseoverElements;
 				//set<string> hiddenElements;
 				string fontName;
+				float fontSize;
 				
 			public:
 				UserInterface();
 				virtual ~UserInterface();
 				
-				void setFont( const string& font );
+				void setFont( const string& font, float fontSize = 0.0f );
 				Font * getFont();
+				float getFontSize();
 				
 				void addElement( Element * element, bool hidden = false );
 				//void showElement( const string& name );
