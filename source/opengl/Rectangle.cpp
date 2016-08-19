@@ -84,6 +84,40 @@ namespace opengl
 		return hasCollision;
 	}
 	
+	bool Rectangle::isInCollision( const Point2D& point ) const
+	{
+		bool hasCollision = false;
+		
+		if( point.getX() >= this->origin.getX() && point.getX() <= this->origin.getX()+ this->width )
+		{
+			if( point.getX() >= this->origin.getY() && point.getY() <= this->origin.getY() + this->height )
+			{
+				hasCollision = true;
+			}
+		}
+		
+		return hasCollision;
+	}
+	
+	bool Rectangle::isInCollision( const Point3D& point ) const
+	{
+		bool hasCollision = false;
+		
+		// Rectangle has no depth, simply compare Z axis
+		if( point.getZ() == this->origin.getZ() )
+		{
+			if( point.getX() >= this->origin.getX() && point.getX() <= this->origin.getX()+ this->width )
+			{
+				if( point.getX() >= this->origin.getY() && point.getY() <= this->origin.getY() + this->height )
+				{
+					hasCollision = true;
+				}
+			}
+		}
+		
+		return hasCollision;
+	}
+	
 	void Rectangle::prepareRendering( vector<Point3D>& vertices, vector<unsigned short int>& indices, bool clockwise ) const
 	{
 		unsigned short int j = static_cast<unsigned short int>( vertices.size() );

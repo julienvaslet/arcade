@@ -1,4 +1,5 @@
 #include <opengl/ui/UserInterface.h>
+#include <opengl/Screen.h>
 
 #ifdef DEBUG0
 #include <tools/logger/Logger.h>
@@ -92,6 +93,78 @@ namespace opengl
 			Element::render( ticks );
 			
 			this->getFont()->render();
+		}
+		
+		bool UserInterface::dispatchEvent( const SDL_Event * event )
+		{
+			bool eventHandled = false;
+			
+			switch( event->type )
+			{
+				case SDL_MOUSEMOTION:
+				{
+					Point2D point = Screen::get()->getCoordinates( event->motion.x, event->motion.y );
+					for( map<string, Element *>::iterator it = this->elements.begin() ; it != this->elements.end() ; it++ )
+					{
+						if( this->hiddenElements.count( it->first ) == 0 && !it->second->isDisabled() )
+						{
+							if( it->second->getRectangle().isInCollision( point ) )
+							{
+								if( this->mouseoverElements.count( it->first ) == 0 )
+								{
+									this->mouseoverElements.insert( it->first );
+									it->second->trigger( "mouseenter" );
+								}
+							}
+							else if( this->mouseoverElements.count( it->first ) > 0 )
+							{
+								this->mouseoverElements.erase( it->first );
+								it->second->trigger( "mouseleave" );
+							}
+						}
+					}
+
+					break;
+				}
+			
+				case SDL_MOUSEBUTTONDOWN:
+				{
+					Point2D point = Screen::get()->getCoordinates( event->button.x, event->button.y );
+					for( map<string, Element *>::iterator it = this->elements.begin() ; it != this->elements.end() ; it++ )
+					{
+						if( this->hiddenElements.count( it->first ) == 0 && !it->second->isDisabled() )
+						{
+							if( it->second->getRectangle().isInCollision( point ) )
+							{
+								it->second->trigger( "mousedown" );
+								eventHandled = true;
+							}
+						}
+					}
+				
+					break;
+				}
+			
+				case SDL_MOUSEBUTTONUP:
+				{
+					Point2D point = Screen::get()->getCoordinates( event->button.x, event->button.y );
+					for( map<string, Element *>::iterator it = this->elements.begin() ; it != this->elements.end() ; it++ )
+					{
+						if( this->hiddenElements.count( it->first ) == 0 && !it->second->isDisabled() )
+						{
+							if( it->second->getRectangle().isInCollision( point ) )
+							{
+								it->second->trigger( "mouseup" );
+								eventHandled = true;
+							}
+						}
+					}
+				
+					break;
+				}
+			}
+		
+			return eventHandled;
 		}
 	}
 }

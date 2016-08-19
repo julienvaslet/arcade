@@ -22,8 +22,8 @@ namespace opengl
 {
 	namespace ui
 	{
-		//class Element;
-		//typedef bool (*Event)( Element * );
+		class Element;
+		typedef bool (*Event)( Element * );
 		typedef void (*ElementRenderFunction)( unsigned int );
 		
 		class Element
@@ -35,8 +35,8 @@ namespace opengl
 				string name;
 				
 				Rectangle rectangle;
-				//bool disabledState;
-				//map<string, vector<Event> > events;
+				bool disabledState;
+				map<string, vector<Event> > events;
 			
 			public:
 				Element( const string& name );
@@ -44,12 +44,13 @@ namespace opengl
 				
 				const string& getName() const;
 				void setUserInterface( UserInterface * ui );
+				Rectangle& getRectangle();
 				
-				//void addEventHandler( const string& event, Event callback );
-				//void removeEventHandler( const string& event );
-				//void trigger( const string& event );				
-				//bool isDisabled() const;
-				//void setDisabledState( bool state );
+				void addEventHandler( const string& event, Event callback );
+				void removeEventHandler( const string& event );
+				void trigger( const string& event );
+				bool isDisabled() const;
+				void setDisabledState( bool state );
 				
 				virtual void prepareRendering( unsigned int ticks ) = 0;
 				static void render( unsigned int ticks );

@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <opengl/OpenGL.h>
 #include <opengl/Color.h>
+#include <opengl/Point2D.h>
 
 #ifdef __PI__
 #define OPENGL_DEFAULT_MAJOR_VERSION	2
@@ -65,6 +66,8 @@ namespace opengl
 			void clear( int flags = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, bool automaticViewport = true );
 			int getWidth();
 			int getHeight();
+			Point2D getCoordinates( int systemX, int systemY );
+			//correct coords
 	};
 }
 

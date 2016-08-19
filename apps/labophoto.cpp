@@ -41,6 +41,7 @@ int main( int argc, char ** argv )
 	ui->setFont( "bitmap", 0.40f );
 	
 	ui::Button * btn = new ui::Button( "btn", "Click me!" );
+	btn->getRectangle().getOrigin().moveTo( 100, 100, 0 );
 	ui->addElement( btn );
 
 	// Set the orthogonal origin at the top-left corner
@@ -56,20 +57,24 @@ int main( int argc, char ** argv )
 	{
 		while( SDL_PollEvent( &lastEvent ) )
 		{
-			switch( lastEvent.type )
+			// Global test temp...
+			if( !ui->dispatchEvent( &lastEvent ) )
 			{
-				case SDL_QUIT:
+				switch( lastEvent.type )
 				{
-					running = false;
-					break;
-				}
-	
-				case SDL_KEYDOWN:
-				{
-					if( lastEvent.key.keysym.sym == SDLK_ESCAPE )
+					case SDL_QUIT:
+					{
 						running = false;
+						break;
+					}
+	
+					case SDL_KEYDOWN:
+					{
+						if( lastEvent.key.keysym.sym == SDLK_ESCAPE )
+							running = false;
 		
-					break;
+						break;
+					}
 				}
 			}
 		}

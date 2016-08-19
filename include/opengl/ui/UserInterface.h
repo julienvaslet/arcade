@@ -14,6 +14,8 @@ namespace opengl
 #include <opengl/ui/Element.h>
 #include <opengl/Font.h>
 
+#include <SDL2/SDL.h>
+
 #include <map>
 using namespace std;
 
@@ -25,8 +27,8 @@ namespace opengl
 		{
 			protected:
 				map<string, Element *> elements;
-				//set<string> mouseoverElements;
-				//set<string> hiddenElements;
+				set<string> mouseoverElements;
+				set<string> hiddenElements;
 				string fontName;
 				float fontSize;
 				
@@ -44,7 +46,7 @@ namespace opengl
 				Element * getElement( const string& name );
 				
 				virtual void render( unsigned int ticks );
-				//bool dispatchEvent( const SDL_Event * event );
+				bool dispatchEvent( const SDL_Event * event );
 		};
 	}
 }

@@ -475,6 +475,11 @@ namespace opengl
 		return this->height;
 	}
 	
+	Point2D Screen::getCoordinates( int systemX, int systemY )
+	{
+		return Point2D( systemX - this->x, systemY - this->y );
+	}
+	
 	#ifdef __NO_X_WINDOW__
 	bool Screen::checkEglError()
 	{
