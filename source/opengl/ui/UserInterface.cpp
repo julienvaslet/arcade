@@ -130,6 +130,7 @@ namespace opengl
 				case SDL_MOUSEBUTTONDOWN:
 				{
 					Point2D point = Screen::get()->getCoordinates( event->button.x, event->button.y );
+					
 					for( map<string, Element *>::iterator it = this->elements.begin() ; it != this->elements.end() ; it++ )
 					{
 						if( this->hiddenElements.count( it->first ) == 0 && !it->second->isDisabled() )

@@ -34,18 +34,21 @@ int main( int argc, char ** argv )
 	
 	new BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
 	
+	// This should be activated by Font or BitmapFont
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 	
 	ui::UserInterface * ui = new ui::UserInterface();
-	ui->setFont( "bitmap", 0.40f );
+	ui->setFont( "bitmap", 0.5f );
 	
 	ui::Button * btn = new ui::Button( "btn", "Click me!" );
-	btn->getRectangle().getOrigin().moveTo( 100, 100, 0 );
+	btn->getRectangle().getOrigin().moveTo( 100.0f, 100.0f, 0 );
 	ui->addElement( btn );
 
+	// This matrix should be instancied into UserInterface, (with UserInterface dimensions, to be translated)
 	// Set the orthogonal origin at the top-left corner
-	Matrix::projection = Matrix::ortho( 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, -1, 1 );
+	//Matrix::projection = Matrix::ortho( 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, -1, 1 );
+	Matrix::projection = Matrix::ortho( 0, Screen::get()->getWidth(), Screen::get()->getHeight(), 0, -1, 1 );
 	Color backgroundColor( "888888" );
 	Screen::get()->setClearColor( backgroundColor );
 		

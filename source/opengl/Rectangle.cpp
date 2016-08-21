@@ -90,7 +90,7 @@ namespace opengl
 		
 		if( point.getX() >= this->origin.getX() && point.getX() <= this->origin.getX()+ this->width )
 		{
-			if( point.getX() >= this->origin.getY() && point.getY() <= this->origin.getY() + this->height )
+			if( point.getY() >= this->origin.getY() && point.getY() <= this->origin.getY() + this->height )
 			{
 				hasCollision = true;
 			}
@@ -108,7 +108,7 @@ namespace opengl
 		{
 			if( point.getX() >= this->origin.getX() && point.getX() <= this->origin.getX()+ this->width )
 			{
-				if( point.getX() >= this->origin.getY() && point.getY() <= this->origin.getY() + this->height )
+				if( point.getY() >= this->origin.getY() && point.getY() <= this->origin.getY() + this->height )
 				{
 					hasCollision = true;
 				}

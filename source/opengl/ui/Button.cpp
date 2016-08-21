@@ -7,7 +7,7 @@ using namespace tools::logger;
 
 #define OPENGL_UI_BUTTON_VERTEX_SHADER				"data/shaders/ui/Button.vs"
 #define OPENGL_UI_BUTTON_FRAGMENT_SHADER			"data/shaders/ui/Button.fs"
-#define OPENGL_UI_BUTTON_HORIZONTAL_PADDING			6
+#define OPENGL_UI_BUTTON_HORIZONTAL_PADDING			8
 #define OPENGL_UI_BUTTON_VERTICAL_PADDING			3
 #define OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT		0.50
 #define OPENGL_UI_BUTTON_HIGHLIGHT_COLOR_PERCENT	0.10
@@ -154,6 +154,10 @@ namespace opengl
 				if( font != NULL )
 					font->getTextSize( size, this->value, this->ui->getFontSize() );
 			}
+			#ifdef DEBUG0
+			else
+				Logger::get() << "[Button#" << this->name << "] /!\\ The button is not linked to an UserInterface, so no font could be used." << Logger::endl;
+			#endif
 			
 			this->rectangle.resize( size.getX() + OPENGL_UI_BUTTON_HORIZONTAL_PADDING * 2, size.getY() + OPENGL_UI_BUTTON_VERTICAL_PADDING * 2 );
 		}
@@ -261,6 +265,10 @@ namespace opengl
 				Button::program->sendColorPointer( "a_Color", Button::colors );
 
 				Button::indices->draw( OpenGL::Triangles );
+				
+				Button::renderingVertices.clear();
+				Button::renderingColors.clear();
+				Button::renderingIndices.clear();
 			}
 		}
 	

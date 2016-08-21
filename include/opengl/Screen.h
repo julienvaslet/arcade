@@ -67,7 +67,6 @@ namespace opengl
 			int getWidth();
 			int getHeight();
 			Point2D getCoordinates( int systemX, int systemY );
-			//correct coords
 	};
 }
 
