@@ -79,7 +79,8 @@ namespace opengl
 			Point2D origin( this->rectangle.getX() + OPENGL_UI_LABEL_HORIZONTAL_PADDING, this->rectangle.getY() + OPENGL_UI_LABEL_VERTICAL_PADDING );
 			this->ui->getFont()->write( origin, this->value, this->color, this->ui->getFontSize() );
 			
-			//Element::renderFunctions.insert( &Label::render );
+			// Nothing to render, all is delegated to Font.
+			// Element::renderFunctions.insert( &Label::render );
 		}
 		
 		void Label::render( unsigned int ticks )

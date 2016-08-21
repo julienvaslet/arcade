@@ -12,6 +12,7 @@
 
 #include <opengl/ui/UserInterface.h>
 #include <opengl/ui/Button.h>
+#include <opengl/ui/PushButton.h>
 
 #include <unistd.h>
 
@@ -47,6 +48,7 @@ int main( int argc, char ** argv )
 		return 1;
 	}
 	
+	// Review this, it should be handled inside of UserInterface
 	// Set the orthogonal origin at the top-left corner
 	Matrix::projection = Matrix::ortho( 0, Screen::get()->getWidth(), Screen::get()->getHeight(), 0, -1, 1 );
 	
@@ -61,8 +63,14 @@ int main( int argc, char ** argv )
 	
 	ui::Button * btn = new ui::Button( "btn", "Click me!" );
 	btn->getRectangle().getOrigin().moveTo( 100.0f, 100.0f, 0 );
+	btn->setButtonColor( "668b8b" );
 	btn->addEventHandler( "mouseup", buttonAction );
 	ui->addElement( btn );
+
+	ui::PushButton * btn2 = new ui::PushButton( "btn2", "Push me!" );
+	btn2->getRectangle().getOrigin().moveTo( 200.0f, 200.0f, 0 );
+	btn2->setButtonColor( "668b8b" );
+	ui->addElement( btn2 );
 
 	Color backgroundColor( "888888" );
 	Screen::get()->setClearColor( backgroundColor );

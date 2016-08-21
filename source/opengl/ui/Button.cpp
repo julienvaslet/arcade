@@ -100,34 +100,6 @@ namespace opengl
 				Button::indices = new ElementArrayBufferObject();
 		}
 		
-		/*const string& Button::getValue() const
-		{
-			return this->value;
-		}
-		
-		void Button::setValue( const string& value, bool resize )
-		{
-			this->value = value;
-			
-			if( resize )
-				this->autoResize();
-		}
-		
-		void Button::setTextColor( const string& color )
-		{
-			this->textColor.setColor( color );
-		}
-		
-		void Button::setTextColor( const Color& color )
-		{
-			this->textColor.setColor( color );
-		}
-		
-		const Color& Button::getTextColor() const
-		{
-			return this->textColor;
-		}*/
-		
 		void Button::setButtonColor( const string& color )
 		{
 			this->buttonColor.setColor( color );
