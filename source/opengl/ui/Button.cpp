@@ -172,22 +172,20 @@ namespace opengl
 			
 			// Button background
 			unsigned int j = Button::renderingVertices.size();
-			Point3D origin = this->rectangle.getOrigin();
-			Point2D anchor = this->rectangle.getAnchor();
 			unsigned int width = this->rectangle.getWidth();
 			unsigned int height = this->rectangle.getHeight();
 			unsigned int border = 1;
 			
-			Button::renderingVertices.push_back( Point3D( origin.getX() - anchor.getX(), origin.getY() - anchor.getY(), origin.getZ() ) );
-			Button::renderingVertices.push_back( Point3D( origin.getX() - anchor.getX() + width, origin.getY() - anchor.getY(), origin.getZ() ) );
-			Button::renderingVertices.push_back( Point3D( origin.getX() - anchor.getX() + width, origin.getY() - anchor.getY(), origin.getZ() ) );
-			Button::renderingVertices.push_back( Point3D( origin.getX() - anchor.getX() + width, origin.getY() - anchor.getY() + height, origin.getZ() ) );
-			Button::renderingVertices.push_back( Point3D( origin.getX() - anchor.getX(), origin.getY() - anchor.getY() + height, origin.getZ() ) );
-			Button::renderingVertices.push_back( Point3D( origin.getX() - anchor.getX(), origin.getY() - anchor.getY() + height, origin.getZ() ) );
-			Button::renderingVertices.push_back( Point3D( origin.getX() - anchor.getX() + border, origin.getY() - anchor.getY() + border, origin.getZ() ) );
-			Button::renderingVertices.push_back( Point3D( origin.getX() - anchor.getX() + width - border, origin.getY() - anchor.getY() + border, origin.getZ() ) );
-			Button::renderingVertices.push_back( Point3D( origin.getX() - anchor.getX() + width - border, origin.getY() - anchor.getY() + height - border, origin.getZ() ) );
-			Button::renderingVertices.push_back( Point3D( origin.getX() - anchor.getX() + border, origin.getY() - anchor.getY() + height - border, origin.getZ() ) );
+			Button::renderingVertices.push_back( Point3D( this->rectangle.getX(), this->rectangle.getY(), this->rectangle.getZ() ) );
+			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + width, this->rectangle.getY(), this->rectangle.getZ() ) );
+			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + width, this->rectangle.getY(), this->rectangle.getZ() ) );
+			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + width, this->rectangle.getY() + height, this->rectangle.getZ() ) );
+			Button::renderingVertices.push_back( Point3D( this->rectangle.getX(), this->rectangle.getY() + height, this->rectangle.getZ() ) );
+			Button::renderingVertices.push_back( Point3D( this->rectangle.getX(), this->rectangle.getY() + height, this->rectangle.getZ() ) );
+			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, this->rectangle.getY() + border, this->rectangle.getZ() ) );
+			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, this->rectangle.getY() + border, this->rectangle.getZ() ) );
+			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, this->rectangle.getY() + height - border, this->rectangle.getZ() ) );
+			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, this->rectangle.getY() + height - border, this->rectangle.getZ() ) );
 			
 			Color topBorder( this->buttonColor.getRed() + ((1.0f - this->buttonColor.getRed()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT), this->buttonColor.getGreen() + ((1.0f - this->buttonColor.getGreen()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT), this->buttonColor.getBlue() + ((1.0f - this->buttonColor.getBlue()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT) );
 			Color bottomBorder( this->buttonColor.getRed() - ((1.0f - this->buttonColor.getRed()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT), this->buttonColor.getGreen() - ((1.0f - this->buttonColor.getGreen()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT), this->buttonColor.getBlue() - ((1.0f - this->buttonColor.getBlue()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT) );
@@ -241,7 +239,7 @@ namespace opengl
 			Button::renderingIndices.push_back( j + 8 );
 			Button::renderingIndices.push_back( j + 9 );
 			
-			Point2D textOrigin( this->rectangle.getOrigin().getX() + OPENGL_UI_BUTTON_HORIZONTAL_PADDING + ( this->pushed ? 1 : 0 ), this->rectangle.getOrigin().getY() + OPENGL_UI_BUTTON_VERTICAL_PADDING + ( this->pushed ? 1 : 0 ) );
+			Point2D textOrigin( this->rectangle.getX() + OPENGL_UI_BUTTON_HORIZONTAL_PADDING + ( this->pushed ? 1 : 0 ), this->rectangle.getY() + OPENGL_UI_BUTTON_VERTICAL_PADDING + ( this->pushed ? 1 : 0 ) );
 			this->ui->getFont()->write( textOrigin, this->value, this->textColor, this->ui->getFontSize() );
 			
 			Element::renderFunctions.insert( &Button::render );

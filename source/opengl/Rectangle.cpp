@@ -28,12 +28,27 @@ namespace opengl
 		return this->anchor;
 	}
 	
-	unsigned int Rectangle::getWidth()
+	float Rectangle::getX() const
+	{
+		return this->origin.getX() - this->anchor.getX();
+	}
+	
+	float Rectangle::getY() const
+	{
+		return this->origin.getY() - this->anchor.getY();
+	}
+	
+	float Rectangle::getZ() const
+	{
+		return this->origin.getZ();
+	}
+	
+	unsigned int Rectangle::getWidth() const
 	{
 		return this->width;
 	}
 	
-	unsigned int Rectangle::getHeight()
+	unsigned int Rectangle::getHeight() const
 	{
 		return this->height;
 	}
@@ -65,18 +80,18 @@ namespace opengl
 		bool hasCollision = false;
 		
 		// X axis collision
-		if( ( this->origin.getX() <= rectangle.origin.getX() && this->origin.getX() + this->width > rectangle.origin.getX() )
-		 || ( rectangle.origin.getX() <= this->origin.getX() && rectangle.origin.getX() + rectangle.width > this->origin.getX() )
-		 || ( this->origin.getX() >= rectangle.origin.getX() && this->origin.getX() + this->width <= rectangle.origin.getX() + rectangle.width ) )
+		if( ( this->getX() <= rectangle.getX() && this->getX() + this->width > rectangle.getX() )
+		 || ( rectangle.getX() <= this->getX() && rectangle.getX() + rectangle.width > this->getX() )
+		 || ( this->getX() >= rectangle.getX() && this->getX() + this->width <= rectangle.getX() + rectangle.width ) )
 		{
 			// Y axis collision
-			if( ( this->origin.getY() <= rectangle.origin.getY() && this->origin.getY() + this->height > rectangle.origin.getY() )
-			 || ( rectangle.origin.getY() <= this->origin.getY() && rectangle.origin.getY() + rectangle.height > this->origin.getY() )
-	 		 || ( this->origin.getY() >= rectangle.origin.getY() && this->origin.getY() + this->height <= rectangle.origin.getY() + rectangle.height ))
+			if( ( this->getY() <= rectangle.getY() && this->getY() + this->height > rectangle.getY() )
+			 || ( rectangle.getY() <= this->getY() && rectangle.getY() + rectangle.height > this->getY() )
+	 		 || ( this->getY() >= rectangle.getY() && this->getY() + this->height <= rectangle.getY() + rectangle.height ))
 			{
 				// Z axis collision
 				// No depth for rectangle, simply compare Z axis
-				if( this->origin.getZ() == rectangle.origin.getZ() )
+				if( this->getZ() == rectangle.getZ() )
 					hasCollision = true;
 			}
 		}
@@ -88,9 +103,9 @@ namespace opengl
 	{
 		bool hasCollision = false;
 		
-		if( point.getX() >= this->origin.getX() && point.getX() <= this->origin.getX()+ this->width )
+		if( point.getX() >= this->getX() && point.getX() <= this->getX()+ this->width )
 		{
-			if( point.getY() >= this->origin.getY() && point.getY() <= this->origin.getY() + this->height )
+			if( point.getY() >= this->getY() && point.getY() <= this->getY() + this->height )
 			{
 				hasCollision = true;
 			}
@@ -104,11 +119,11 @@ namespace opengl
 		bool hasCollision = false;
 		
 		// Rectangle has no depth, simply compare Z axis
-		if( point.getZ() == this->origin.getZ() )
+		if( point.getZ() == this->getZ() )
 		{
-			if( point.getX() >= this->origin.getX() && point.getX() <= this->origin.getX()+ this->width )
+			if( point.getX() >= this->getX() && point.getX() <= this->getX()+ this->width )
 			{
-				if( point.getY() >= this->origin.getY() && point.getY() <= this->origin.getY() + this->height )
+				if( point.getY() >= this->getY() && point.getY() <= this->getY() + this->height )
 				{
 					hasCollision = true;
 				}

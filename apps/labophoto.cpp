@@ -13,6 +13,8 @@
 #include <opengl/ui/UserInterface.h>
 #include <opengl/ui/Button.h>
 
+#include <unistd.h>
+
 #define SCREEN_WIDTH	800
 #define SCREEN_HEIGHT	600
 
@@ -20,6 +22,19 @@ using namespace opengl;
 using namespace game;
 using namespace tools::logger;
 using namespace tools::camera;
+
+bool buttonAction( ui::Element * element )
+{
+	Logger::get() << "Button \"" << element->getName() << "\" action!" << Logger::endl;
+	Logger::get() << "Anchor: (" << element->getRectangle().getAnchor().getX() << "," << element->getRectangle().getAnchor().getY() << ")" << Logger::endl;
+	
+	if( element->getRectangle().getAnchor().getX() == 0.0f )
+		element->getRectangle().getAnchor().moveTo( element->getRectangle().getWidth(), element->getRectangle().getHeight() );
+	else
+		element->getRectangle().getAnchor().moveTo( 0.0f, 0.0f );
+	
+	return true;
+}
 
 int main( int argc, char ** argv )
 {
@@ -32,6 +47,9 @@ int main( int argc, char ** argv )
 		return 1;
 	}
 	
+	// Set the orthogonal origin at the top-left corner
+	Matrix::projection = Matrix::ortho( 0, Screen::get()->getWidth(), Screen::get()->getHeight(), 0, -1, 1 );
+	
 	new BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
 	
 	// This should be activated by Font or BitmapFont
@@ -43,12 +61,9 @@ int main( int argc, char ** argv )
 	
 	ui::Button * btn = new ui::Button( "btn", "Click me!" );
 	btn->getRectangle().getOrigin().moveTo( 100.0f, 100.0f, 0 );
+	btn->addEventHandler( "mouseup", buttonAction );
 	ui->addElement( btn );
 
-	// This matrix should be instancied into UserInterface, (with UserInterface dimensions, to be translated)
-	// Set the orthogonal origin at the top-left corner
-	//Matrix::projection = Matrix::ortho( 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, -1, 1 );
-	Matrix::projection = Matrix::ortho( 0, Screen::get()->getWidth(), Screen::get()->getHeight(), 0, -1, 1 );
 	Color backgroundColor( "888888" );
 	Screen::get()->setClearColor( backgroundColor );
 		
@@ -93,6 +108,8 @@ int main( int argc, char ** argv )
 			
 			lastDrawTicks = ticks;
 		}
+		else
+			usleep( 15 );
 	}
 	
 	delete ui;

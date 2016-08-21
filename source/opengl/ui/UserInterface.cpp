@@ -51,7 +51,7 @@ namespace opengl
 		{
 			return Font::get( this->fontName );
 		}
-
+		
 		void UserInterface::addElement( Element * element, bool hidden )
 		{
 			map<string, Element *>::iterator it = this->elements.find( element->getName() );

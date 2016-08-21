@@ -25,8 +25,11 @@ namespace opengl
 			
 			Point3D& getOrigin();
 			Point2D& getAnchor();
-			unsigned int getWidth();
-			unsigned int getHeight();
+			float getX() const;
+			float getY() const;
+			float getZ() const;
+			unsigned int getWidth() const;
+			unsigned int getHeight() const;
 			void setWidth( unsigned int width );
 			void setHeight( unsigned int height );
 			void resize( unsigned int width, unsigned int height );
