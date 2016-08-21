@@ -28,7 +28,7 @@ namespace opengl
 				string value;
 				Color color;
 				
-				void autoResize();
+				virtual void autoResize();
 			
 			public:
 				Label( const string& name, const string& value );

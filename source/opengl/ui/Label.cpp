@@ -66,15 +66,17 @@ namespace opengl
 				if( font != NULL )
 					font->getTextSize( size, this->value, this->ui->getFontSize() );
 			}
+			#ifdef DEBUG0
+			else
+				Logger::get() << "[Label#" << this->name << "] /!\\ The label is not linked to an UserInterface, so no font could be used." << Logger::endl;
+			#endif
 			
 			this->rectangle.resize( size.getX() + OPENGL_UI_LABEL_HORIZONTAL_PADDING * 2, size.getY() + OPENGL_UI_LABEL_VERTICAL_PADDING * 2 );
 		}
 		
 		void Label::prepareRendering( unsigned int ticks )
 		{
-			//Logger::get() << "[Label] Preparing rendering" << Logger::endl;
-			Point2D origin( this->rectangle.getOrigin().getX() + OPENGL_UI_LABEL_HORIZONTAL_PADDING, this->rectangle.getOrigin().getY() + OPENGL_UI_LABEL_VERTICAL_PADDING );
-			
+			Point2D origin( this->rectangle.getX() + OPENGL_UI_LABEL_HORIZONTAL_PADDING, this->rectangle.getY() + OPENGL_UI_LABEL_VERTICAL_PADDING );
 			this->ui->getFont()->write( origin, this->value, this->color, this->ui->getFontSize() );
 			
 			//Element::renderFunctions.insert( &Label::render );
@@ -82,7 +84,7 @@ namespace opengl
 		
 		void Label::render( unsigned int ticks )
 		{
-			//Logger::get() << "[Label] Rendering." << Logger::endl;
+			// Nothing to do...
 		}
 	}
 }

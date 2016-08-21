@@ -26,7 +26,7 @@ namespace opengl
 		vector<Point3D> Button::renderingVertices;
 		vector<Color> Button::renderingColors;
 		
-		Button::Button( const string& name, const string& value ) : Element(name), value(value), textColor("ffffff"), buttonColor("aaaaaa"), highlighted(false), pushed(false)
+		Button::Button( const string& name, const string& value ) : Label(name,value), buttonColor("aaaaaa"), highlighted(false), pushed(false)
 		{
 			this->initializeRendering();
 			
@@ -100,7 +100,7 @@ namespace opengl
 				Button::indices = new ElementArrayBufferObject();
 		}
 		
-		const string& Button::getValue() const
+		/*const string& Button::getValue() const
 		{
 			return this->value;
 		}
@@ -126,7 +126,7 @@ namespace opengl
 		const Color& Button::getTextColor() const
 		{
 			return this->textColor;
-		}
+		}*/
 		
 		void Button::setButtonColor( const string& color )
 		{
@@ -240,7 +240,7 @@ namespace opengl
 			Button::renderingIndices.push_back( j + 9 );
 			
 			Point2D textOrigin( this->rectangle.getX() + OPENGL_UI_BUTTON_HORIZONTAL_PADDING + ( this->pushed ? 1 : 0 ), this->rectangle.getY() + OPENGL_UI_BUTTON_VERTICAL_PADDING + ( this->pushed ? 1 : 0 ) );
-			this->ui->getFont()->write( textOrigin, this->value, this->textColor, this->ui->getFontSize() );
+			this->ui->getFont()->write( textOrigin, this->value, this->color, this->ui->getFontSize() );
 			
 			Element::renderFunctions.insert( &Button::render );
 		}

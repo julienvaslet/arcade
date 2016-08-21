@@ -1,7 +1,7 @@
 #ifndef __OPENGL_UI_BUTTON_H
 #define __OPENGL_UI_BUTTON_H	1
 
-#include <opengl/ui/Element.h>
+#include <opengl/ui/Label.h>
 
 #include <opengl/Program.h>
 #include <opengl/ArrayBufferObject.h>
@@ -18,7 +18,7 @@ namespace opengl
 {
 	namespace ui
 	{
-		class Button : public Element
+		class Button : public Label
 		{
 			private:
 				static unsigned int instances;
@@ -34,24 +34,15 @@ namespace opengl
 				void initializeRendering();
 				
 			protected:
-				string value;
-				Color textColor;
 				Color buttonColor;
 				bool highlighted;
 				bool pushed;
 				
-				void autoResize();
+				virtual void autoResize();
 			
 			public:
 				Button( const string& name, const string& value );
 				virtual ~Button();
-				
-				const string& getValue() const;
-				void setValue( const string& value, bool resize = false );
-				
-				void setTextColor( const string& color );
-				void setTextColor( const Color& color );
-				const Color& getTextColor() const;
 				
 				void setButtonColor( const string& color );
 				void setButtonColor( const Color& color );
