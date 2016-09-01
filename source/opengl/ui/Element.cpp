@@ -43,6 +43,11 @@ namespace opengl
 			this->ui = ui;
 		}
 		
+		UserInterface * Element::getUserInterface()
+		{
+			return this->ui;
+		}
+		
 		Rectangle& Element::getRectangle()
 		{
 			return this->rectangle;
@@ -56,13 +61,13 @@ namespace opengl
 			Element::renderFunctions.clear();
 		}
 		
-		void Element::addEventHandler( const string& event, Event callback )
+		void Element::addEventHandler( const string& event, EventHandler callback )
 		{
-			map<string, vector<Event> >::iterator it = this->events.find( event );
+			map<string, vector<EventHandler> >::iterator it = this->events.find( event );
 		
 			if( it == this->events.end() )
 			{
-				vector<Event> evts;
+				vector<EventHandler> evts;
 				evts.push_back( callback );
 				this->events[event] = evts;
 			}
@@ -72,28 +77,24 @@ namespace opengl
 		
 		void Element::removeEventHandler( const string& event )
 		{
-			map<string, vector<Event> >::iterator it = this->events.find( event );
+			map<string, vector<EventHandler> >::iterator it = this->events.find( event );
 		
 			if( it != this->events.end() )
 				this->events.erase( it );
 		}
 		
-		void Element::trigger( const string& event )
+		void Element::trigger( const event::Event * event )
 		{
-			map<string, vector<Event> >::iterator it = this->events.find( event );
+			map<string, vector<EventHandler> >::iterator it = this->events.find( event->getName() );
 		
 			if( it != this->events.end() )
-			{
-				#ifdef DEBUG0
-				cout << "[Element#" << this->getName() << "] Triggered event \"" << event << "\"." << endl;
-				#endif
-			
-				for( vector<Event>::reverse_iterator itEvent = it->second.rbegin() ; itEvent != it->second.rend() ; itEvent++ )
+			{			
+				for( vector<EventHandler>::reverse_iterator itEvent = it->second.rbegin() ; itEvent != it->second.rend() ; itEvent++ )
 				{
 					if( *itEvent != NULL )
 					{
 						// This could trigger a bad behavior if events are badly setted.
-						if( (*itEvent)( this ) == false )
+						if( (*itEvent)( this, event ) == false )
 						{
 							#ifdef DEBUG0
 							cout << "[Element#" << this->getName() << "] Event propagation stopped." << endl;
@@ -106,6 +107,13 @@ namespace opengl
 						break;
 				}
 			}
+		}
+		
+		void Element::trigger( const string& action )
+		{
+			event::Event * event = new event::Event( action );
+			this->trigger( event );
+			delete event;
 		}
 	}
 }

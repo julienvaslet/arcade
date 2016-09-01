@@ -19,7 +19,7 @@ namespace opengl
 	{
 		class Label : public Element
 		{
-			private:				
+			private:
 				// this boolean should be thinked again
 				// how to also manage global renderFunctions cache?
 				//static bool useRenderingCache;

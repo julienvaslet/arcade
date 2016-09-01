@@ -1,5 +1,5 @@
-#ifndef __OPENGL_UI_BUTTON_H
-#define __OPENGL_UI_BUTTON_H	1
+#ifndef __OPENGL_UI_LIST_H
+#define __OPENGL_UI_LIST_H	1
 
 #include <opengl/ui/Label.h>
 
@@ -18,7 +18,7 @@ namespace opengl
 {
 	namespace ui
 	{
-		class Button : public Label
+		class List : public Label
 		{
 			private:
 				static unsigned int instances;
@@ -34,29 +34,34 @@ namespace opengl
 				void initializeRendering();
 				
 			protected:
-				Color buttonColor;
-				bool highlighted;
-				bool pushed;
-				
-				virtual void autoResize();
+				Color backgroundColor;
+				int selectedItem;
+				int highlightedItem;
+				vector<string> items;
 			
-			public:
-				Button( const string& name, const string& value );
-				virtual ~Button();
+				virtual void autoResize();
 				
-				void setButtonColor( const string& color );
-				void setButtonColor( const Color& color );
-				const Color& getButtonColor() const;
+			public:
+				List( const string& name );
+				virtual ~List();
+				
+				void setBackgroundColor( const string& color );
+				void setBackgroundColor( const Color& color );
+				const Color& getBackgroundColor() const;
+				
+				void addItem( const string& value, bool selected = false );
+				string getSelectedItem();
+				void clear();
 				
 				virtual void prepareRendering( unsigned int ticks );
 				static void render( unsigned int ticks );
-			
-				static bool eventMouseDown( Element * element, const event::Event * event );
-				static bool eventMouseUp( Element * element, const event::Event * event );
-				static bool eventMouseEnter( Element * element, const event::Event * event );
-				static bool eventMouseLeave( Element * element, const event::Event * event );
+				
+				static bool eventMousemove( Element * element, const event::Event * event );
+				static bool eventMouseleave( Element * element, const event::Event * event );
+				static bool eventMouseup( Element * element, const event::Event * event );
 		};
 	}
 }
 
 #endif
+

@@ -243,28 +243,40 @@ namespace opengl
 		}
 	
 		// Events
-		bool Button::eventMouseDown( Element * element )
+		bool Button::eventMouseDown( Element * element, const event::Event * event )
 		{
-			Button * button = reinterpret_cast<Button *>( element );
-			button->pushed = true;
+			const event::MouseEvent * e = reinterpret_cast<const event::MouseEvent *>( event );
+			
+			if( e->getButton() == event::MouseButton::Left )
+			{
+				Button * button = reinterpret_cast<Button *>( element );
+				button->pushed = true;
+			}
+			
 			return true;
 		}
 		
-		bool Button::eventMouseUp( Element * element )
+		bool Button::eventMouseUp( Element * element, const event::Event * event )
 		{
-			Button * button = reinterpret_cast<Button *>( element );
-			button->pushed = false;
+			const event::MouseEvent * e = reinterpret_cast<const event::MouseEvent *>( event );
+			
+			if( e->getButton() == event::MouseButton::Left )
+			{
+				Button * button = reinterpret_cast<Button *>( element );
+				button->pushed = false;
+			}
+			
 			return true;
 		}
 		
-		bool Button::eventMouseEnter( Element * element )
+		bool Button::eventMouseEnter( Element * element, const event::Event * event )
 		{
 			Button * button = reinterpret_cast<Button *>( element );
 			button->highlighted = true;
 			return true;
 		}
 		
-		bool Button::eventMouseLeave( Element * element )
+		bool Button::eventMouseLeave( Element * element, const event::Event * event )
 		{
 			Button * button = reinterpret_cast<Button *>( element );
 			button->highlighted = false;

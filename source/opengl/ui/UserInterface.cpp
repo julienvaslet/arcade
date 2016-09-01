@@ -1,5 +1,6 @@
 #include <opengl/ui/UserInterface.h>
 #include <opengl/Screen.h>
+#include <opengl/ui/event/Event.h>
 
 #ifdef DEBUG0
 #include <tools/logger/Logger.h>
@@ -68,27 +69,75 @@ namespace opengl
 			this->elements[element->getName()] = element;
 			element->setUserInterface( this );
 			
+			if( hidden )
+				this->hideElement( element->getName() );
+			
 			#ifdef DEBUG0
 			Logger::get() << "[UserInterface] Element#" << element->getName() << " has been added." << Logger::endl;
 			#endif
+		}
+		
+		bool UserInterface::hasElement( const string& name )
+		{
+			map<string, Element *>::iterator it = this->elements.find( name );
+			return ( it != this->elements.end() );
 		}
 		
 		Element * UserInterface::getElement( const string& name )
 		{
 			Element * element = NULL;
 			
-			map<string, Element *>::iterator it = this->elements.find( element->getName() );
+			map<string, Element *>::iterator it = this->elements.find( name );
 			
 			if( it != this->elements.end() )
 				element = it->second;
-				
+			
 			return element;
+		}
+		
+		void UserInterface::removeElement( const string& name, bool deleteElement )
+		{
+			map<string, Element *>::iterator it = this->elements.find( name );
+			
+			if( it != this->elements.end() )
+			{
+				if( it->second->getUserInterface() == this )
+				{
+					if( deleteElement )
+						delete it->second;
+						
+					this->elements.erase( it );
+					
+					#ifdef DEBUG0
+					Logger::get() << "[UserInterface] Element#" << name << " has been removed." << Logger::endl;
+					#endif
+				}
+				#ifdef DEBUG0
+				else
+				{
+					Logger::get() << "[UserInterface] /!\\ Element \"" << name << "\" asked to be removed, but it does not belong to current UserInterace." << Logger::endl;
+				}
+				#endif
+			}
+		}
+
+		void UserInterface::showElement( const string& name )
+		{
+			this->hiddenElements.erase( name );
+		}
+		
+		void UserInterface::hideElement( const string& name )
+		{
+			this->hiddenElements.insert( name );
 		}
 		
 		void UserInterface::render( unsigned int ticks )
 		{
 			for( map<string, Element *>::iterator it = this->elements.begin() ; it != this->elements.end() ; it++ )
-				it->second->prepareRendering( ticks );
+			{
+				if( this->hiddenElements.count( it->first ) == 0 )
+					it->second->prepareRendering( ticks );
+			}
 				
 			Element::render( ticks );
 			
@@ -99,72 +148,67 @@ namespace opengl
 		{
 			bool eventHandled = false;
 			
-			switch( event->type )
+			event::Event * e = event::Event::create( event );
+			
+			if( e != NULL )
 			{
-				case SDL_MOUSEMOTION:
+				switch( e->getType() )
 				{
-					Point2D point = Screen::get()->getCoordinates( event->motion.x, event->motion.y );
-					for( map<string, Element *>::iterator it = this->elements.begin() ; it != this->elements.end() ; it++ )
+					case event::EventType::Mouse:
 					{
-						if( this->hiddenElements.count( it->first ) == 0 && !it->second->isDisabled() )
+						event::MouseEvent * mEvent = static_cast<event::MouseEvent *>( e );
+						
+						for( map<string, Element *>::iterator it = this->elements.begin() ; it != this->elements.end() ; it++ )
 						{
-							if( it->second->getRectangle().isInCollision( point ) )
+							if( this->hiddenElements.count( it->first ) == 0 && !it->second->isDisabled() )
 							{
-								if( this->mouseoverElements.count( it->first ) == 0 )
+								if( it->second->getRectangle().isInCollision( mEvent->getOrigin() ) )
 								{
-									this->mouseoverElements.insert( it->first );
-									it->second->trigger( "mouseenter" );
+									it->second->trigger( mEvent );
+									eventHandled = true;
+									
+									if( this->mouseoverElements.count( it->first ) == 0 )
+									{
+										this->mouseoverElements.insert( it->first );
+										
+										event::MouseEvent * enterEvent = new event::MouseEvent( "mouseenter", mEvent );
+										it->second->trigger( enterEvent );
+										delete enterEvent;
+									}
+								}
+								else if( this->mouseoverElements.count( it->first ) > 0 )
+								{
+									this->mouseoverElements.erase( it->first );
+									
+									event::MouseEvent * leaveEvent = new event::MouseEvent( "mouseleave", mEvent );
+									it->second->trigger( leaveEvent );
+									delete leaveEvent;
 								}
 							}
-							else if( this->mouseoverElements.count( it->first ) > 0 )
-							{
-								this->mouseoverElements.erase( it->first );
-								it->second->trigger( "mouseleave" );
-							}
 						}
+						
+						break;
 					}
-
-					break;
-				}
-			
-				case SDL_MOUSEBUTTONDOWN:
-				{
-					Point2D point = Screen::get()->getCoordinates( event->button.x, event->button.y );
 					
-					for( map<string, Element *>::iterator it = this->elements.begin() ; it != this->elements.end() ; it++ )
+					case event::EventType::Window:
 					{
-						if( this->hiddenElements.count( it->first ) == 0 && !it->second->isDisabled() )
-						{
-							if( it->second->getRectangle().isInCollision( point ) )
-							{
-								it->second->trigger( "mousedown" );
-								eventHandled = true;
-							}
-						}
+						break;
 					}
-				
-					break;
-				}
-			
-				case SDL_MOUSEBUTTONUP:
-				{
-					Point2D point = Screen::get()->getCoordinates( event->button.x, event->button.y );
-					for( map<string, Element *>::iterator it = this->elements.begin() ; it != this->elements.end() ; it++ )
+					
+					case event::EventType::Keyboard:
 					{
-						if( this->hiddenElements.count( it->first ) == 0 && !it->second->isDisabled() )
-						{
-							if( it->second->getRectangle().isInCollision( point ) )
-							{
-								it->second->trigger( "mouseup" );
-								eventHandled = true;
-							}
-						}
+						break;
 					}
-				
-					break;
+					
+					case event::EventType::Action:
+					{
+						break;
+					}
 				}
+				
+				delete e;
 			}
-		
+			
 			return eventHandled;
 		}
 	}

@@ -143,6 +143,7 @@ namespace opengl
 			0,
 			width,
 			height,
+			//SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_MAXIMIZED
 			SDL_WINDOW_BORDERLESS | SDL_WINDOW_OPENGL
 		);
 		

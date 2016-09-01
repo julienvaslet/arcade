@@ -22,8 +22,8 @@ namespace opengl
 				void setPushState( bool state );
 				bool getPushState() const;
 			
-				static bool eventMouseUp( Element * element );
-				static bool eventMouseLeave( Element * element );
+				static bool eventMouseUp( Element * element, const event::Event * event );
+				static bool eventMouseLeave( Element * element, const event::Event * event );
 		};
 	}
 }

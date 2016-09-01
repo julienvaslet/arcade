@@ -12,6 +12,7 @@ namespace opengl
 }
 
 #include <opengl/ui/UserInterface.h>
+#include <opengl/ui/event/Event.h>
 
 #include <string>
 #include <map>
@@ -23,7 +24,7 @@ namespace opengl
 	namespace ui
 	{
 		class Element;
-		typedef bool (*Event)( Element * );
+		typedef bool (*EventHandler)( Element *, const event::Event * );
 		typedef void (*ElementRenderFunction)( unsigned int );
 		
 		class Element
@@ -36,19 +37,22 @@ namespace opengl
 				
 				Rectangle rectangle;
 				bool disabledState;
-				map<string, vector<Event> > events;
+				map<string, vector<EventHandler> > events;
 			
 			public:
 				Element( const string& name );
 				virtual ~Element();
 				
 				const string& getName() const;
-				void setUserInterface( UserInterface * ui );
+				virtual void setUserInterface( UserInterface * ui );
+				UserInterface * getUserInterface();
 				Rectangle& getRectangle();
 				
-				void addEventHandler( const string& event, Event callback );
+				void addEventHandler( const string& event, EventHandler callback );
 				void removeEventHandler( const string& event );
-				void trigger( const string& event );
+				void trigger( const event::Event * event );
+				void trigger( const string& action );
+				
 				bool isDisabled() const;
 				void setDisabledState( bool state );
 				

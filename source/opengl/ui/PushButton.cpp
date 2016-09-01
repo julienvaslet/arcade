@@ -35,6 +35,8 @@ namespace opengl
 		{
 			this->pushState = state;
 			this->pushed = this->pushState;
+			
+			this->trigger( "pushstatechanged" );
 		}
 	
 		bool PushButton::getPushState() const
@@ -42,15 +44,23 @@ namespace opengl
 			return this->pushState;
 		}
 	
-		bool PushButton::eventMouseUp( Element * element )
+		bool PushButton::eventMouseUp( Element * element, const event::Event * event )
 		{
-			PushButton * button = reinterpret_cast<PushButton *>( element );
-			button->pushState = !button->pushState;
-			button->pushed = button->pushState;
+			const event::MouseEvent * e = reinterpret_cast<const event::MouseEvent *>( event );
+			
+			if( e->getButton() == event::MouseButton::Left )
+			{
+				PushButton * button = reinterpret_cast<PushButton *>( element );
+				button->pushState = !button->pushState;
+				button->pushed = button->pushState;
+				
+				button->trigger( "pushstatechanged" );
+			}
+			
 			return true;
 		}
 	
-		bool PushButton::eventMouseLeave( Element * element )
+		bool PushButton::eventMouseLeave( Element * element, const event::Event * event )
 		{
 			PushButton * button = reinterpret_cast<PushButton *>( element );
 			button->highlighted = false;
