@@ -34,7 +34,7 @@ namespace opengl
 				void initializeRendering();
 				
 			protected:
-				Color buttonColor;
+				Color backgroundColor;
 				bool highlighted;
 				bool pushed;
 				
@@ -44,9 +44,9 @@ namespace opengl
 				Button( const string& name, const string& value );
 				virtual ~Button();
 				
-				void setButtonColor( const string& color );
-				void setButtonColor( const Color& color );
-				const Color& getButtonColor() const;
+				void setBackgroundColor( const string& color );
+				void setBackgroundColor( const Color& color );
+				const Color& getBackgroundColor() const;
 				
 				virtual void prepareRendering( unsigned int ticks );
 				static void render( unsigned int ticks );

@@ -57,21 +57,24 @@ namespace opengl
 		
 		void Label::autoResize()
 		{
-			Point2D size;
-			
-			if( this->ui != NULL )
+			if( this->autoSized || this->getWidth() == 0 || this->getHeight() == 0 )
 			{
-				Font * font = this->ui->getFont();
-				
-				if( font != NULL )
-					font->getTextSize( size, this->value, this->ui->getFontSize() );
-			}
-			#ifdef DEBUG0
-			else
-				Logger::get() << "[Label#" << this->name << "] /!\\ The label is not linked to an UserInterface, so no font could be used." << Logger::endl;
-			#endif
+				Point2D size;
 			
-			this->rectangle.resize( size.getX() + OPENGL_UI_LABEL_HORIZONTAL_PADDING * 2, size.getY() + OPENGL_UI_LABEL_VERTICAL_PADDING * 2 );
+				if( this->ui != NULL )
+				{
+					Font * font = this->ui->getFont();
+				
+					if( font != NULL )
+						font->getTextSize( size, this->value, this->ui->getFontSize() );
+				}
+				#ifdef DEBUG0
+				else
+					Logger::get() << "[Label#" << this->name << "] /!\\ The label is not linked to an UserInterface, so no font could be used." << Logger::endl;
+				#endif
+			
+				this->rectangle.resize( size.getX() + OPENGL_UI_LABEL_HORIZONTAL_PADDING * 2, size.getY() + OPENGL_UI_LABEL_VERTICAL_PADDING * 2 );
+			}
 		}
 		
 		void Label::prepareRendering( unsigned int ticks )

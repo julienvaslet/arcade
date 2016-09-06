@@ -121,9 +121,9 @@ namespace opengl
 				this->value = this->title;
 		
 			// Update list positions & colors
-			this->list->setBackgroundColor( this->buttonColor );
+			this->list->setBackgroundColor( this->backgroundColor );
 			this->list->setColor( this->color );
-			this->list->getRectangle().getOrigin().moveTo( this->rectangle.getOrigin().getX(), this->rectangle.getOrigin().getY() + this->rectangle.getHeight(), this->rectangle.getOrigin().getZ() );
+			this->list->moveTo( this->rectangle.getOrigin().getX(), this->rectangle.getOrigin().getY() + this->rectangle.getHeight(), this->rectangle.getOrigin().getZ() );
 		}
 		
 		void DropDownList::setUserInterface( UserInterface * ui )
@@ -135,28 +135,31 @@ namespace opengl
 		
 		void DropDownList::autoResize()
 		{
-			Point2D size;
-			
-			if( this->ui != NULL )
+			if( this->autoSized || this->getWidth() == 0 || this->getHeight() == 0 )
 			{
-				Font * font = this->ui->getFont();
-				
-				if( font != NULL )
-				{
-					string longestValue = this->value;
-					
-					if( this->value.length() == 0 )
-						longestValue = this->title;
-					
-					font->getTextSize( size, longestValue, this->ui->getFontSize() );
-				}
-			}
-			#ifdef DEBUG0
-			else
-				Logger::get() << "[DropDownList#" << this->name << "] /!\\ The drop-down list is not linked to an UserInterface, so no font could be used." << Logger::endl;
-			#endif
+				Point2D size;
 			
-			this->rectangle.resize( size.getX() + OPENGL_UI_DROPDOWNLIST_HORIZONTAL_PADDING * 3 + OPENGL_UI_DROPDOWNLIST_TRIANGLE_WIDTH, size.getY() + OPENGL_UI_DROPDOWNLIST_VERTICAL_PADDING * 2 );
+				if( this->ui != NULL )
+				{
+					Font * font = this->ui->getFont();
+				
+					if( font != NULL )
+					{
+						string longestValue = this->value;
+					
+						if( this->value.length() == 0 )
+							longestValue = this->title;
+					
+						font->getTextSize( size, longestValue, this->ui->getFontSize() );
+					}
+				}
+				#ifdef DEBUG0
+				else
+					Logger::get() << "[DropDownList#" << this->name << "] /!\\ The drop-down list is not linked to an UserInterface, so no font could be used." << Logger::endl;
+				#endif
+			
+				this->rectangle.resize( size.getX() + OPENGL_UI_DROPDOWNLIST_HORIZONTAL_PADDING * 3 + OPENGL_UI_DROPDOWNLIST_TRIANGLE_WIDTH, size.getY() + OPENGL_UI_DROPDOWNLIST_VERTICAL_PADDING * 2 );
+			}
 		}
 		
 		void DropDownList::addItem( const string& item, bool selected )

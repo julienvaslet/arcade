@@ -26,7 +26,7 @@ namespace opengl
 		vector<Point3D> Button::renderingVertices;
 		vector<Color> Button::renderingColors;
 		
-		Button::Button( const string& name, const string& value ) : Label(name,value), buttonColor("aaaaaa"), highlighted(false), pushed(false)
+		Button::Button( const string& name, const string& value ) : Label(name,value), backgroundColor("aaaaaa"), highlighted(false), pushed(false)
 		{
 			this->initializeRendering();
 			
@@ -100,38 +100,41 @@ namespace opengl
 				Button::indices = new ElementArrayBufferObject();
 		}
 		
-		void Button::setButtonColor( const string& color )
+		void Button::setBackgroundColor( const string& color )
 		{
-			this->buttonColor.setColor( color );
+			this->backgroundColor.setColor( color );
 		}
 		
-		void Button::setButtonColor( const Color& color )
+		void Button::setBackgroundColor( const Color& color )
 		{
-			this->buttonColor.setColor( color );
+			this->backgroundColor.setColor( color );
 		}
 		
-		const Color& Button::getButtonColor() const
+		const Color& Button::getBackgroundColor() const
 		{
-			return this->buttonColor;
+			return this->backgroundColor;
 		}
 		
 		void Button::autoResize()
 		{
-			Point2D size;
-			
-			if( this->ui != NULL )
+			if( this->autoSized || this->getWidth() == 0 || this->getHeight() == 0 )
 			{
-				Font * font = this->ui->getFont();
-				
-				if( font != NULL )
-					font->getTextSize( size, this->value, this->ui->getFontSize() );
-			}
-			#ifdef DEBUG0
-			else
-				Logger::get() << "[Button#" << this->name << "] /!\\ The button is not linked to an UserInterface, so no font could be used." << Logger::endl;
-			#endif
+				Point2D size;
 			
-			this->rectangle.resize( size.getX() + OPENGL_UI_BUTTON_HORIZONTAL_PADDING * 2, size.getY() + OPENGL_UI_BUTTON_VERTICAL_PADDING * 2 );
+				if( this->ui != NULL )
+				{
+					Font * font = this->ui->getFont();
+				
+					if( font != NULL )
+						font->getTextSize( size, this->value, this->ui->getFontSize() );
+				}
+				#ifdef DEBUG0
+				else
+					Logger::get() << "[Button#" << this->name << "] /!\\ The button is not linked to an UserInterface, so no font could be used." << Logger::endl;
+				#endif
+			
+				this->rectangle.resize( size.getX() + OPENGL_UI_BUTTON_HORIZONTAL_PADDING * 2, size.getY() + OPENGL_UI_BUTTON_VERTICAL_PADDING * 2 );
+			}
 		}
 		
 		// Rendering functions
@@ -159,8 +162,8 @@ namespace opengl
 			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, this->rectangle.getY() + height - border, this->rectangle.getZ() ) );
 			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, this->rectangle.getY() + height - border, this->rectangle.getZ() ) );
 			
-			Color topBorder( this->buttonColor.getRed() + ((1.0f - this->buttonColor.getRed()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT), this->buttonColor.getGreen() + ((1.0f - this->buttonColor.getGreen()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT), this->buttonColor.getBlue() + ((1.0f - this->buttonColor.getBlue()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT) );
-			Color bottomBorder( this->buttonColor.getRed() - ((1.0f - this->buttonColor.getRed()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT), this->buttonColor.getGreen() - ((1.0f - this->buttonColor.getGreen()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT), this->buttonColor.getBlue() - ((1.0f - this->buttonColor.getBlue()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT) );
+			Color topBorder( this->backgroundColor.getRed() + ((1.0f - this->backgroundColor.getRed()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT), this->backgroundColor.getGreen() + ((1.0f - this->backgroundColor.getGreen()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT), this->backgroundColor.getBlue() + ((1.0f - this->backgroundColor.getBlue()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT) );
+			Color bottomBorder( this->backgroundColor.getRed() - ((1.0f - this->backgroundColor.getRed()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT), this->backgroundColor.getGreen() - ((1.0f - this->backgroundColor.getGreen()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT), this->backgroundColor.getBlue() - ((1.0f - this->backgroundColor.getBlue()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT) );
 
 			if( this->pushed )
 			{
@@ -183,7 +186,7 @@ namespace opengl
 			
 			if( this->highlighted )
 			{
-				Color highlight( this->buttonColor.getRed() + ((1.0f - this->buttonColor.getRed()) * OPENGL_UI_BUTTON_HIGHLIGHT_COLOR_PERCENT), this->buttonColor.getGreen() + ((1.0f - this->buttonColor.getGreen()) * OPENGL_UI_BUTTON_HIGHLIGHT_COLOR_PERCENT), this->buttonColor.getBlue() + ((1.0f - this->buttonColor.getBlue()) * OPENGL_UI_BUTTON_HIGHLIGHT_COLOR_PERCENT) ); 
+				Color highlight( this->backgroundColor.getRed() + ((1.0f - this->backgroundColor.getRed()) * OPENGL_UI_BUTTON_HIGHLIGHT_COLOR_PERCENT), this->backgroundColor.getGreen() + ((1.0f - this->backgroundColor.getGreen()) * OPENGL_UI_BUTTON_HIGHLIGHT_COLOR_PERCENT), this->backgroundColor.getBlue() + ((1.0f - this->backgroundColor.getBlue()) * OPENGL_UI_BUTTON_HIGHLIGHT_COLOR_PERCENT) ); 
 				Button::renderingColors.push_back( highlight );
 				Button::renderingColors.push_back( highlight );
 				Button::renderingColors.push_back( highlight );
@@ -191,10 +194,10 @@ namespace opengl
 			}
 			else
 			{
-				Button::renderingColors.push_back( this->buttonColor );
-				Button::renderingColors.push_back( this->buttonColor );
-				Button::renderingColors.push_back( this->buttonColor );
-				Button::renderingColors.push_back( this->buttonColor );
+				Button::renderingColors.push_back( this->backgroundColor );
+				Button::renderingColors.push_back( this->backgroundColor );
+				Button::renderingColors.push_back( this->backgroundColor );
+				Button::renderingColors.push_back( this->backgroundColor );
 			}
 			
 			Button::renderingIndices.push_back( j );

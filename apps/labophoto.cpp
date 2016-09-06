@@ -31,10 +31,10 @@ bool buttonAction( ui::Element * element, const ui::event::Event * event )
 	
 	if( e->getButton() == ui::event::MouseButton::Left )
 	{
-		if( element->getRectangle().getAnchor().getX() == 0.0f )
-			element->getRectangle().getAnchor().moveTo( element->getRectangle().getWidth(), element->getRectangle().getHeight() );
+		if( element->getX() == 0.0f )
+			element->moveTo( element->getWidth(), element->getHeight() );
 		else
-			element->getRectangle().getAnchor().moveTo( 0.0f, 0.0f );
+			element->moveTo( 0.0f, 0.0f );
 	}
 	
 	return true;
@@ -65,20 +65,20 @@ int main( int argc, char ** argv )
 	ui->setFont( "bitmap", 0.5f );
 	
 	ui::Button * btn = new ui::Button( "btn", "Click me!" );
-	btn->getRectangle().getOrigin().moveTo( 100.0f, 100.0f, 0.0f );
-	btn->setButtonColor( "668b8b" );
+	btn->moveTo( 100.0f, 100.0f );
+	btn->setBackgroundColor( "668b8b" );
 	btn->addEventHandler( "mouseup", buttonAction );
 	ui->addElement( btn );
 
 	ui::PushButton * btn2 = new ui::PushButton( "btn2", "Push me!" );
-	btn2->getRectangle().getOrigin().moveTo( 200.0f, 200.0f, 0.0f );
-	btn2->setButtonColor( "668b8b" );
+	btn2->moveTo( 200.0f, 200.0f );
+	btn2->setBackgroundColor( "668b8b" );
 	ui->addElement( btn2 );
 	
 	ui::DropDownList * list = new ui::DropDownList( "list", "Items" );
-	list->getRectangle().getOrigin().moveTo( 35.0f, 170.0f, 0.0f );
-	//list->setBackgroundColor( "668b8b" );
-	list->setButtonColor( "668b8b" );
+	list->moveTo( 35.0f, 170.0f );
+	list->resize( 150, 20 );
+	list->setBackgroundColor( "668b8b" );
 	list->addItem( "Item 1" );
 	list->addItem( "Item 2", true );
 	list->addItem( "Item 3" );
@@ -103,6 +103,16 @@ int main( int argc, char ** argv )
 					case SDL_QUIT:
 					{
 						running = false;
+						break;
+					}
+					
+					case SDL_WINDOWEVENT:
+					{
+						if( lastEvent.window.event == SDL_WINDOWEVENT_SIZE_CHANGED )
+						{
+							Logger::get() << "Window resized to : " << lastEvent.window.data1 << "x" << lastEvent.window.data2 << Logger::endl;
+						}
+						
 						break;
 					}
 	

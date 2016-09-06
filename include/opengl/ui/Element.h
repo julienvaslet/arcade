@@ -37,7 +37,10 @@ namespace opengl
 				
 				Rectangle rectangle;
 				bool disabledState;
+				bool autoSized;
 				map<string, vector<EventHandler> > events;
+				
+				virtual void autoResize() = 0;
 			
 			public:
 				Element( const string& name );
@@ -46,7 +49,19 @@ namespace opengl
 				const string& getName() const;
 				virtual void setUserInterface( UserInterface * ui );
 				UserInterface * getUserInterface();
-				Rectangle& getRectangle();
+				
+				bool isAutoSized() const;
+				void setAutoSized( bool state );
+				
+				const Rectangle& getRectangle() const;
+				void resize( unsigned int width, unsigned int height );
+				unsigned int getWidth() const;
+				unsigned int getHeight() const;
+				
+				void moveTo( float x, float y, float z = 0.0f );
+				float getX() const;
+				float getY() const;
+				float getZ() const;
 				
 				void addEventHandler( const string& event, EventHandler callback );
 				void removeEventHandler( const string& event );

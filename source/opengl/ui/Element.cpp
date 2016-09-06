@@ -15,7 +15,7 @@ namespace opengl
 	{
 		set<ElementRenderFunction> Element::renderFunctions;
 		
-		Element::Element( const string& name ) : ui(NULL), name(name), disabledState(false)
+		Element::Element( const string& name ) : ui(NULL), name(name), disabledState(false), autoSized(true)
 		{
 		}
 		
@@ -48,9 +48,55 @@ namespace opengl
 			return this->ui;
 		}
 		
-		Rectangle& Element::getRectangle()
+		bool Element::isAutoSized() const
+		{
+			return this->autoSized;
+		}
+		
+		void Element::setAutoSized( bool state )
+		{
+			this->autoSized = state;
+		}
+		
+		const Rectangle& Element::getRectangle() const
 		{
 			return this->rectangle;
+		}
+		
+		void Element::resize( unsigned int width, unsigned int height )
+		{
+			this->rectangle.resize( width, height );
+			this->autoSized = false;
+		}
+		
+		unsigned int Element::getWidth() const
+		{
+			return this->rectangle.getWidth();
+		}
+		
+		unsigned int Element::getHeight() const
+		{
+			return this->rectangle.getHeight();
+		}
+		
+		void Element::moveTo( float x, float y, float z )
+		{
+			this->rectangle.getOrigin().moveTo( x, y, z );
+		}
+		
+		float Element::getX() const
+		{
+			return this->rectangle.getX();
+		}
+		
+		float Element::getY() const
+		{
+			return this->rectangle.getY();
+		}
+		
+		float Element::getZ() const
+		{
+			return this->rectangle.getZ();
 		}
 		
 		void Element::render( unsigned int ticks )
