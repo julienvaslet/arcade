@@ -299,8 +299,9 @@ namespace opengl
 				List::colors->setData( List::renderingColors );
 				List::indices->setData( List::renderingIndices );
 			
-				List::program->sendUniform( "projection_matrix", Matrix::projection, false );
-				List::program->sendUniform( "modelview_matrix", Matrix::modelview, false );
+			
+				List::program->sendUniform( "projection_matrix", UserInterface::get()->getProjectionMatrix(), false );
+				List::program->sendUniform( "modelview_matrix", UserInterface::get()->getModelviewMatrix(), false );
 				List::program->sendVertexPointer( "a_Vertex", List::vertices );
 				List::program->sendColorPointer( "a_Color", List::colors );
 

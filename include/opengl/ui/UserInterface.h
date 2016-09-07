@@ -27,15 +27,29 @@ namespace opengl
 		class UserInterface
 		{
 			protected:
+				static UserInterface * userInterface;
+			
 				map<string, Element *> elements;
 				set<string> mouseoverElements;
 				set<string> hiddenElements;
 				string fontName;
 				float fontSize;
 				
+				unsigned int width;
+				unsigned int height;
+				Matrix projection;
+				Matrix modelview;
+				
+				UserInterface( unsigned int width, unsigned int height );
+				
 			public:
-				UserInterface();
+				static bool create( unsigned int width = 0, unsigned int height = 0 );
+				static UserInterface * get();
 				virtual ~UserInterface();
+				
+				void resize( unsigned int width, unsigned int height );
+				const Matrix& getProjectionMatrix();
+				const Matrix& getModelviewMatrix();
 				
 				void setFont( const string& font, float fontSize = 0.0f );
 				Font * getFont();

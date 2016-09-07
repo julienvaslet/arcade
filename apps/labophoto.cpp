@@ -45,11 +45,13 @@ int main( int argc, char ** argv )
 	// Initialize standard-output logger
 	new Stdout( "stdout", true );
 	
-	if( !Screen::initialize( SCREEN_WIDTH, SCREEN_HEIGHT ) )
+	if( !Screen::initializeWindowed() )
 	{
 		Logger::get() << "Unable to initialize screen. Exiting.\n";
 		return 1;
 	}
+	
+	Screen::get()->setTitle( "Labophoto" );
 	
 	// Review this, it should be handled inside of UserInterface
 	// Set the orthogonal origin at the top-left corner
@@ -61,7 +63,7 @@ int main( int argc, char ** argv )
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 	
-	ui::UserInterface * ui = new ui::UserInterface();
+	ui::UserInterface * ui = ui::UserInterface::get();
 	ui->setFont( "bitmap", 0.5f );
 	
 	ui::Button * btn = new ui::Button( "btn", "Click me!" );
@@ -110,7 +112,7 @@ int main( int argc, char ** argv )
 					{
 						if( lastEvent.window.event == SDL_WINDOWEVENT_SIZE_CHANGED )
 						{
-							Logger::get() << "Window resized to : " << lastEvent.window.data1 << "x" << lastEvent.window.data2 << Logger::endl;
+							Screen::get()->resize( lastEvent.window.data1, lastEvent.window.data2 );
 						}
 						
 						break;

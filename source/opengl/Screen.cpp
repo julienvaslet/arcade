@@ -112,7 +112,17 @@ namespace opengl
 		#endif
 	}
 	
-	bool Screen::createWindow( int width, int height )
+	void Screen::initializeSystem()
+	{
+		#ifdef __NO_X_WINDOW__
+		bcm_host_init();
+		SDL_Init( SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO );
+		#else
+		SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO );
+		#endif
+	}
+	
+	bool Screen::createWindow( int width, int height, bool windowed )
 	{
 		bool success = true;
 		
@@ -143,8 +153,7 @@ namespace opengl
 			0,
 			width,
 			height,
-			//SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_MAXIMIZED
-			SDL_WINDOW_BORDERLESS | SDL_WINDOW_OPENGL
+			windowed ? SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_MAXIMIZED : SDL_WINDOW_BORDERLESS | SDL_WINDOW_OPENGL
 		);
 		
 		if( this->window == NULL )
@@ -320,12 +329,7 @@ namespace opengl
 	{
 		bool success = true;
 		
-		#ifdef __NO_X_WINDOW__
-		bcm_host_init();
-		SDL_Init( SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO );
-		#else
-		SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO );
-		#endif
+		Screen::initializeSystem();
 		
 		int overscanTop = 0;
 		int overscanBottom = 0;
@@ -427,6 +431,71 @@ namespace opengl
 	
 		return success;
 	}
+	
+	bool Screen::initializeWindowed( int width, int height, bool maximized, int majorVersion, int minorVersion )
+	{
+		bool success = true;
+		
+		Screen::initializeSystem();
+		
+		int displayWidth = 0;
+		int displayHeight = 0;
+		Screen::getDisplaySize( &displayWidth, &displayHeight );
+		
+		if( displayWidth == 0 || displayHeight == 0 )
+		{
+			displayWidth = width;
+			displayHeight = height;
+		}
+		
+		Screen * screen = new Screen();
+		
+		if( width == 0 || height == 0 )
+		{
+			width = displayWidth;
+			height = displayHeight;
+			
+			#ifdef DEBUG0
+			Logger::get() << "[Screen] Auto-sized window: " << width << "x" << height << "." << Logger::endl;
+			#endif
+		}
+		
+		screen->width = width;
+		screen->height = height;
+
+		if( !screen->createWindow( displayWidth, displayHeight, true ) )
+		{
+			success = false;
+			delete screen;
+		}
+		else
+		{
+			#ifdef DEBUG0
+			Logger::get() << "[Screen] Window created." << Logger::endl;
+			#endif
+	
+			if( !screen->createContext( majorVersion, minorVersion ) )
+			{
+				success = false;
+				delete screen;
+			}
+			else
+			{
+				#ifdef DEBUG0
+				Logger::get() << "[Screen] Context created." << Logger::endl;
+				#endif
+			
+				Screen::instance = screen;
+				
+				OpenGL::initialize();
+			
+				screen->clear();
+				screen->render();
+			}
+		}
+	
+		return success;
+	}
 
 	Screen * Screen::get()
 	{
@@ -461,6 +530,11 @@ namespace opengl
 		#endif
 	}
 	
+	void Screen::setTitle( const string& title )
+	{
+		SDL_SetWindowTitle( this->window, title.c_str() );
+	}
+	
 	void Screen::setClearColor( const Color& color )
 	{
 		this->clearColor.setColor( color );
@@ -474,6 +548,16 @@ namespace opengl
 	int Screen::getHeight()
 	{
 		return this->height;
+	}
+	
+	void Screen::resize( int width, int height )
+	{
+		this->width = width;
+		this->height = height;
+		
+		#ifdef DEBUG0
+		Logger::get() << "[Screen] Window resized to : " << width << "x" << height << Logger::endl;
+		#endif
 	}
 	
 	Point2D Screen::getCoordinates( int systemX, int systemY )

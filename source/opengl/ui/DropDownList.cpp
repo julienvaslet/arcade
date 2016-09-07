@@ -213,9 +213,9 @@ namespace opengl
 				DropDownList::vertices->setData( DropDownList::renderingVertices );
 				DropDownList::colors->setData( DropDownList::renderingColors );
 				DropDownList::indices->setData( DropDownList::renderingIndices );
-			
-				DropDownList::program->sendUniform( "projection_matrix", Matrix::projection, false );
-				DropDownList::program->sendUniform( "modelview_matrix", Matrix::modelview, false );
+				
+				DropDownList::program->sendUniform( "projection_matrix", UserInterface::get()->getProjectionMatrix(), false );
+				DropDownList::program->sendUniform( "modelview_matrix", UserInterface::get()->getModelviewMatrix(), false );
 				DropDownList::program->sendVertexPointer( "a_Vertex", DropDownList::vertices );
 				DropDownList::program->sendColorPointer( "a_Color", DropDownList::colors );
 

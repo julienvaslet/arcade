@@ -11,11 +11,21 @@ namespace opengl
 {
 	namespace ui
 	{
-		UserInterface::UserInterface() : fontName(OPENGL_UI_DEFAULT_FONT), fontSize(0.0f)
+		UserInterface * UserInterface::userInterface = NULL;
+		
+		UserInterface::UserInterface( unsigned int width, unsigned int height ) : fontName(OPENGL_UI_DEFAULT_FONT), fontSize(0.0f), width(width), height(height)
 		{
 			#ifdef DEBUG0
 			Logger::get() << "[UserInterface] Created." << Logger::endl;
 			#endif
+			
+			if( this->width == 0 || this->height == 0 )
+			{
+				this->width = Screen::get()->getWidth();
+				this->height = Screen::get()->getHeight();
+			}
+			
+			this->resize( this->width, this->height );
 		}
 		
 		UserInterface::~UserInterface()
@@ -28,6 +38,48 @@ namespace opengl
 			#ifdef DEBUG0
 			Logger::get() << "[UserInterface] Deleted." << Logger::endl;
 			#endif
+		}
+		
+		bool UserInterface::create( unsigned int width, unsigned int height )
+		{
+			if( UserInterface::userInterface == NULL )
+			{
+				UserInterface::userInterface = new UserInterface( width, height );
+				return true;
+			}
+			else
+				return false;
+		}
+		
+		UserInterface * UserInterface::get()
+		{
+			if( UserInterface::userInterface == NULL )
+				UserInterface::create();
+				
+			return UserInterface::userInterface;
+		}
+		
+		void UserInterface::resize( unsigned int width, unsigned int height )
+		{
+			this->width = width;
+			this->height = height;
+			
+			this->projection = Matrix::ortho( 0, this->width, this->height, 0, -1, 1 );
+			this->modelview = Matrix::identity();
+			
+			#ifdef DEBUG0
+			Logger::get() << "[UserInterface] Resized to " << this->width << "x" << this->height << "." << Logger::endl;
+			#endif
+		}
+		
+		const Matrix& UserInterface::getProjectionMatrix()
+		{
+			return this->projection;
+		}
+		
+		const Matrix& UserInterface::getModelviewMatrix()
+		{
+			return this->modelview;
 		}
 		
 		void UserInterface::setFont( const string& font, float fontSize )
@@ -133,6 +185,9 @@ namespace opengl
 		
 		void UserInterface::render( unsigned int ticks )
 		{
+			// Dock UserInterface to the top-left window corner
+			glViewport( 0, Screen::get()->getHeight() - this->height, this->width, this->height );
+			
 			for( map<string, Element *>::iterator it = this->elements.begin() ; it != this->elements.end() ; it++ )
 			{
 				if( this->hiddenElements.count( it->first ) == 0 )

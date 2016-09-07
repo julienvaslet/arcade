@@ -48,8 +48,10 @@ namespace opengl
 		
 			Screen();
 			~Screen();
-			bool createWindow( int width, int height );
+			bool createWindow( int width, int height, bool windowed = false );
 			bool createContext( int majorVersion, int minorVersion );
+			
+			static void initializeSystem();
 			
 #ifdef __NO_X_WINDOW__
 			static bool checkEglError();
@@ -58,14 +60,17 @@ namespace opengl
 		public:
 			static void getDisplaySize( int * width, int * height );
 			static bool initialize( int width = 0, int height = 0, bool autoResize = true, bool ignoreOverscan = false, int majorVersion = OPENGL_DEFAULT_MAJOR_VERSION, int minorVersion = OPENGL_DEFAULT_MINOR_VERSION );
+			static bool initializeWindowed( int width = 0, int height = 0, bool maximized = true, int majorVersion = OPENGL_DEFAULT_MAJOR_VERSION, int minorVersion = OPENGL_DEFAULT_MINOR_VERSION );
 			static Screen * get();
 			static void destroy();
 		
+			void setTitle( const string& title );
 			void setClearColor( const Color& color );
 			void render();
 			void clear( int flags = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, bool automaticViewport = true );
 			int getWidth();
 			int getHeight();
+			void resize( int width, int height );
 			Point2D getCoordinates( int systemX, int systemY );
 	};
 }

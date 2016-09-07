@@ -232,8 +232,8 @@ namespace opengl
 				Button::colors->setData( Button::renderingColors );
 				Button::indices->setData( Button::renderingIndices );
 			
-				Button::program->sendUniform( "projection_matrix", Matrix::projection, false );
-				Button::program->sendUniform( "modelview_matrix", Matrix::modelview, false );
+				Button::program->sendUniform( "projection_matrix", UserInterface::get()->getProjectionMatrix(), false );
+				Button::program->sendUniform( "modelview_matrix", UserInterface::get()->getModelviewMatrix(), false );
 				Button::program->sendVertexPointer( "a_Vertex", Button::vertices );
 				Button::program->sendColorPointer( "a_Color", Button::colors );
 
