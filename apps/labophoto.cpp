@@ -2,7 +2,7 @@
 #include <opengl/Screen.h>
 #include <opengl/OpenGL.h>
 #include <opengl/Matrix.h>
-#include <opengl/BitmapFont.h>
+#include <opengl/ui/BitmapFont.h>
 #include <game/Resource.h>
 
 #include <opengl/TexturedRectangle.h>
@@ -57,7 +57,7 @@ int main( int argc, char ** argv )
 	// Set the orthogonal origin at the top-left corner
 	Matrix::projection = Matrix::ortho( 0, Screen::get()->getWidth(), Screen::get()->getHeight(), 0, -1, 1 );
 	
-	new BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
+	new ui::BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
 	
 	// This should be activated by Font or BitmapFont
 	glEnable( GL_BLEND );
@@ -147,7 +147,7 @@ int main( int argc, char ** argv )
 	delete ui;
 	
 	//GphotoCamera::destroyContext();
-	Font::destroy();
+	ui::Font::destroy();
 	Resource::destroy();
 	Screen::destroy();
 	Logger::destroy();

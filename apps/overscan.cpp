@@ -1,7 +1,7 @@
 #include <SDL2/SDL.h>
 
 #include <opengl/Screen.h>
-#include <opengl/BitmapFont.h>
+#include <opengl/ui/BitmapFont.h>
 #include <game/Resource.h>
 #include <game/Player.h>
 #include <overscan/ConfigScene.h>
@@ -15,6 +15,7 @@
 #include <string>
 
 using namespace opengl;
+using namespace opengl::ui;
 using namespace tools::logger;
 using namespace tools::pi;
 using namespace controller;

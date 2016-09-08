@@ -4,7 +4,7 @@
 #include <blockgame/Constants.h>
 
 #include <opengl/OpenGL.h>
-#include <opengl/Font.h>
+#include <opengl/ui/Font.h>
 #include <opengl/Screen.h>
 #include <opengl/Point3D.h>
 #include <opengl/Point2D.h>
@@ -26,6 +26,7 @@ using namespace tools::logger;
 #endif
 
 using namespace opengl;
+using namespace opengl::ui;
 using namespace controller;
 using namespace audio;
 using namespace audio::instrument;

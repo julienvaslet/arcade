@@ -9,12 +9,13 @@
 #include <opengl/Screen.h>
 #include <opengl/OpenGL.h>
 #include <opengl/Camera.h>
-#include <opengl/BitmapFont.h>
+#include <opengl/ui/BitmapFont.h>
 #include <opengl/Program.h>
 
 #include <data/image/Image.h>
 
 using namespace opengl;
+using namespace opengl::ui;
 using namespace std;
 using namespace tools::logger;
 using namespace data;
@@ -91,7 +92,8 @@ int main( int argc, char ** argv )
 		{
 			Screen::get()->clear();
 
-			Font::get("bitmap")->render( Point2D( 20, Screen::get()->getHeight() - 60 ), text.str(), 1.0f );
+			Font::get("bitmap")->write( Point2D( 20, Screen::get()->getHeight() - 60 ), text.str(), 1.0f );
+			Font::get("bitmap")->render();
 			
 			Screen::get()->render();
 			

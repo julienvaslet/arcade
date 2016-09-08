@@ -1,7 +1,7 @@
 #include <overscan/ConfigScene.h>
 #include <overscan/ConfigSceneEventHandler.h>
 #include <controller/Controller.h>
-#include <opengl/Font.h>
+#include <opengl/ui/Font.h>
 #include <opengl/Screen.h>
 
 #include <tools/pi/Overscan.h>
@@ -9,6 +9,7 @@
 
 using namespace controller;
 using namespace opengl;
+using namespace opengl::ui;
 using namespace tools::pi;
 
 #ifdef DEBUG1

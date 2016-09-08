@@ -5,7 +5,7 @@
 #include <snake/Map.h>
 
 #include <opengl/OpenGL.h>
-#include <opengl/Font.h>
+#include <opengl/ui/Font.h>
 #include <opengl/Screen.h>
 #include <opengl/Point2D.h>
 #include <opengl/Color.h>
@@ -14,6 +14,7 @@
 #include <vector>
 
 using namespace opengl;
+using namespace opengl::ui;
 using namespace controller;
 using namespace std;
 

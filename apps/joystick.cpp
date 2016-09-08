@@ -2,7 +2,7 @@
 
 #include <opengl/Screen.h>
 #include <opengl/Point2D.h>
-#include <opengl/BitmapFont.h>
+#include <opengl/ui/BitmapFont.h>
 
 #include <controller/Controller.h>
 #include <tools/logger/Stdout.h>
@@ -10,6 +10,7 @@
 #include <sstream>
 
 using namespace opengl;
+using namespace opengl::ui;
 using namespace tools::logger;
 using namespace controller;
 

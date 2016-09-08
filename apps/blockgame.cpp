@@ -3,7 +3,7 @@
 
 #include <opengl/Screen.h>
 #include <opengl/OpenGL.h>
-#include <opengl/BitmapFont.h>
+#include <opengl/ui/BitmapFont.h>
 #include <controller/Controller.h>
 
 #include <audio/Mixer.h>
@@ -12,6 +12,7 @@
 #include <blockgame/Constants.h>
 
 using namespace opengl;
+using namespace opengl::ui;
 using namespace tools::logger;
 using namespace audio;
 using namespace controller;

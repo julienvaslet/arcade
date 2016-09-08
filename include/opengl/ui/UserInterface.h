@@ -12,7 +12,7 @@ namespace opengl
 }
 
 #include <opengl/ui/Element.h>
-#include <opengl/Font.h>
+#include <opengl/ui/Font.h>
 #include <opengl/Matrix.h>
 
 #include <SDL2/SDL.h>

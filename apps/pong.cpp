@@ -1,7 +1,7 @@
 #include <SDL2/SDL.h>
 
 #include <opengl/Screen.h>
-#include <opengl/BitmapFont.h>
+#include <opengl/ui/BitmapFont.h>
 #include <game/Resource.h>
 #include <game/Player.h>
 #include <pong/PlayScene.h>
@@ -11,6 +11,7 @@
 #include <tools/logger/Stdout.h>
 
 using namespace opengl;
+using namespace opengl::ui;
 using namespace tools::logger;
 using namespace controller;
 using namespace audio;
