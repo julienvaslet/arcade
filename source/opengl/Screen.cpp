@@ -555,9 +555,9 @@ namespace opengl
 		this->width = width;
 		this->height = height;
 		
-		#ifdef DEBUG0
+		/*#ifdef DEBUG0
 		Logger::get() << "[Screen] Window resized to : " << width << "x" << height << Logger::endl;
-		#endif
+		#endif*/
 	}
 	
 	Point2D Screen::getCoordinates( int systemX, int systemY )

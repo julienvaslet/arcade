@@ -79,7 +79,7 @@ namespace opengl
 		
 		void Label::prepareRendering( unsigned int ticks )
 		{
-			Point2D origin( this->rectangle.getX() + OPENGL_UI_LABEL_HORIZONTAL_PADDING, this->rectangle.getY() + OPENGL_UI_LABEL_VERTICAL_PADDING );
+			Point3D origin( this->rectangle.getX() + OPENGL_UI_LABEL_HORIZONTAL_PADDING, this->rectangle.getY() + OPENGL_UI_LABEL_VERTICAL_PADDING, this->rectangle.getZ() + 0.1f );
 			this->ui->getFont()->write( origin, this->value, this->color, this->ui->getFontSize() );
 			
 			// Nothing to render, all is delegated to Font.

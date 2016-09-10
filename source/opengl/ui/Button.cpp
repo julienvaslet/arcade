@@ -157,10 +157,10 @@ namespace opengl
 			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + width, this->rectangle.getY() + height, this->rectangle.getZ() ) );
 			Button::renderingVertices.push_back( Point3D( this->rectangle.getX(), this->rectangle.getY() + height, this->rectangle.getZ() ) );
 			Button::renderingVertices.push_back( Point3D( this->rectangle.getX(), this->rectangle.getY() + height, this->rectangle.getZ() ) );
-			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, this->rectangle.getY() + border, this->rectangle.getZ() ) );
-			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, this->rectangle.getY() + border, this->rectangle.getZ() ) );
-			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, this->rectangle.getY() + height - border, this->rectangle.getZ() ) );
-			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, this->rectangle.getY() + height - border, this->rectangle.getZ() ) );
+			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, this->rectangle.getY() + border, this->rectangle.getZ() + 0.01f ) );
+			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, this->rectangle.getY() + border, this->rectangle.getZ() + 0.01f ) );
+			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, this->rectangle.getY() + height - border, this->rectangle.getZ() + 0.01f ) );
+			Button::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, this->rectangle.getY() + height - border, this->rectangle.getZ() + 0.01f ) );
 			
 			Color topBorder( this->backgroundColor.getRed() + ((1.0f - this->backgroundColor.getRed()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT), this->backgroundColor.getGreen() + ((1.0f - this->backgroundColor.getGreen()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT), this->backgroundColor.getBlue() + ((1.0f - this->backgroundColor.getBlue()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT) );
 			Color bottomBorder( this->backgroundColor.getRed() - ((1.0f - this->backgroundColor.getRed()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT), this->backgroundColor.getGreen() - ((1.0f - this->backgroundColor.getGreen()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT), this->backgroundColor.getBlue() - ((1.0f - this->backgroundColor.getBlue()) * OPENGL_UI_BUTTON_BORDER_COLOR_PERCENT) );
@@ -214,7 +214,7 @@ namespace opengl
 			Button::renderingIndices.push_back( j + 8 );
 			Button::renderingIndices.push_back( j + 9 );
 			
-			Point2D textOrigin( this->rectangle.getX() + OPENGL_UI_BUTTON_HORIZONTAL_PADDING + ( this->pushed ? 1 : 0 ), this->rectangle.getY() + OPENGL_UI_BUTTON_VERTICAL_PADDING + ( this->pushed ? 1 : 0 ) );
+			Point3D textOrigin( this->rectangle.getX() + OPENGL_UI_BUTTON_HORIZONTAL_PADDING + ( this->pushed ? 1 : 0 ), this->rectangle.getY() + OPENGL_UI_BUTTON_VERTICAL_PADDING + ( this->pushed ? 1 : 0 ), this->rectangle.getZ() + 0.1f );
 			this->ui->getFont()->write( textOrigin, this->value, this->color, this->ui->getFontSize() );
 			
 			Element::renderFunctions.insert( &Button::render );

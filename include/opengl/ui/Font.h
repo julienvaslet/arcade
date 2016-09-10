@@ -3,6 +3,7 @@
 
 #include <opengl/OpenGL.h>
 #include <opengl/Point2D.h>
+#include <opengl/Point3D.h>
 #include <opengl/Color.h>
 
 #include <map>
@@ -22,10 +23,17 @@ namespace opengl
 				virtual ~Font();
 			
 			public:
-				virtual void write( const Point2D& origin, const string& text, const Color& color, float size = 0.0f ) = 0;
+				virtual void write( const Point3D& origin, const string& text, const Color& color, float size = 0.0f ) = 0;
 				virtual void getTextSize( Point2D& origin, const string& text, float size = 0.0f ) const = 0;
 				virtual float getTextWidth( const string& text, float size = 0.0f ) const = 0;
 				virtual float getTextHeight( const string& text, float size = 0.0f ) const = 0;
+				
+				void write( const Point2D& origin, const string& text, const Color& color, float size = 0.0f )
+				{
+					Point3D newOrigin( origin.getX(), origin.getY(), 0.0f );
+					this->write( newOrigin, text, color, size );
+				}
+				
 				void write( const Point2D& origin, const string& text, float size = 0.0f )
 				{
 					Color color( 1.0f, 1.0f, 1.0f, 1.0f );

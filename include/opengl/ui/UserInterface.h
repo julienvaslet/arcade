@@ -59,6 +59,7 @@ namespace opengl
 				bool hasElement( const string& name );
 				Element * getElement( const string& name );
 				void removeElement( const string& name, bool deleteElement = true );
+				void clear();
 				
 				void showElement( const string& name );
 				void hideElement( const string& name );

@@ -64,7 +64,7 @@ namespace opengl
 			this->width = width;
 			this->height = height;
 			
-			this->projection = Matrix::ortho( 0, this->width, this->height, 0, -1, 1 );
+			this->projection = Matrix::ortho( 0, this->width, this->height, 0, -10, 10 );
 			this->modelview = Matrix::identity();
 			
 			#ifdef DEBUG0
@@ -155,14 +155,14 @@ namespace opengl
 			{
 				if( it->second->getUserInterface() == this )
 				{
+					#ifdef DEBUG0
+					Logger::get() << "[UserInterface] Element#" << name << " has been removed." << Logger::endl;
+					#endif
+					
 					if( deleteElement )
 						delete it->second;
 						
 					this->elements.erase( it );
-					
-					#ifdef DEBUG0
-					Logger::get() << "[UserInterface] Element#" << name << " has been removed." << Logger::endl;
-					#endif
 				}
 				#ifdef DEBUG0
 				else
@@ -171,6 +171,21 @@ namespace opengl
 				}
 				#endif
 			}
+		}
+		
+		void UserInterface::clear()
+		{
+			for( map<string, Element *>::iterator it = this->elements.begin() ; it != this->elements.end() ; it++ )
+			{
+				if( it->second->getUserInterface() == this )
+					delete it->second;
+			}
+			
+			this->elements.clear();
+			
+			#ifdef DEBUG0
+			Logger::get() << "[UserInterface] All elements have been removed." << Logger::endl;
+			#endif
 		}
 
 		void UserInterface::showElement( const string& name )
@@ -212,6 +227,7 @@ namespace opengl
 					case event::EventType::Mouse:
 					{
 						event::MouseEvent * mEvent = static_cast<event::MouseEvent *>( e );
+						Element * targetedElement = NULL;
 						
 						for( map<string, Element *>::iterator it = this->elements.begin() ; it != this->elements.end() ; it++ )
 						{
@@ -219,17 +235,8 @@ namespace opengl
 							{
 								if( it->second->getRectangle().isInCollision( mEvent->getOrigin() ) )
 								{
-									it->second->trigger( mEvent );
-									eventHandled = true;
-									
-									if( this->mouseoverElements.count( it->first ) == 0 )
-									{
-										this->mouseoverElements.insert( it->first );
-										
-										event::MouseEvent * enterEvent = new event::MouseEvent( "mouseenter", mEvent );
-										it->second->trigger( enterEvent );
-										delete enterEvent;
-									}
+									if( targetedElement == NULL || targetedElement->getZ() < it->second->getZ() )
+										targetedElement = it->second;
 								}
 								else if( this->mouseoverElements.count( it->first ) > 0 )
 								{
@@ -239,6 +246,21 @@ namespace opengl
 									it->second->trigger( leaveEvent );
 									delete leaveEvent;
 								}
+							}
+						}
+						
+						if( targetedElement != NULL )
+						{
+							targetedElement->trigger( mEvent );
+							eventHandled = true;
+							
+							if( this->mouseoverElements.count( targetedElement->getName() ) == 0 )
+							{
+								this->mouseoverElements.insert( targetedElement->getName() );
+								
+								event::MouseEvent * enterEvent = new event::MouseEvent( "mouseenter", mEvent );
+								targetedElement->trigger( enterEvent );
+								delete enterEvent;
 							}
 						}
 						

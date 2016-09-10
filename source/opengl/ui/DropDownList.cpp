@@ -123,7 +123,7 @@ namespace opengl
 			// Update list positions & colors
 			this->list->setBackgroundColor( this->backgroundColor );
 			this->list->setColor( this->color );
-			this->list->moveTo( this->rectangle.getOrigin().getX(), this->rectangle.getOrigin().getY() + this->rectangle.getHeight(), this->rectangle.getOrigin().getZ() );
+			this->list->moveTo( this->rectangle.getOrigin().getX(), this->rectangle.getOrigin().getY() + this->rectangle.getHeight(), this->rectangle.getOrigin().getZ() + 1.0f );
 		}
 		
 		void DropDownList::setUserInterface( UserInterface * ui )
@@ -168,6 +168,12 @@ namespace opengl
 			this->synchronizeList();
 		}
 		
+		void DropDownList::setSelectedItem( int index )
+		{
+			this->list->setSelectedItem( index );
+			this->synchronizeList();
+		}
+		
 		string DropDownList::getSelectedItem()
 		{
 			return this->list->getSelectedItem();
@@ -189,9 +195,9 @@ namespace opengl
 			unsigned int width = this->rectangle.getWidth();
 			unsigned int height = this->rectangle.getHeight();
 			
-			DropDownList::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - OPENGL_UI_DROPDOWNLIST_HORIZONTAL_PADDING - OPENGL_UI_DROPDOWNLIST_TRIANGLE_WIDTH + (this->pushed ? 1 : 0), this->rectangle.getY() + ((height - OPENGL_UI_DROPDOWNLIST_VERTICAL_PADDING - OPENGL_UI_DROPDOWNLIST_TRIANGLE_HEIGHT) / 2.0f) + 1 + (this->pushed ? 1 : 0), this->rectangle.getZ() ) );
-			DropDownList::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - OPENGL_UI_DROPDOWNLIST_HORIZONTAL_PADDING + (this->pushed ? 1 : 0), this->rectangle.getY() + ((height - OPENGL_UI_DROPDOWNLIST_VERTICAL_PADDING - OPENGL_UI_DROPDOWNLIST_TRIANGLE_HEIGHT) / 2.0f) + 1 + (this->pushed ? 1 : 0), this->rectangle.getZ() ) );
-			DropDownList::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - OPENGL_UI_DROPDOWNLIST_HORIZONTAL_PADDING - (OPENGL_UI_DROPDOWNLIST_TRIANGLE_WIDTH / 2.0f) + (this->pushed ? 1 : 0), this->rectangle.getY() + height - ( (height - OPENGL_UI_DROPDOWNLIST_VERTICAL_PADDING - OPENGL_UI_DROPDOWNLIST_TRIANGLE_HEIGHT) / 2.0f ) + 1 + (this->pushed ? 1 : 0), this->rectangle.getZ() ) );
+			DropDownList::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - OPENGL_UI_DROPDOWNLIST_HORIZONTAL_PADDING - OPENGL_UI_DROPDOWNLIST_TRIANGLE_WIDTH + (this->pushed ? 1 : 0), this->rectangle.getY() + ((height - OPENGL_UI_DROPDOWNLIST_VERTICAL_PADDING - OPENGL_UI_DROPDOWNLIST_TRIANGLE_HEIGHT) / 2.0f) + 1 + (this->pushed ? 1 : 0), this->rectangle.getZ() + 0.02f ) );
+			DropDownList::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - OPENGL_UI_DROPDOWNLIST_HORIZONTAL_PADDING + (this->pushed ? 1 : 0), this->rectangle.getY() + ((height - OPENGL_UI_DROPDOWNLIST_VERTICAL_PADDING - OPENGL_UI_DROPDOWNLIST_TRIANGLE_HEIGHT) / 2.0f) + 1 + (this->pushed ? 1 : 0), this->rectangle.getZ() + 0.02f ) );
+			DropDownList::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - OPENGL_UI_DROPDOWNLIST_HORIZONTAL_PADDING - (OPENGL_UI_DROPDOWNLIST_TRIANGLE_WIDTH / 2.0f) + (this->pushed ? 1 : 0), this->rectangle.getY() + height - ( (height - OPENGL_UI_DROPDOWNLIST_VERTICAL_PADDING - OPENGL_UI_DROPDOWNLIST_TRIANGLE_HEIGHT) / 2.0f ) + 1 + (this->pushed ? 1 : 0), this->rectangle.getZ() + 0.02f ) );
 
 			DropDownList::renderingColors.push_back( this->color );
 			DropDownList::renderingColors.push_back( this->color );
@@ -252,7 +258,10 @@ namespace opengl
 			DropDownList * ddl = reinterpret_cast<DropDownList *>( list->getUserInterface()->getElement( DropDownList::getButtonName( list->getName() ) ) );
 			
 			if( ddl != NULL )
+			{
 				ddl->setPushState( false );
+				ddl->trigger( "selectionchanged" );
+			}
 			
 			return true;
 		}

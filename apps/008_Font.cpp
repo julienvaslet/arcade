@@ -37,9 +37,9 @@ int main( int argc, char ** argv )
 	
 	new BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
 
-	Camera camera;
+	/*Camera camera;
 	camera.getEye().moveTo( 0.0f, 1.25f, 4.0f );
-	camera.getCenter().moveTo( 0.0f, 0.0f, 0.0f );
+	camera.getCenter().moveTo( 0.0f, 0.0f, 0.0f );*/
 	
 	glEnable( GL_DEPTH_TEST );
 	glEnable( GL_BLEND );
@@ -92,7 +92,7 @@ int main( int argc, char ** argv )
 		{
 			Screen::get()->clear();
 
-			Font::get("bitmap")->write( Point2D( 20, Screen::get()->getHeight() - 60 ), text.str(), 1.0f );
+			Font::get("bitmap")->write( Point2D( 20, 20 ), text.str(), 1.0f );
 			Font::get("bitmap")->render();
 			
 			Screen::get()->render();

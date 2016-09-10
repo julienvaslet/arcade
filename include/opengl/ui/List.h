@@ -50,6 +50,7 @@ namespace opengl
 				const Color& getBackgroundColor() const;
 				
 				void addItem( const string& value, bool selected = false );
+				void setSelectedItem( int index );
 				string getSelectedItem();
 				void clear();
 				

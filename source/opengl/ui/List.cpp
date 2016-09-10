@@ -154,6 +154,19 @@ namespace opengl
 				this->selectedItem = this->items.size() - 1;
 		}
 		
+		void List::setSelectedItem( int index )
+		{
+			bool triggerEvent = (index != this->selectedItem);
+			
+			if( index < 0 || static_cast<unsigned int>( index ) >= this->items.size() )
+				this->selectedItem = -1;
+			else
+				this->selectedItem = index;
+				
+			if( triggerEvent )
+				this->trigger( "selectionchanged" );
+		}
+		
 		string List::getSelectedItem()
 		{
 			if( this->selectedItem >= 0 && static_cast<unsigned int>( this->selectedItem ) < this->items.size() )
@@ -166,12 +179,12 @@ namespace opengl
 		
 		void List::clear()
 		{
+			this->selectedItem = -1;
 			this->items.clear();
 		}
 		
 		void List::prepareRendering( unsigned int ticks )
 		{
-			// Temp, should only be done when a boolean is set (mustResize for instance)
 			this->autoResize();
 			
 			unsigned int j = List::renderingVertices.size();
@@ -183,10 +196,10 @@ namespace opengl
 			List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width, this->rectangle.getY(), this->rectangle.getZ() ) );
 			List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width, this->rectangle.getY() + height, this->rectangle.getZ() ) );
 			List::renderingVertices.push_back( Point3D( this->rectangle.getX(), this->rectangle.getY() + height, this->rectangle.getZ() ) );
-			List::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, this->rectangle.getY() + border, this->rectangle.getZ() ) );
-			List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, this->rectangle.getY() + border, this->rectangle.getZ() ) );
-			List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, this->rectangle.getY() + height - border, this->rectangle.getZ() ) );
-			List::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, this->rectangle.getY() + height - border, this->rectangle.getZ() ) );
+			List::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, this->rectangle.getY() + border, this->rectangle.getZ() + 0.01f ) );
+			List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, this->rectangle.getY() + border, this->rectangle.getZ() + 0.01f ) );
+			List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, this->rectangle.getY() + height - border, this->rectangle.getZ() + 0.01f ) );
+			List::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, this->rectangle.getY() + height - border, this->rectangle.getZ() + 0.01f ) );
 			
 			Color borderColor( this->backgroundColor.getRed() - ((1.0f - this->backgroundColor.getRed()) * OPENGL_UI_LIST_BORDER_COLOR_PERCENT), this->backgroundColor.getGreen() - ((1.0f - this->backgroundColor.getGreen()) * OPENGL_UI_LIST_BORDER_COLOR_PERCENT), this->backgroundColor.getBlue() - ((1.0f - this->backgroundColor.getBlue()) * OPENGL_UI_LIST_BORDER_COLOR_PERCENT) );
 
@@ -219,10 +232,10 @@ namespace opengl
 				float cellHeight = (this->rectangle.getHeight() - OPENGL_UI_LIST_VERTICAL_PADDING * 2.0f) / static_cast<float>( this->items.size() );
 				float yDelta = cellHeight * this->highlightedItem;
 				
-				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, yDelta + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() ) );
-				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, yDelta + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() ) );
-				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, yDelta + cellHeight + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() ) );
-				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, yDelta + cellHeight + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() ) );
+				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, yDelta + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() + 0.02f ) );
+				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, yDelta + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() + 0.02f ) );
+				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, yDelta + cellHeight + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() + 0.02f ) );
+				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, yDelta + cellHeight + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() + 0.02f ) );
 				
 				List::renderingColors.push_back( highlightColor );
 				List::renderingColors.push_back( highlightColor );
@@ -244,14 +257,14 @@ namespace opengl
 				float yDelta = cellHeight * this->selectedItem;
 				unsigned short int indiceDelta = ( this->highlightedItem >= 0 ) ? 4 : 0;
 				
-				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, yDelta + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() ) );
-				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, yDelta + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() ) );
-				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, yDelta + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING + border, this->rectangle.getZ() ) );
-				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, yDelta + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING + border, this->rectangle.getZ() ) );
-				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, yDelta + cellHeight - border + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() ) );
-				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, yDelta + cellHeight - border + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() ) );
-				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, yDelta + cellHeight + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() ) );
-				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, yDelta + cellHeight + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() ) );
+				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, yDelta + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() + 0.03f ) );
+				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, yDelta + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() + 0.03f ) );
+				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, yDelta + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING + border, this->rectangle.getZ() + 0.03f ) );
+				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, yDelta + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING + border, this->rectangle.getZ() + 0.03f ) );
+				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, yDelta + cellHeight - border + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() + 0.03f ) );
+				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, yDelta + cellHeight - border + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() + 0.03f ) );
+				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + width - border, yDelta + cellHeight + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() + 0.03f ) );
+				List::renderingVertices.push_back( Point3D( this->rectangle.getX() + border, yDelta + cellHeight + this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING, this->rectangle.getZ() + 0.03f ) );
 				
 				List::renderingColors.push_back( selectedBorder );
 				List::renderingColors.push_back( selectedBorder );
@@ -276,14 +289,14 @@ namespace opengl
 				List::renderingIndices.push_back( j + indiceDelta + 14 );
 			}
 				
-			Point2D textOrigin( this->rectangle.getX() + OPENGL_UI_LIST_HORIZONTAL_PADDING + OPENGL_UI_LIST_ELEMENT_HORIZONTAL_PADDING, this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING + OPENGL_UI_LIST_ELEMENT_VERTICAL_PADDING );
+			Point3D textOrigin( this->rectangle.getX() + OPENGL_UI_LIST_HORIZONTAL_PADDING + OPENGL_UI_LIST_ELEMENT_HORIZONTAL_PADDING, this->rectangle.getY() + OPENGL_UI_LIST_VERTICAL_PADDING + OPENGL_UI_LIST_ELEMENT_VERTICAL_PADDING, this->rectangle.getZ() + 0.1f );
 			
 			for( vector<string>::iterator it = this->items.begin() ; it != this->items.end() ; it++ )
 			{
 				float height = this->ui->getFont()->getTextHeight( *it, this->ui->getFontSize() );
 				this->ui->getFont()->write( textOrigin, *it, this->color, this->ui->getFontSize() );
 				
-				textOrigin.moveBy( 0.0f, height + OPENGL_UI_LIST_ELEMENT_VERTICAL_PADDING * 2 );
+				textOrigin.moveBy( 0.0f, height + OPENGL_UI_LIST_ELEMENT_VERTICAL_PADDING * 2, 0.0f );
 			}
 			
 			Element::renderFunctions.insert( &List::render );

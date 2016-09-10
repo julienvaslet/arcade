@@ -111,15 +111,15 @@ namespace opengl
 			this->vColors.clear();
 			this->vIndices.clear();
 		}
-	
-		void BitmapFont::write( const Point2D& origin, const string& text, const Color& color, float size )
+		
+		void BitmapFont::write( const Point3D& origin, const string& text, const Color& color, float size )
 		{
 			if( size == 0.0f ) size = 1.0f;
 		
 			if( this->rectangle->getTile()->getTexture() != NULL )
 			{
 				this->rectangle->resize( (this->characterWidth - (2.0f * this->marginWidth)) * size, (this->characterHeight - (2.0f * this->marginHeight)) * size );
-				this->rectangle->getOrigin().moveTo( origin.getX(), origin.getY(), 0.0f );
+				this->rectangle->getOrigin().moveTo( origin.getX(), origin.getY(), origin.getZ() );
 		
 				if( text.length() > 0 )
 				{
