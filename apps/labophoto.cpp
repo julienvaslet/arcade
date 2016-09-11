@@ -45,7 +45,10 @@ int main( int argc, char ** argv )
 				case SDL_WINDOWEVENT:
 				{
 					if( lastEvent.window.event == SDL_WINDOWEVENT_SIZE_CHANGED )
+					{
 						Screen::get()->resize( lastEvent.window.data1, lastEvent.window.data2 );
+						app->resizeWorkspace();
+					}
 					
 					break;
 				}

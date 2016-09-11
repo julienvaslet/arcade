@@ -65,7 +65,10 @@ namespace opengl
 		this->texture = texture;
 		
 		if( this->texture != NULL )
+		{
 			this->texture->use();
+			this->view.resize( this->texture->getWidth(), this->texture->getHeight() );
+		}
 	}
 	
 	void Tile::setTexture( const string& textureResource )
@@ -79,6 +82,7 @@ namespace opengl
 				
 			this->texture = texture;
 			this->texture->use();
+			this->view.resize( this->texture->getWidth(), this->texture->getHeight() );
 		}
 	}
 	

@@ -4,9 +4,11 @@
 #include <opengl/ui/BitmapFont.h>
 #include <opengl/ui/Button.h>
 #include <opengl/ui/DropDownList.h>
+#include <game/Resource.h>
 
 #include <sstream>
 
+using namespace game;
 using namespace opengl;
 using namespace std;
 
@@ -15,6 +17,8 @@ using namespace std;
 using namespace tools::logger;
 #endif
 
+#define CONTROL_PANEL_WIDTH			310.0f
+#define WORKSPACE_BACKGROUND_COLOR	"444444"
 #define WINDOW_BACKGROUND_COLOR		"888888"
 #define UI_ELEMENT_BACKGROUND_COLOR	"668b8b"
 
@@ -22,7 +26,7 @@ namespace labophoto
 {
 	Labophoto * Labophoto::instance = NULL;
 	
-	Labophoto::Labophoto() : camera(NULL), ui(NULL)
+	Labophoto::Labophoto() : camera(NULL), ui(NULL), image(NULL), workspace(NULL)
 	{
 		if( Labophoto::instance != NULL )
 		{
@@ -36,10 +40,13 @@ namespace labophoto
 
 		Color backgroundColor( WINDOW_BACKGROUND_COLOR );
 		Screen::get()->setClearColor( backgroundColor );
-	
-		// This should be enabled to render image, tools, etc.
-		// Set the orthogonal origin at the top-left corner
-		//Matrix::projection = Matrix::ortho( 0, Screen::get()->getWidth(), Screen::get()->getHeight(), 0, -1, 1 );
+		
+		this->image = new TexturedRectangle( 1, 1 );
+		
+		Color workspaceColor( WORKSPACE_BACKGROUND_COLOR );
+		this->workspace = new ColoredRectangle( 1, 1, workspaceColor );
+		
+		this->resizeWorkspace();
 	
 		new ui::BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
 	
@@ -65,6 +72,18 @@ namespace labophoto
 	
 	Labophoto::~Labophoto()
 	{
+		if( this->workspace != NULL )
+		{
+			delete this->workspace;
+			this->workspace = NULL;
+		}
+		
+		if( this->image != NULL )
+		{
+			delete this->image;
+			this->image = NULL;
+		}
+		
 		if( this->ui != NULL )
 		{
 			delete this->ui;
@@ -91,8 +110,76 @@ namespace labophoto
 		return true;
 	}
 	
+	void Labophoto::resizeWorkspace()
+	{
+		unsigned int width = Screen::get()->getWidth();
+		unsigned int height = Screen::get()->getHeight();
+		
+		// Set the orthogonal origin at the top-left corner
+		Matrix::projection = Matrix::ortho( 0, width, height, 0, -1.0f, 1.0f );
+		
+		this->workspace->getOrigin().moveTo( CONTROL_PANEL_WIDTH, 0.0f, 0.0f );
+		this->workspace->resize( width - CONTROL_PANEL_WIDTH, height );
+		
+		// Resize image to fit workspace
+		Texture2D * texture = this->image->getTile()->getTexture();
+		
+		if( texture != NULL )
+		{
+			// Review ratio computation
+			float imageRatio = static_cast<float>( texture->getWidth() ) / static_cast<float>( texture->getHeight() );
+			unsigned int imageWidth = 0;
+			unsigned int imageHeight = 0;
+			
+			if( imageRatio > 1.0f )
+			{
+				imageWidth = this->workspace->getWidth();
+				imageHeight = imageWidth / imageRatio;
+				
+				if( imageHeight > this->workspace->getHeight() )
+				{
+					imageHeight = this->workspace->getHeight();
+					imageWidth = imageHeight * imageRatio;
+				}
+			}
+			else
+			{
+				imageHeight = this->workspace->getHeight();
+				imageWidth = imageHeight * imageRatio;
+				
+				if( imageWidth > this->workspace->getWidth() )
+				{
+					imageWidth = this->workspace->getWidth();
+					imageHeight = imageWidth / imageRatio;
+				}
+			}
+			
+			this->image->resize( imageWidth, imageHeight );
+			this->image->getOrigin().moveTo( CONTROL_PANEL_WIDTH + ( this->workspace->getWidth() - imageWidth ) / 2.0f, (this->workspace->getHeight() - imageHeight ) / 2.0f, 0.5f );
+		}
+	}
+	
 	void Labophoto::render( unsigned int ticks )
 	{
+		vector<Point3D> vertices;
+		vector<Color> colors;
+		vector<Point2D> textureCoordinates;
+		vector<unsigned short int> indices;
+		
+		this->workspace->prepareRendering( vertices, colors, indices );
+		ColoredRectangle::render( vertices, colors, indices );
+	
+		Texture2D * texture = static_cast<Texture2D *>( Resource::get( "labophoto.image" ) );
+		
+		if( texture != NULL )
+		{
+			vertices.clear();
+			indices.clear();
+			
+			this->image->prepareRendering( vertices, textureCoordinates, indices );
+			TexturedRectangle::render( vertices, textureCoordinates, indices, texture );
+		}
+		
 		this->ui->render( ticks );
 	}
 	
@@ -101,10 +188,19 @@ namespace labophoto
 		this->ui->dispatchEvent( event );
 	}
 	
+	void Labophoto::captureImage()
+	{
+		this->camera->capture( "test.jpg" );
+		Resource::loadTexture2D( "labophoto.image", "test.jpg", true );
+		this->image->getTile()->setTexture( "labophoto.image" );
+		this->resizeWorkspace();
+	}
+	
 	void Labophoto::loadModeSelectionUI()
 	{
 		ui::DropDownList * currentMode = new ui::DropDownList( "current_mode", "Mode de travail" );
 		currentMode->setBackgroundColor( UI_ELEMENT_BACKGROUND_COLOR );
+		currentMode->moveTo( 5, 5 );
 		currentMode->resize( 300, 20 );
 		
 		currentMode->addItem( "1 - Choix de l'appareil" );
@@ -170,6 +266,11 @@ namespace labophoto
 		
 		this->ui->hideElement( "btn_reload_camera_list" );
 		this->ui->hideElement( "camera_list" );
+		this->ui->hideElement( "btn_take_preview" );
+		this->ui->hideElement( "camera_iso" );
+		this->ui->hideElement( "camera_aperture" );
+		this->ui->hideElement( "camera_shutterspeed" );
+		this->ui->hideElement( "camera_whitebalance" );
 		
 		switch( mode )
 		{
@@ -182,6 +283,14 @@ namespace labophoto
 			
 			case 1:
 			{
+				this->ui->showElement( "btn_take_preview" );
+				this->ui->showElement( "camera_iso" );
+				this->ui->showElement( "camera_aperture" );
+				this->ui->showElement( "camera_shutterspeed" );
+				this->ui->showElement( "camera_whitebalance" );
+				
+				// Test if it useful to do this
+				this->reloadCameraConfiguration();
 				break;
 			}
 			
@@ -205,13 +314,13 @@ namespace labophoto
 	{
 		ui::Button * reloadCameraList = new ui::Button( "btn_reload_camera_list", "Recharger la liste" );
 		reloadCameraList->setBackgroundColor( UI_ELEMENT_BACKGROUND_COLOR );
-		reloadCameraList->moveTo( 0, 30 );
+		reloadCameraList->moveTo( 5, 35 );
 		reloadCameraList->resize( 300, 20 );
 		reloadCameraList->addEventHandler( "mousedown", Labophoto::reloadCameraListEvent );
 		
 		ui::DropDownList * cameraList = new ui::DropDownList( "camera_list", "Liste des appareils" );
 		cameraList->setBackgroundColor( UI_ELEMENT_BACKGROUND_COLOR );
-		cameraList->moveTo( 0, 50 );
+		cameraList->moveTo( 5, 55 );
 		cameraList->resize( 300, 20 );
 		cameraList->addEventHandler( "selectionchanged", Labophoto::cameraChangedEvent );
 		
@@ -298,6 +407,164 @@ namespace labophoto
 	 
 	void Labophoto::loadCameraConfigurationUI()
 	{
+		ui::Button * takePreview = new ui::Button( "btn_take_preview", "Prendre une photo" );
+		takePreview->setBackgroundColor( UI_ELEMENT_BACKGROUND_COLOR );
+		takePreview->moveTo( 5, 35 );
+		takePreview->resize( 300, 20 );
+		takePreview->addEventHandler( "mousedown", Labophoto::takePreviewEvent );
+		
+		ui::DropDownList * cameraShutterSpeed = new ui::DropDownList( "camera_shutterspeed", "Duree d'ouverture (s)" );
+		cameraShutterSpeed->setBackgroundColor( UI_ELEMENT_BACKGROUND_COLOR );
+		cameraShutterSpeed->moveTo( 5, 60 );
+		cameraShutterSpeed->resize( 300, 20 );
+		cameraShutterSpeed->addEventHandler( "selectionchanged", Labophoto::changeShutterSpeedEvent );
+		
+		ui::DropDownList * cameraAperture = new ui::DropDownList( "camera_aperture", "Ouverture (focale)" );
+		cameraAperture->setBackgroundColor( UI_ELEMENT_BACKGROUND_COLOR );
+		cameraAperture->moveTo( 5, 80 );
+		cameraAperture->resize( 300, 20 );
+		cameraAperture->addEventHandler( "selectionchanged", Labophoto::changeApertureEvent );
+		
+		ui::DropDownList * cameraIso = new ui::DropDownList( "camera_iso", "Sensibilite (ISO)" );
+		cameraIso->setBackgroundColor( UI_ELEMENT_BACKGROUND_COLOR );
+		cameraIso->moveTo( 5, 100 );
+		cameraIso->resize( 300, 20 );
+		cameraIso->addEventHandler( "selectionchanged", Labophoto::changeIsoEvent );
+		
+		ui::DropDownList * cameraWhiteBalance = new ui::DropDownList( "camera_whitebalance", "Balance des blancs" );
+		cameraWhiteBalance->setBackgroundColor( UI_ELEMENT_BACKGROUND_COLOR );
+		cameraWhiteBalance->moveTo( 5, 120 );
+		cameraWhiteBalance->resize( 300, 20 );
+		cameraWhiteBalance->addEventHandler( "selectionchanged", Labophoto::changeWhiteBalanceEvent );
+		
+		this->ui->addElement( takePreview );
+		this->ui->addElement( cameraIso );
+		this->ui->addElement( cameraAperture );
+		this->ui->addElement( cameraShutterSpeed );
+		this->ui->addElement( cameraWhiteBalance );
+	}
+	
+	void Labophoto::reloadCameraConfiguration()
+	{
+		if( this->camera != NULL )
+		{
+			map<string, string> configurations;
+			configurations["aperture"] = "camera_aperture";
+			configurations["shutterspeed"] = "camera_shutterspeed";
+			configurations["iso"] = "camera_iso";
+			configurations["whitebalance"] = "camera_whitebalance";
+			
+			vector<string> values;
+			string currentValue;
+			
+			for( map<string,string>::const_iterator itConfiguration = configurations.begin() ; itConfiguration != configurations.end() ; itConfiguration++ )
+			{
+				currentValue = this->camera->getSetting( itConfiguration->first );
+				this->camera->getSettingValues( itConfiguration->first, values );
+			
+				ui::DropDownList * ddl = static_cast<ui::DropDownList *>( this->ui->getElement( itConfiguration->second ) );
+			
+				if( ddl != NULL )
+				{
+					ddl->clear();
+				
+					for( vector<string>::iterator it = values.begin() ; it != values.end() ; it++ )
+						ddl->addItem( *it, (*it == currentValue) );
+				}
+			
+				values.clear();
+			}
+		}
+	}
+	
+	void Labophoto::setCameraShutterSpeed( const string& value )
+	{
+		if( this->camera != NULL )
+		{
+			this->camera->setSetting( "shutterspeed", value );
+		}
+	}
+	
+	void Labophoto::setCameraAperture( const string& value )
+	{
+		if( this->camera != NULL )
+		{
+			this->camera->setSetting( "aperture", value );
+		}
+	}
+	
+	void Labophoto::setCameraIso( const string& value )
+	{
+		if( this->camera != NULL )
+		{
+			this->camera->setSetting( "iso", value );
+		}
+	}
+	
+	void Labophoto::setCameraWhiteBalance( const string& value )
+	{
+		if( this->camera != NULL )
+		{
+			this->camera->setSetting( "whitebalance", value );
+		}
+	}
+	
+	bool Labophoto::takePreviewEvent( Element * element, const event::Event * event )
+	{
+		Labophoto * labophoto = Labophoto::get();
+		
+		if( labophoto != NULL )
+		{
+			element->setDisabledState( true );
+			labophoto->captureImage();
+			element->setDisabledState( false );
+		}
+		
+		return true;
+	}
+	
+	bool Labophoto::changeShutterSpeedEvent( Element * element, const event::Event * event )
+	{
+		Labophoto * labophoto = Labophoto::get();
+		ui::DropDownList * ddl = static_cast<ui::DropDownList *>( element );
+		
+		if( labophoto != NULL )
+			labophoto->setCameraShutterSpeed( ddl->getSelectedItem() );
+		
+		return true;
+	}
+	
+	bool Labophoto::changeApertureEvent( Element * element, const event::Event * event )
+	{
+		Labophoto * labophoto = Labophoto::get();
+		ui::DropDownList * ddl = static_cast<ui::DropDownList *>( element );
+		
+		if( labophoto != NULL )
+			labophoto->setCameraAperture( ddl->getSelectedItem() );
+		
+		return true;
+	}
+	
+	bool Labophoto::changeIsoEvent( Element * element, const event::Event * event )
+	{
+		Labophoto * labophoto = Labophoto::get();
+		ui::DropDownList * ddl = static_cast<ui::DropDownList *>( element );
+		
+		if( labophoto != NULL )
+			labophoto->setCameraIso( ddl->getSelectedItem() );
+		
+		return true;
+	}
+	
+	bool Labophoto::changeWhiteBalanceEvent( Element * element, const event::Event * event )
+	{
+		Labophoto * labophoto = Labophoto::get();
+		ui::DropDownList * ddl = static_cast<ui::DropDownList *>( element );
+		
+		if( labophoto != NULL )
+			labophoto->setCameraWhiteBalance( ddl->getSelectedItem() );
+		
+		return true;
 	}
 }
 
