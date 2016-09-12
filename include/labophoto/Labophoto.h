@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include <opengl/ColoredRectangle.h>
-#include <opengl/TexturedRectangle.h>
+#include <labophoto/Negative.h>
 #include <opengl/ui/UserInterface.h>
 #include <tools/camera/GphotoCamera.h>
 
@@ -17,10 +17,11 @@ namespace labophoto
 	{
 		protected:
 			static Labophoto * instance;
+			
 			GphotoCamera * camera;
 			UserInterface * ui;
-			TexturedRectangle * image;
-			ColoredRectangle * workspace;
+			Negative * image;
+			ColoredRectangle * background;
 			
 			void loadModeSelectionUI();
 			void loadCameraSelectionUI();
@@ -45,7 +46,7 @@ namespace labophoto
 			void render( unsigned int ticks );
 			void handleEvent( SDL_Event * event );
 			
-			void resizeWorkspace();
+			void resizeView();
 			
 			static Labophoto * get();
 			

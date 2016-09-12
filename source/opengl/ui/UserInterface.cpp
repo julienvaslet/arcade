@@ -66,10 +66,6 @@ namespace opengl
 			
 			this->projection = Matrix::ortho( 0, this->width, this->height, 0, -10, 10 );
 			this->modelview = Matrix::identity();
-			
-			#ifdef DEBUG0
-			Logger::get() << "[UserInterface] Resized to " << this->width << "x" << this->height << "." << Logger::endl;
-			#endif
 		}
 		
 		const Matrix& UserInterface::getProjectionMatrix()

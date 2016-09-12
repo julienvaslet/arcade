@@ -12,12 +12,16 @@ namespace opengl
 	{
 		if( this->useGenericProgram )
 			this->initializeRendering();
+		
+		this->tile = new Tile();
 	}
 	
 	TexturedRectangle::TexturedRectangle( bool useGenericProgram ) : Rectangle(), useGenericProgram(useGenericProgram), tile(NULL)
 	{
 		if( this->useGenericProgram )
 			this->initializeRendering();
+		
+		this->tile = new Tile();
 	}
 	
 	TexturedRectangle::TexturedRectangle( const TexturedRectangle& rectangle ) : Rectangle(rectangle), useGenericProgram(rectangle.useGenericProgram), tile(NULL)
@@ -46,7 +50,9 @@ namespace opengl
 	
 	TexturedRectangle::TexturedRectangle( unsigned width, unsigned height, bool useGenericProgram ) : Rectangle(width,height), useGenericProgram(useGenericProgram), tile(NULL)
 	{
-		this->initializeRendering();
+		if( this->useGenericProgram )
+			this->initializeRendering();
+			
 		this->tile = new Tile();
 	}
 	

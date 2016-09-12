@@ -124,6 +124,10 @@ namespace opengl
 	{
 		bool status = false;
 		
+		#ifdef DEBUG0
+		Logger::get() << "[Program#" << this->id << "] Loading vertex shader \"" << filename << "\"." << Logger::endl;
+		#endif
+		
 		VertexShader * shader = new VertexShader();
 		if( shader->loadFile( filename ) )
 			status = this->attachShader( shader, true );
@@ -134,6 +138,10 @@ namespace opengl
 	bool Program::loadFragmentShaderFile( const string& filename )
 	{
 		bool status = false;
+		
+		#ifdef DEBUG0
+		Logger::get() << "[Program#" << this->id << "] Loading fragment shader \"" << filename << "\"." << Logger::endl;
+		#endif
 		
 		FragmentShader * shader = new FragmentShader();
 		if( shader->loadFile( filename ) )

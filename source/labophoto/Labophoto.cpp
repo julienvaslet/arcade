@@ -26,7 +26,7 @@ namespace labophoto
 {
 	Labophoto * Labophoto::instance = NULL;
 	
-	Labophoto::Labophoto() : camera(NULL), ui(NULL), image(NULL), workspace(NULL)
+	Labophoto::Labophoto() : camera(NULL), ui(NULL), image(NULL), background(NULL)
 	{
 		if( Labophoto::instance != NULL )
 		{
@@ -41,12 +41,10 @@ namespace labophoto
 		Color backgroundColor( WINDOW_BACKGROUND_COLOR );
 		Screen::get()->setClearColor( backgroundColor );
 		
-		this->image = new TexturedRectangle( 1, 1 );
+		this->image = new Negative();
 		
 		Color workspaceColor( WORKSPACE_BACKGROUND_COLOR );
-		this->workspace = new ColoredRectangle( 1, 1, workspaceColor );
-		
-		this->resizeWorkspace();
+		this->background = new ColoredRectangle( 1, 1, workspaceColor );
 	
 		new ui::BitmapFont( "data/fonts/bitmap.tga", 32, 32, 7, 1 );
 	
@@ -67,15 +65,17 @@ namespace labophoto
 		this->loadCameraSelectionUI();
 		this->loadCameraConfigurationUI();
 		
+		this->resizeView();
+		
 		this->setMode( 0 );
 	}
 	
 	Labophoto::~Labophoto()
 	{
-		if( this->workspace != NULL )
+		if( this->background != NULL )
 		{
-			delete this->workspace;
-			this->workspace = NULL;
+			delete this->background;
+			this->background = NULL;
 		}
 		
 		if( this->image != NULL )
@@ -110,16 +110,18 @@ namespace labophoto
 		return true;
 	}
 	
-	void Labophoto::resizeWorkspace()
+	void Labophoto::resizeView()
 	{
 		unsigned int width = Screen::get()->getWidth();
 		unsigned int height = Screen::get()->getHeight();
 		
+		this->ui->resize( width, height );
+		
 		// Set the orthogonal origin at the top-left corner
 		Matrix::projection = Matrix::ortho( 0, width, height, 0, -1.0f, 1.0f );
 		
-		this->workspace->getOrigin().moveTo( CONTROL_PANEL_WIDTH, 0.0f, 0.0f );
-		this->workspace->resize( width - CONTROL_PANEL_WIDTH, height );
+		this->background->getOrigin().moveTo( CONTROL_PANEL_WIDTH, 0.0f, 0.0f );
+		this->background->resize( width - CONTROL_PANEL_WIDTH, height );
 		
 		// Resize image to fit workspace
 		Texture2D * texture = this->image->getTile()->getTexture();
@@ -133,29 +135,29 @@ namespace labophoto
 			
 			if( imageRatio > 1.0f )
 			{
-				imageWidth = this->workspace->getWidth();
+				imageWidth = this->background->getWidth();
 				imageHeight = imageWidth / imageRatio;
 				
-				if( imageHeight > this->workspace->getHeight() )
+				if( imageHeight > this->background->getHeight() )
 				{
-					imageHeight = this->workspace->getHeight();
+					imageHeight = this->background->getHeight();
 					imageWidth = imageHeight * imageRatio;
 				}
 			}
 			else
 			{
-				imageHeight = this->workspace->getHeight();
+				imageHeight = this->background->getHeight();
 				imageWidth = imageHeight * imageRatio;
 				
-				if( imageWidth > this->workspace->getWidth() )
+				if( imageWidth > this->background->getWidth() )
 				{
-					imageWidth = this->workspace->getWidth();
+					imageWidth = this->background->getWidth();
 					imageHeight = imageWidth / imageRatio;
 				}
 			}
 			
 			this->image->resize( imageWidth, imageHeight );
-			this->image->getOrigin().moveTo( CONTROL_PANEL_WIDTH + ( this->workspace->getWidth() - imageWidth ) / 2.0f, (this->workspace->getHeight() - imageHeight ) / 2.0f, 0.5f );
+			this->image->getOrigin().moveTo( CONTROL_PANEL_WIDTH + ( this->background->getWidth() - imageWidth ) / 2.0f, (this->background->getHeight() - imageHeight ) / 2.0f, 0.5f );
 		}
 	}
 	
@@ -166,7 +168,7 @@ namespace labophoto
 		vector<Point2D> textureCoordinates;
 		vector<unsigned short int> indices;
 		
-		this->workspace->prepareRendering( vertices, colors, indices );
+		this->background->prepareRendering( vertices, colors, indices );
 		ColoredRectangle::render( vertices, colors, indices );
 	
 		Texture2D * texture = static_cast<Texture2D *>( Resource::get( "labophoto.image" ) );
@@ -177,7 +179,7 @@ namespace labophoto
 			indices.clear();
 			
 			this->image->prepareRendering( vertices, textureCoordinates, indices );
-			TexturedRectangle::render( vertices, textureCoordinates, indices, texture );
+			Negative::render( vertices, textureCoordinates, indices, texture );
 		}
 		
 		this->ui->render( ticks );
@@ -193,7 +195,7 @@ namespace labophoto
 		this->camera->capture( "test.jpg" );
 		Resource::loadTexture2D( "labophoto.image", "test.jpg", true );
 		this->image->getTile()->setTexture( "labophoto.image" );
-		this->resizeWorkspace();
+		this->resizeView();
 	}
 	
 	void Labophoto::loadModeSelectionUI()
@@ -271,6 +273,9 @@ namespace labophoto
 		this->ui->hideElement( "camera_aperture" );
 		this->ui->hideElement( "camera_shutterspeed" );
 		this->ui->hideElement( "camera_whitebalance" );
+		this->ui->hideElement( "btn_invert_colors" );
+		this->ui->hideElement( "btn_rotate" );
+		this->ui->hideElement( "btn_crop" );
 		
 		switch( mode )
 		{
@@ -288,6 +293,9 @@ namespace labophoto
 				this->ui->showElement( "camera_aperture" );
 				this->ui->showElement( "camera_shutterspeed" );
 				this->ui->showElement( "camera_whitebalance" );
+				this->ui->showElement( "btn_invert_colors" );
+				this->ui->showElement( "btn_rotate" );
+				this->ui->showElement( "btn_crop" );
 				
 				// Test if it useful to do this
 				this->reloadCameraConfiguration();
@@ -373,11 +381,11 @@ namespace labophoto
 		{
 			ui::DropDownList * ddl = reinterpret_cast<ui::DropDownList *>( element );
 			string cameraName = ddl->getSelectedItem();
-			size_t openingParenthesis = cameraName.find( '(' ) + 1;
+			size_t openingParenthesis = cameraName.find( '(' );
 			
 			if( openingParenthesis != string::npos )
 			{
-				string port = cameraName.substr( openingParenthesis, cameraName.find( ')' ) - openingParenthesis );
+				string port = cameraName.substr( openingParenthesis + 1, cameraName.find( ')' ) - openingParenthesis - 1 );
 				labophoto->selectCamera( port );
 			}
 		}
@@ -411,7 +419,7 @@ namespace labophoto
 		takePreview->setBackgroundColor( UI_ELEMENT_BACKGROUND_COLOR );
 		takePreview->moveTo( 5, 35 );
 		takePreview->resize( 300, 20 );
-		takePreview->addEventHandler( "mousedown", Labophoto::takePreviewEvent );
+		takePreview->addEventHandler( "mouseup", Labophoto::takePreviewEvent );
 		
 		ui::DropDownList * cameraShutterSpeed = new ui::DropDownList( "camera_shutterspeed", "Duree d'ouverture (s)" );
 		cameraShutterSpeed->setBackgroundColor( UI_ELEMENT_BACKGROUND_COLOR );
@@ -437,11 +445,32 @@ namespace labophoto
 		cameraWhiteBalance->resize( 300, 20 );
 		cameraWhiteBalance->addEventHandler( "selectionchanged", Labophoto::changeWhiteBalanceEvent );
 		
+		ui::PushButton * invertColorsButton = new ui::PushButton( "btn_invert_colors", "Inverser les couleurs" );
+		invertColorsButton->setBackgroundColor( UI_ELEMENT_BACKGROUND_COLOR );
+		invertColorsButton->moveTo( 5, 150 );
+		invertColorsButton->resize( 300, 20 );
+		//invertColorsButton->addEventHandler( "mouseup", ... );
+		
+		ui::PushButton * rotateButton = new ui::PushButton( "btn_rotate", "Aligner" );
+		rotateButton->setBackgroundColor( UI_ELEMENT_BACKGROUND_COLOR );
+		rotateButton->moveTo( 5, 170 );
+		rotateButton->resize( 300, 20 );
+		//rotateButton->addEventHandler( "mouseup", ... );
+		
+		ui::PushButton * cropButton = new ui::PushButton( "btn_crop", "Recadrer" );
+		cropButton->setBackgroundColor( UI_ELEMENT_BACKGROUND_COLOR );
+		cropButton->moveTo( 5, 190 );
+		cropButton->resize( 300, 20 );
+		//cropButton->addEventHandler( "mouseup", ... );
+		
 		this->ui->addElement( takePreview );
 		this->ui->addElement( cameraIso );
 		this->ui->addElement( cameraAperture );
 		this->ui->addElement( cameraShutterSpeed );
 		this->ui->addElement( cameraWhiteBalance );
+		this->ui->addElement( invertColorsButton );
+		this->ui->addElement( rotateButton );
+		this->ui->addElement( cropButton );
 	}
 	
 	void Labophoto::reloadCameraConfiguration()
