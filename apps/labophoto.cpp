@@ -25,7 +25,13 @@ int main( int argc, char ** argv )
 	}
 	
 	Labophoto * app = new Labophoto();
-		
+	
+	/*if( argc >= 2 )
+	{
+		// Load argv[1]
+		app->loadNegative( argv[1] );
+	}*/
+	
 	bool running = true;
 	SDL_Event lastEvent;
 	unsigned int lastDrawTicks = 0;

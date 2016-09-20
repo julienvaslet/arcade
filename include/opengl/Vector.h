@@ -1,6 +1,8 @@
 #ifndef __OPENGL_VECTOR_H
 #define __OPENGL_VECTOR_H	1
 
+#include <opengl/Matrix.h>
+
 using namespace std;
 
 namespace opengl
@@ -35,6 +37,8 @@ namespace opengl
 			Vector operator*( const Vector& vector );
 			Vector& operator/=( float n );
 			Vector operator/( float n );
+			Vector operator*( const Matrix& matrix );
+			Vector& operator*=( const Matrix& matrix );
 	};
 }
 

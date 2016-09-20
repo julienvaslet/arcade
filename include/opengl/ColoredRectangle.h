@@ -36,6 +36,7 @@ namespace opengl
 			virtual ~ColoredRectangle();
 			
 			Color& getColor();
+			void setColor( const Color& color );
 			
 			void prepareRendering( vector<Point3D>& vertices, vector<Color>& colors, vector<unsigned short int>& indices ) const;
 			static void render( vector<Point3D>& vertices, vector<Color>& colors, vector<unsigned short int>& indices );

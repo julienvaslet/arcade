@@ -105,6 +105,11 @@ namespace opengl
 		return this->color;
 	}
 	
+	void ColoredRectangle::setColor( const Color& color )
+	{
+		this->color.setColor( color );
+	}
+	
 	void ColoredRectangle::prepareRendering( vector<Point3D>& vertices, vector<Color>& colors, vector<unsigned short int>& indices ) const
 	{
 		Rectangle::prepareRendering( vertices, indices, true );

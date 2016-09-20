@@ -4,6 +4,10 @@
 
 namespace opengl
 {
+	Vector::Vector() : x(0.0f), y(0.0f), z(0.0f)
+	{
+	}
+	
 	Vector::Vector( float x, float y, float z ) : x(x), y(y), z(z)
 	{
 	}
@@ -109,5 +113,26 @@ namespace opengl
 		v /= n;
 	
 		return v;
-	}	
+	}
+	
+	Vector Vector::operator*( const Matrix& matrix )
+	{
+		Vector v;
+		
+		v.x = this->x * matrix.get( 1, 1 ) + this->y * matrix.get( 2, 1 ) + this->z * matrix.get( 3, 1 ) + matrix.get( 4, 1 );
+		v.y = this->x * matrix.get( 1, 2 ) + this->y * matrix.get( 2, 2 ) + this->z * matrix.get( 3, 2 ) + matrix.get( 4, 2 );
+		v.z = this->x * matrix.get( 1, 3 ) + this->y * matrix.get( 2, 3 ) + this->z * matrix.get( 3, 3 ) + matrix.get( 4, 3 );
+	
+		return v;
+	}
+	
+	Vector& Vector::operator*=( const Matrix& matrix )
+	{
+		Vector v = (*this) * matrix;
+		this->x = v.x;
+		this->y = v.y;
+		this->z = v.z;
+	
+		return *this;
+	}
 }

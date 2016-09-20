@@ -6,7 +6,7 @@ namespace opengl
 	{
 	}
 	
-	Rectangle::Rectangle( const Rectangle& rectangle ) : origin(rectangle.origin), anchor(rectangle.anchor), width(0), height(0)
+	Rectangle::Rectangle( const Rectangle& rectangle ) : origin(rectangle.origin), anchor(rectangle.anchor), width(rectangle.width), height(rectangle.height)
 	{
 	}
 	

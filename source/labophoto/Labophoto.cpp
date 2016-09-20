@@ -17,16 +17,11 @@ using namespace std;
 using namespace tools::logger;
 #endif
 
-#define CONTROL_PANEL_WIDTH			310.0f
-#define WORKSPACE_BACKGROUND_COLOR	"444444"
-#define WINDOW_BACKGROUND_COLOR		"888888"
-#define UI_ELEMENT_BACKGROUND_COLOR	"668b8b"
-
 namespace labophoto
 {
 	Labophoto * Labophoto::instance = NULL;
 	
-	Labophoto::Labophoto() : camera(NULL), ui(NULL), image(NULL), background(NULL)
+	Labophoto::Labophoto() : camera(NULL), ui(NULL), image(NULL), background(NULL), cropTool(NULL)
 	{
 		if( Labophoto::instance != NULL )
 		{
@@ -42,6 +37,7 @@ namespace labophoto
 		Screen::get()->setClearColor( backgroundColor );
 		
 		this->image = new Negative();
+		this->cropTool = new CropTool( this->image );
 		
 		Color workspaceColor( WORKSPACE_BACKGROUND_COLOR );
 		this->background = new ColoredRectangle( 1, 1, workspaceColor );
@@ -72,6 +68,12 @@ namespace labophoto
 	
 	Labophoto::~Labophoto()
 	{
+		if( this->cropTool != NULL )
+		{
+			delete this->cropTool;
+			this->cropTool = NULL;
+		}
+		
 		if( this->background != NULL )
 		{
 			delete this->background;
@@ -158,6 +160,41 @@ namespace labophoto
 			
 			this->image->resize( imageWidth, imageHeight );
 			this->image->getOrigin().moveTo( CONTROL_PANEL_WIDTH + ( this->background->getWidth() - imageWidth ) / 2.0f, (this->background->getHeight() - imageHeight ) / 2.0f, 0.5f );
+
+			this->cropTool->resize( imageWidth, imageHeight );
+			this->cropTool->getOrigin().moveTo( CONTROL_PANEL_WIDTH + ( this->background->getWidth() - imageWidth ) / 2.0f, (this->background->getHeight() - imageHeight ) / 2.0f, 0.8f );
+		}
+	}
+	
+	void Labophoto::loadNegative( const string& path )
+	{
+		/*Resource::loadTexture2D( "labophoto.image", path, true );
+
+		this->image->getTile()->setTexture( "labophoto.image" );
+		Texture2D * texture = static_cast<Texture2D *>( Resource::get( "labophoto.image" ) );
+		
+		// Only if width or height == 0
+		this->image->setView( 0, 0, texture->getWidth(), texture->getHeight() );
+		
+		this->resizeView();
+		this->setMode( 1 );*/
+	}
+	
+	void Labophoto::setLoadingAnimation( bool status )
+	{
+		if( status )
+		{
+			SDL_Cursor * newCursor = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_WAIT );
+			SDL_Cursor * oldCursor = SDL_GetCursor();
+			SDL_SetCursor( newCursor );
+			SDL_FreeCursor( oldCursor );
+		}
+		else
+		{
+			SDL_Cursor * newCursor = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_ARROW );
+			SDL_Cursor * oldCursor = SDL_GetCursor();
+			SDL_SetCursor( newCursor );
+			SDL_FreeCursor( oldCursor );
 		}
 	}
 	
@@ -165,37 +202,85 @@ namespace labophoto
 	{
 		vector<Point3D> vertices;
 		vector<Color> colors;
-		vector<Point2D> textureCoordinates;
 		vector<unsigned short int> indices;
 		
 		this->background->prepareRendering( vertices, colors, indices );
 		ColoredRectangle::render( vertices, colors, indices );
 	
-		Texture2D * texture = static_cast<Texture2D *>( Resource::get( "labophoto.image" ) );
+		this->image->render( !this->cropTool->isActive() );
 		
-		if( texture != NULL )
-		{
-			vertices.clear();
-			indices.clear();
-			
-			this->image->prepareRendering( vertices, textureCoordinates, indices );
-			Negative::render( vertices, textureCoordinates, indices, texture );
-		}
+		if( cropTool->isActive() )
+			this->cropTool->render();
 		
 		this->ui->render( ticks );
 	}
 	
 	void Labophoto::handleEvent( SDL_Event * event )
 	{
-		this->ui->dispatchEvent( event );
+		bool eventHandled = false;
+		
+		switch( event->type )
+		{
+			case SDL_MOUSEMOTION:
+			{
+				// Crop Tool should be a class..
+				// this class should fully handle event 
+				/*if( this->cropTool->isActive() )
+				{
+					Point2D mouse( event->motion.x, event->motion.y );
+					MouseCropPosition mPosition = this->cropRectangle->getCropPosition( mouse, this->negative );
+				
+					if( this->cropRectangle->isInCollision( mouse ) )
+					{
+						SDL_Cursor * newCursor = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_SIZEALL );
+						SDL_Cursor * oldCursor = SDL_GetCursor();
+						SDL_SetCursor( newCursor );
+						SDL_FreeCursor( oldCursor );
+					}
+					else
+					{
+						SDL_Cursor * newCursor = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_ARROW );
+						SDL_Cursor * oldCursor = SDL_GetCursor();
+						SDL_SetCursor( newCursor );
+						SDL_FreeCursor( oldCursor );
+					}
+				}*/
+				
+				break;
+			}
+			
+			case SDL_MOUSEBUTTONDOWN:
+			{
+				break;
+			}
+			
+			case SDL_MOUSEBUTTONUP:
+			{
+				break;
+			}
+		}
+		
+		if( !eventHandled )
+			this->ui->dispatchEvent( event );
 	}
 	
 	void Labophoto::captureImage()
 	{
+		this->setLoadingAnimation( true );
 		this->camera->capture( "test.jpg" );
 		Resource::loadTexture2D( "labophoto.image", "test.jpg", true );
+
 		this->image->getTile()->setTexture( "labophoto.image" );
+		Texture2D * texture = static_cast<Texture2D *>( Resource::get( "labophoto.image" ) );
+		
+		// Only if width or height == 0
+		//this->image->setView( 0, 0, texture->getWidth(), texture->getHeight() );
+		
+		// test
+		this->image->setView( 500, 500, texture->getWidth() - 1000, texture->getHeight() - 1000 );
+		
 		this->resizeView();
+		this->setLoadingAnimation( false );
 	}
 	
 	void Labophoto::loadModeSelectionUI()
@@ -274,8 +359,13 @@ namespace labophoto
 		this->ui->hideElement( "camera_shutterspeed" );
 		this->ui->hideElement( "camera_whitebalance" );
 		this->ui->hideElement( "btn_invert_colors" );
-		this->ui->hideElement( "btn_rotate" );
 		this->ui->hideElement( "btn_crop" );
+		this->ui->hideElement( "lbl_rotation" );
+		this->ui->hideElement( "lbl_rotation_value" );
+		this->ui->hideElement( "lbl_crop_origin" );
+		this->ui->hideElement( "lbl_crop_origin_value" );
+		this->ui->hideElement( "lbl_crop_size" );
+		this->ui->hideElement( "lbl_crop_size_value" );
 		
 		switch( mode )
 		{
@@ -294,8 +384,13 @@ namespace labophoto
 				this->ui->showElement( "camera_shutterspeed" );
 				this->ui->showElement( "camera_whitebalance" );
 				this->ui->showElement( "btn_invert_colors" );
-				this->ui->showElement( "btn_rotate" );
 				this->ui->showElement( "btn_crop" );
+				this->ui->showElement( "lbl_rotation" );
+				this->ui->showElement( "lbl_rotation_value" );
+				this->ui->showElement( "lbl_crop_origin" );
+				this->ui->showElement( "lbl_crop_origin_value" );
+				this->ui->showElement( "lbl_crop_size" );
+				this->ui->showElement( "lbl_crop_size_value" );
 				
 				// Test if it useful to do this
 				this->reloadCameraConfiguration();
@@ -449,19 +544,38 @@ namespace labophoto
 		invertColorsButton->setBackgroundColor( UI_ELEMENT_BACKGROUND_COLOR );
 		invertColorsButton->moveTo( 5, 150 );
 		invertColorsButton->resize( 300, 20 );
-		//invertColorsButton->addEventHandler( "mouseup", ... );
-		
-		ui::PushButton * rotateButton = new ui::PushButton( "btn_rotate", "Aligner" );
-		rotateButton->setBackgroundColor( UI_ELEMENT_BACKGROUND_COLOR );
-		rotateButton->moveTo( 5, 170 );
-		rotateButton->resize( 300, 20 );
-		//rotateButton->addEventHandler( "mouseup", ... );
+		invertColorsButton->setPushState( this->image->areColorsInverted() );
+		invertColorsButton->addEventHandler( "pushstatechanged", Labophoto::changeColorInversionEvent );
 		
 		ui::PushButton * cropButton = new ui::PushButton( "btn_crop", "Recadrer" );
 		cropButton->setBackgroundColor( UI_ELEMENT_BACKGROUND_COLOR );
-		cropButton->moveTo( 5, 190 );
+		cropButton->moveTo( 5, 170 );
 		cropButton->resize( 300, 20 );
-		//cropButton->addEventHandler( "mouseup", ... );
+		cropButton->addEventHandler( "pushstatechanged", Labophoto::activeCropToolEvent );
+		
+		ui::Label * lblRotation = new ui::Label( "lbl_rotation", "Rotation :" );
+		lblRotation->moveTo( 5, 200 );
+		lblRotation->resize( 150, 20 );
+		
+		ui::Label * lblRotationValue = new ui::Label( "lbl_rotation_value", "-" );
+		lblRotationValue->moveTo( 150, 200 );
+		lblRotationValue->resize( 150, 20 );
+		
+		ui::Label * lblCropOrigin = new ui::Label( "lbl_crop_origin", "Origine :" );
+		lblCropOrigin->moveTo( 5, 220 );
+		lblCropOrigin->resize( 150, 20 );
+		
+		ui::Label * lblCropOriginValue = new ui::Label( "lbl_crop_origin_value", "-" );
+		lblCropOriginValue->moveTo( 150, 220 );
+		lblCropOriginValue->resize( 150, 20 );
+		
+		ui::Label * lblCropSize = new ui::Label( "lbl_crop_size", "Dimension :" );
+		lblCropSize->moveTo( 5, 240 );
+		lblCropSize->resize( 150, 20 );
+		
+		ui::Label * lblCropSizeValue = new ui::Label( "lbl_crop_size_value", "-" );
+		lblCropSizeValue->moveTo( 150, 240 );
+		lblCropSizeValue->resize( 150, 20 );
 		
 		this->ui->addElement( takePreview );
 		this->ui->addElement( cameraIso );
@@ -469,8 +583,13 @@ namespace labophoto
 		this->ui->addElement( cameraShutterSpeed );
 		this->ui->addElement( cameraWhiteBalance );
 		this->ui->addElement( invertColorsButton );
-		this->ui->addElement( rotateButton );
 		this->ui->addElement( cropButton );
+		this->ui->addElement( lblRotation );
+		this->ui->addElement( lblRotationValue );
+		this->ui->addElement( lblCropOrigin );
+		this->ui->addElement( lblCropOriginValue );
+		this->ui->addElement( lblCropSize );
+		this->ui->addElement( lblCropSizeValue );
 	}
 	
 	void Labophoto::reloadCameraConfiguration()
@@ -503,6 +622,43 @@ namespace labophoto
 			
 				values.clear();
 			}
+		}
+		
+		this->synchronizeCropToolLabels();
+	}
+	
+	void Labophoto::synchronizeCropToolLabels()
+	{
+		stringstream ss;
+		
+		// Rotation
+		ui::Label * lbl = static_cast<ui::Label *>( this->ui->getElement( "lbl_rotation_value" ) );
+		
+		if( lbl != NULL )
+		{
+			ss << this->image->getRotation() << " degres";
+			lbl->setValue( ss.str() );
+			ss.str( "" );
+		}
+		
+		// Crop origin
+		lbl = static_cast<ui::Label *>( this->ui->getElement( "lbl_crop_origin_value" ) );
+		
+		if( lbl != NULL )
+		{
+			ss << "(" << this->image->getView().getX() << "," << this->image->getView().getY() << ")";
+			lbl->setValue( ss.str() );
+			ss.str( "" );
+		}
+		
+		// Crop size
+		lbl = static_cast<ui::Label *>( this->ui->getElement( "lbl_crop_size_value" ) );
+		
+		if( lbl != NULL )
+		{
+			ss << this->image->getView().getWidth() << "x" << this->image->getView().getHeight();
+			lbl->setValue( ss.str() );
+			ss.str( "" );
 		}
 	}
 	
@@ -546,6 +702,7 @@ namespace labophoto
 		{
 			element->setDisabledState( true );
 			labophoto->captureImage();
+			labophoto->synchronizeCropToolLabels();
 			element->setDisabledState( false );
 		}
 		
@@ -593,6 +750,31 @@ namespace labophoto
 		if( labophoto != NULL )
 			labophoto->setCameraWhiteBalance( ddl->getSelectedItem() );
 		
+		return true;
+	}
+	
+	bool Labophoto::changeColorInversionEvent( Element * element, const event::Event * event )
+	{
+		ui::PushButton * btn = static_cast<ui::PushButton *>( element );
+		Labophoto * labophoto = Labophoto::get();
+		
+		if( labophoto != NULL )
+			labophoto->image->setColorInversion( btn->getPushState() );
+		
+		return true;
+	}
+	
+	bool Labophoto::activeCropToolEvent( Element * element, const event::Event * event )
+	{
+		ui::PushButton * btn = static_cast<ui::PushButton *>( element );
+		Labophoto * labophoto = Labophoto::get();
+		
+		if( labophoto != NULL )
+		{
+			labophoto->cropTool->activate( btn->getPushState() );
+			labophoto->synchronizeCropToolLabels();
+		}
+			
 		return true;
 	}
 }

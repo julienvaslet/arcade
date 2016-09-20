@@ -10,13 +10,14 @@ namespace labophoto
 	class Negative : public TexturedRectangle
 	{
 		protected:
-			static unsigned int instances;
-			static Program * program;
-			static ArrayBufferObject * vertices;
-			static ArrayBufferObject * textureCoordinates;
-			static ElementArrayBufferObject * indices;
+			Program * program;
+			ArrayBufferObject * vertices;
+			ArrayBufferObject * textureCoordinates;
+			ElementArrayBufferObject * indices;
 			
 			bool invertColors;
+			float rotation;
+			Rectangle view;
 			
 			void initializeRendering();
 		
@@ -24,7 +25,18 @@ namespace labophoto
 			Negative();
 			virtual ~Negative();
 			
-			static void render( vector<Point3D>& vertices, vector<Point2D>& textureCoordinates, vector<unsigned short int>& indices, Texture2D * texture, unsigned int textureUnit = 0 );
+			bool areColorsInverted();
+			void setColorInversion( bool status );
+			
+			unsigned int getNegativeWidth() const;
+			unsigned int getNegativeHeight() const;
+			
+			float getRotation();
+			void setRotation( float angle );
+			const Rectangle& getView() const;
+			void setView( unsigned int x, unsigned int y, unsigned int width, unsigned int height );
+			
+			void render( bool cropped = true );
 	};
 }
 
