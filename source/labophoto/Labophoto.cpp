@@ -223,39 +223,36 @@ namespace labophoto
 		{
 			case SDL_MOUSEMOTION:
 			{
-				// Crop Tool should be a class..
-				// this class should fully handle event 
-				/*if( this->cropTool->isActive() )
+				if( this->cropTool->isActive() )
 				{
 					Point2D mouse( event->motion.x, event->motion.y );
-					MouseCropPosition mPosition = this->cropRectangle->getCropPosition( mouse, this->negative );
-				
-					if( this->cropRectangle->isInCollision( mouse ) )
-					{
-						SDL_Cursor * newCursor = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_SIZEALL );
-						SDL_Cursor * oldCursor = SDL_GetCursor();
-						SDL_SetCursor( newCursor );
-						SDL_FreeCursor( oldCursor );
-					}
-					else
-					{
-						SDL_Cursor * newCursor = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_ARROW );
-						SDL_Cursor * oldCursor = SDL_GetCursor();
-						SDL_SetCursor( newCursor );
-						SDL_FreeCursor( oldCursor );
-					}
-				}*/
+					this->cropTool->mousemove( mouse );
+					this->synchronizeCropToolLabels();
+				}
 				
 				break;
 			}
 			
 			case SDL_MOUSEBUTTONDOWN:
 			{
+				if( this->cropTool->isActive() )
+				{
+					Point2D mouse( event->button.x, event->button.y );
+					this->cropTool->mousedown( mouse );
+				}
+				
 				break;
 			}
 			
 			case SDL_MOUSEBUTTONUP:
 			{
+				if( this->cropTool->isActive() )
+				{
+					Point2D mouse( event->button.x, event->button.y );
+					this->cropTool->mouseup( mouse );
+					this->synchronizeCropToolLabels();
+				}
+				
 				break;
 			}
 		}

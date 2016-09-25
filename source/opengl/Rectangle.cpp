@@ -69,7 +69,7 @@ namespace opengl
 		this->height = height;
 	}
 	
-	void Rectangle::resizeBy( int deltaWidth, unsigned int deltaHeight )
+	void Rectangle::resizeBy( unsigned int deltaWidth, unsigned int deltaHeight )
 	{
 		this->width += deltaWidth;
 		this->height += deltaHeight;

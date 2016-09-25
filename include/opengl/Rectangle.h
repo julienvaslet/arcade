@@ -33,7 +33,7 @@ namespace opengl
 			void setWidth( unsigned int width );
 			void setHeight( unsigned int height );
 			void resize( unsigned int width, unsigned int height );
-			void resizeBy( int deltaWidth, unsigned int deltaHeight );
+			void resizeBy( unsigned int deltaWidth, unsigned int deltaHeight );
 			bool isInCollision( const Rectangle& rectangle ) const;
 			bool isInCollision( const Point2D& point ) const;
 			bool isInCollision( const Point3D& point ) const;

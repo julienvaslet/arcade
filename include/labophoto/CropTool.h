@@ -25,8 +25,16 @@ namespace labophoto
 	class CropTool : public ColoredRectangle
 	{
 		protected:
-			bool active;
 			Negative * negative;
+			bool active;
+			MouseCropPosition mouseCropPosition;
+			Point2D mousePosition;
+			bool mouseIsDown;
+			Rectangle originalView;
+			
+			MouseCropPosition getCropPosition( const Point2D& point );
+			void setMousePosition( MouseCropPosition position );
+			void resizeView( const Point2D& point );
 		
 		public:
 			CropTool( Negative * negative );
@@ -35,7 +43,10 @@ namespace labophoto
 			bool isActive() const;
 			void activate( bool status );
 			
-			MouseCropPosition getCropPosition( const Point2D& point, const Negative& negative );
+			void mousemove( const Point2D& mouse );
+			void mousedown( const Point2D& mouse );
+			void mouseup( const Point2D& mouse );
+			
 			void render();
 	};
 }

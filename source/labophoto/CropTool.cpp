@@ -1,3 +1,5 @@
+#include <SDL2/SDL.h>
+
 #include <labophoto/CropTool.h>
 #include <opengl/Texture2D.h>
 #include <cmath>
@@ -10,10 +12,11 @@ using namespace tools::logger;
 #define CROP_RECTANGLE_BORDER_COLOR		"ffffff"
 #define CROP_RECTANGLE_BORDER_SIZE		1.0f
 #define CROP_RECTANGLE_BACKGROUND_COLOR	"00000088"
+#define CROP_TOOL_MOUSE_MARGIN			5.0f
 
 namespace labophoto
-{	
-	CropTool::CropTool( Negative * negative ) : ColoredRectangle(), active(false), negative(negative)
+{
+	CropTool::CropTool( Negative * negative ) : ColoredRectangle(), negative(negative), active(false), mouseCropPosition(MouseCropPosition::Outside), mousePosition(0.0f,0.0f), mouseIsDown(false)
 	{
 	}
 	
@@ -21,11 +24,57 @@ namespace labophoto
 	{
 	}
 	
-	MouseCropPosition CropTool::getCropPosition( const Point2D& point, const Negative& negative )
+	MouseCropPosition CropTool::getCropPosition( const Point2D& point )
 	{
 		MouseCropPosition position = MouseCropPosition::Outside;
+		unsigned int textureWidth = this->negative->getNegativeWidth();
+
+		if( textureWidth > 0 )
+		{
+			float ratio = static_cast<float>( this->getWidth() ) / static_cast<float>( textureWidth );
+			float margin = CROP_TOOL_MOUSE_MARGIN / ratio;
+			
+			Rectangle view;
+			view.getOrigin().moveTo( this->getOrigin().getX() + round( this->negative->getView().getX() * ratio ), this->getOrigin().getY() + round( this->negative->getView().getY() * ratio ), this->getOrigin().getZ() );
+			view.resize( round( this->negative->getView().getWidth() * ratio ), round( this->negative->getView().getHeight() * ratio ) );
 		
-		
+			if( this->isInCollision( point ) )
+			{
+				if( point.getX() - margin < view.getX() )
+				{
+					if( point.getY() - margin < view.getY() )
+						position = MouseCropPosition::NorthWest;
+						
+					else if( point.getY() > view.getY() + view.getHeight() - margin )
+						position = MouseCropPosition::SouthWest;
+						
+					else
+						position = MouseCropPosition::West;
+				}
+				else if( point.getX() > view.getX() + view.getWidth() - margin )
+				{
+					if( point.getY() - margin < view.getY() )
+						position = MouseCropPosition::NorthEast;
+						
+					else if( point.getY() > view.getY() + view.getHeight() - margin )
+						position = MouseCropPosition::SouthEast;
+						
+					else
+						position = MouseCropPosition::East;
+				}
+				else
+				{
+					if( point.getY() - margin < view.getY() )
+						position = MouseCropPosition::North;
+						
+					else if( point.getY() > view.getY() + view.getHeight() - margin )
+						position = MouseCropPosition::South;
+						
+					else
+						position = MouseCropPosition::Inside;
+				}
+			}
+		}
 		
 		return position;
 	}
@@ -38,6 +87,368 @@ namespace labophoto
 	void CropTool::activate( bool status )
 	{
 		this->active = status;
+		
+		if( !this->active )
+			this->setMousePosition( MouseCropPosition::Outside );
+	}
+	
+	void CropTool::setMousePosition( MouseCropPosition position )
+	{
+		if( position != this->mouseCropPosition )
+		{
+			this->mouseCropPosition = position;
+			SDL_SystemCursor cursorId = SDL_SYSTEM_CURSOR_ARROW;
+			
+			switch( this->mouseCropPosition )
+			{
+				case MouseCropPosition::Inside:
+				{
+					cursorId = SDL_SYSTEM_CURSOR_SIZEALL;
+					break;
+				}
+				
+				case MouseCropPosition::NorthWest:
+				case MouseCropPosition::SouthEast:
+				{
+					cursorId = SDL_SYSTEM_CURSOR_SIZENWSE;
+					break;
+				}
+				
+				case MouseCropPosition::North:
+				case MouseCropPosition::South:
+				{
+					cursorId = SDL_SYSTEM_CURSOR_SIZENS;
+					break;
+				}
+				
+				case MouseCropPosition::NorthEast:
+				case MouseCropPosition::SouthWest:
+				{
+					cursorId = SDL_SYSTEM_CURSOR_SIZENESW;
+					break;
+				}
+				
+				case MouseCropPosition::East:
+				case MouseCropPosition::West:
+				{
+					cursorId = SDL_SYSTEM_CURSOR_SIZEWE;
+					break;
+				}
+				
+				default:
+				case MouseCropPosition::Outside:
+				{
+					cursorId = SDL_SYSTEM_CURSOR_ARROW;
+					break;
+				}
+			}
+			
+			SDL_Cursor * newCursor = SDL_CreateSystemCursor( cursorId );
+			SDL_Cursor * oldCursor = SDL_GetCursor();
+			SDL_SetCursor( newCursor );
+			SDL_FreeCursor( oldCursor );
+		}
+	}
+	
+	void CropTool::mousemove( const Point2D& mouse )
+	{
+		if( this->mouseIsDown )
+		{
+			this->resizeView( mouse );
+		}
+		else
+		{
+			MouseCropPosition position = this->getCropPosition( mouse );
+			this->setMousePosition( position );
+		}
+	}
+	
+	void CropTool::mousedown( const Point2D& mouse )
+	{
+		this->mouseIsDown = true;
+		this->originalView = Rectangle( this->negative->getView() );
+		this->mousePosition = mouse;
+	}
+	
+	void CropTool::mouseup( const Point2D& mouse )
+	{
+		this->mouseIsDown = false;
+		this->resizeView( mouse );
+	}
+	
+	void CropTool::resizeView( const Point2D& point )
+	{
+		Rectangle view( this->originalView );
+		unsigned int textureWidth = this->negative->getNegativeWidth();
+		float ratio = 1.0f;
+
+		if( textureWidth > 0 )
+			ratio = static_cast<float>( this->getWidth() ) / static_cast<float>( textureWidth );
+		
+		switch( this->mouseCropPosition )
+		{
+			case MouseCropPosition::Inside:
+			{
+				view.getOrigin().moveBy( (point.getX() - this->mousePosition.getX()) / ratio, (point.getY() - this->mousePosition.getY()) / ratio, 0.0f );
+				
+				if( view.getX() < 0.0f )
+					view.getOrigin().setX( 0.0f );
+					
+				else if( view.getX() + view.getWidth() > this->negative->getNegativeWidth() )
+					view.getOrigin().setX( this->negative->getNegativeWidth() - view.getWidth() - 1.0f );
+					
+				if( view.getY() < 0.0f )
+					view.getOrigin().setY( 0.0f );
+					
+				else if( view.getY() + view.getHeight() > this->negative->getNegativeHeight() )
+					view.getOrigin().setY( this->negative->getNegativeHeight() - view.getHeight() - 1.0f );
+				
+				break;
+			}
+			
+			case MouseCropPosition::NorthWest:
+			{
+				float deltaHeight = (point.getY() - this->mousePosition.getY()) / ratio;
+				float deltaWidth = (point.getX() - this->mousePosition.getX()) / ratio;
+				
+				if( deltaWidth + view.getX() > 0 )
+				{
+					if( deltaWidth < view.getWidth() )
+					{
+						view.getOrigin().moveBy( deltaWidth, 0.0f, 0.0f );
+						view.resizeBy( -deltaWidth, 0 );
+					}
+					else
+					{
+						view.getOrigin().setX( view.getX() + view.getWidth() - 1.0f );
+						view.setWidth( 1 );
+					}
+				}
+				else
+				{
+					view.setWidth( view.getX() + view.getWidth() );
+					view.getOrigin().setX( 0.0f );
+				}
+				
+				if( deltaHeight + view.getY() > 0 )
+				{
+					if( deltaHeight < view.getHeight() )
+					{
+						view.getOrigin().moveBy( 0.0f, deltaHeight, 0.0f );
+						view.resizeBy( 0, -deltaHeight );
+					}
+					else
+					{
+						view.getOrigin().setY( view.getY() + view.getHeight() - 1.0f );
+						view.setHeight( 1 );
+					}
+				}
+				else
+				{
+					view.setHeight( view.getY() + view.getHeight() );
+					view.getOrigin().setY( 0.0f );
+				}
+				
+				break;
+			}
+			
+			case MouseCropPosition::SouthEast:
+			{
+				float deltaWidth = (point.getX() - this->mousePosition.getX()) / ratio;
+				float deltaHeight = (point.getY() - this->mousePosition.getY()) / ratio;
+				
+				if( deltaWidth + view.getWidth() > 0 )
+				{
+					view.resizeBy( deltaWidth, 0 );
+				
+					if( view.getX() + view.getWidth() > this->negative->getNegativeWidth() )
+						view.setWidth( this->negative->getNegativeWidth() - view.getX() );
+				}
+				else
+					view.setWidth( 1 );
+				
+				if( deltaHeight + view.getHeight() > 0 )
+				{
+					view.resizeBy( 0, deltaHeight );
+				
+					if( view.getY() + view.getHeight() > this->negative->getNegativeHeight() )
+						view.setHeight( this->negative->getNegativeHeight() - view.getY() );
+				}
+				else
+					view.setHeight( 1 );
+					
+				break;
+			}
+			
+			case MouseCropPosition::North:
+			{
+				float deltaHeight = (point.getY() - this->mousePosition.getY()) / ratio;
+				
+				if( deltaHeight + view.getY() > 0 )
+				{
+					if( deltaHeight < view.getHeight() )
+					{
+						view.getOrigin().moveBy( 0.0f, deltaHeight, 0.0f );
+						view.resizeBy( 0, -deltaHeight );
+					}
+					else
+					{
+						view.getOrigin().setY( view.getY() + view.getHeight() - 1.0f );
+						view.setHeight( 1 );
+					}
+				}
+				else
+				{
+					view.setHeight( view.getY() + view.getHeight() );
+					view.getOrigin().setY( 0.0f );
+				}
+				
+				break;
+			}
+			
+			case MouseCropPosition::South:
+			{
+				float deltaHeight = (point.getY() - this->mousePosition.getY()) / ratio;
+				
+				if( deltaHeight + view.getHeight() > 0 )
+				{
+					view.resizeBy( 0, deltaHeight );
+				
+					if( view.getY() + view.getHeight() > this->negative->getNegativeHeight() )
+						view.setHeight( this->negative->getNegativeHeight() - view.getY() );
+				}
+				else
+					view.setHeight( 1 );
+				
+				break;
+			}
+			
+			case MouseCropPosition::NorthEast:
+			{
+				float deltaWidth = (point.getX() - this->mousePosition.getX()) / ratio;
+				float deltaHeight = (point.getY() - this->mousePosition.getY()) / ratio;
+				
+				if( deltaWidth + view.getWidth() > 0 )
+				{
+					view.resizeBy( deltaWidth, 0 );
+				
+					if( view.getX() + view.getWidth() > this->negative->getNegativeWidth() )
+						view.setWidth( this->negative->getNegativeWidth() - view.getX() );
+				}
+				else
+					view.setWidth( 1 );
+				
+				if( deltaHeight + view.getY() > 0 )
+				{
+					if( deltaHeight < view.getHeight() )
+					{
+						view.getOrigin().moveBy( 0.0f, deltaHeight, 0.0f );
+						view.resizeBy( 0, -deltaHeight );
+					}
+					else
+					{
+						view.getOrigin().setY( view.getY() + view.getHeight() - 1.0f );
+						view.setHeight( 1 );
+					}
+				}
+				else
+				{
+					view.setHeight( view.getY() + view.getHeight() );
+					view.getOrigin().setY( 0.0f );
+				}
+					
+				break;
+			}
+			
+			case MouseCropPosition::SouthWest:
+			{
+				float deltaHeight = (point.getY() - this->mousePosition.getY()) / ratio;
+				float deltaWidth = (point.getX() - this->mousePosition.getX()) / ratio;
+				
+				if( deltaWidth + view.getX() > 0 )
+				{
+					if( deltaWidth < view.getWidth() )
+					{
+						view.getOrigin().moveBy( deltaWidth, 0.0f, 0.0f );
+						view.resizeBy( -deltaWidth, 0 );
+					}
+					else
+					{
+						view.getOrigin().setX( view.getX() + view.getWidth() - 1.0f );
+						view.setWidth( 1 );
+					}
+				}
+				else
+				{
+					view.setWidth( view.getX() + view.getWidth() );
+					view.getOrigin().setX( 0.0f );
+				}
+				
+				if( deltaHeight + view.getHeight() > 0 )
+				{
+					view.resizeBy( 0, deltaHeight );
+				
+					if( view.getY() + view.getHeight() > this->negative->getNegativeHeight() )
+						view.setHeight( this->negative->getNegativeHeight() - view.getY() );
+				}
+				else
+					view.setHeight( 1 );
+					
+				break;
+			}
+			
+			case MouseCropPosition::East:
+			{
+				float deltaWidth = (point.getX() - this->mousePosition.getX()) / ratio;
+				
+				if( deltaWidth + view.getWidth() > 0 )
+				{
+					view.resizeBy( deltaWidth, 0 );
+				
+					if( view.getX() + view.getWidth() > this->negative->getNegativeWidth() )
+						view.setWidth( this->negative->getNegativeWidth() - view.getX() );
+				}
+				else
+					view.setWidth( 1 );
+				
+				break;
+			}
+			
+			case MouseCropPosition::West:
+			{
+				float deltaWidth = (point.getX() - this->mousePosition.getX()) / ratio;
+				
+				if( deltaWidth + view.getX() > 0 )
+				{
+					if( deltaWidth < view.getWidth() )
+					{
+						view.getOrigin().moveBy( deltaWidth, 0.0f, 0.0f );
+						view.resizeBy( -deltaWidth, 0 );
+					}
+					else
+					{
+						view.getOrigin().setX( view.getX() + view.getWidth() - 1.0f );
+						view.setWidth( 1 );
+					}
+				}
+				else
+				{
+					view.setWidth( view.getX() + view.getWidth() );
+					view.getOrigin().setX( 0.0f );
+				}
+				
+				break;
+			}
+			
+			default:
+			case MouseCropPosition::Outside:
+			{
+				// Do nothing.
+				break;
+			}
+		}
+		
+		this->negative->setView( view.getX(), view.getY(), view.getWidth(), view.getHeight() );
 	}
 	
 	void CropTool::render()
