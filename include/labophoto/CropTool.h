@@ -29,12 +29,15 @@ namespace labophoto
 			bool active;
 			MouseCropPosition mouseCropPosition;
 			Point2D mousePosition;
-			bool mouseIsDown;
+			bool croppingStarted;
+			bool rotationStarted;
+			float originalRotation;
 			Rectangle originalView;
 			
 			MouseCropPosition getCropPosition( const Point2D& point );
 			void setMousePosition( MouseCropPosition position );
 			void resizeView( const Point2D& point );
+			void rotateView( const Point2D& point );
 		
 		public:
 			CropTool( Negative * negative );
@@ -44,8 +47,10 @@ namespace labophoto
 			void activate( bool status );
 			
 			void mousemove( const Point2D& mouse );
-			void mousedown( const Point2D& mouse );
-			void mouseup( const Point2D& mouse );
+			void startCropping( const Point2D& mouse );
+			void stopCropping( const Point2D& mouse );
+			void startRotation( const Point2D& mouse );
+			void stopRotation( const Point2D& mouse );
 			
 			void render();
 	};

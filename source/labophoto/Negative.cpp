@@ -81,16 +81,17 @@ namespace labophoto
 			Rectangle::prepareRendering( vertices, indices );
 			
 			Matrix transformation = Matrix::identity();
-			Matrix moveToCenter = Matrix::translation( texture->getWidth() / 2.0f, texture->getHeight() / 2.0f, 0.0f );
 			Matrix rotate = Matrix::rotationZ( this->rotation );
-			Matrix moveBack = Matrix::translation( texture->getWidth() / -2.0f, texture->getHeight() / -2.0f, 0.0f );
-		
-			transformation.multiply( moveToCenter );
-			transformation.multiply( rotate );
-			transformation.multiply( moveBack );
 
 			if( cropped )
 			{
+				Matrix moveToCenter = Matrix::translation( texture->getWidth() / 2.0f, texture->getHeight() / 2.0f, 0.0f );
+				Matrix moveBack = Matrix::translation( texture->getWidth() / -2.0f, texture->getHeight() / -2.0f, 0.0f );
+				
+				transformation.multiply( moveToCenter );
+				transformation.multiply( rotate );
+				transformation.multiply( moveBack );
+				
 				Vector positionUpLeft( this->view.getOrigin().getX(), this->view.getOrigin().getY(), this->view.getOrigin().getZ() );
 				Vector positionUpRight( this->view.getOrigin().getX() + static_cast<float>( this->view.getWidth() ), this->view.getOrigin().getY(), this->view.getOrigin().getZ() );
 				Vector positionBottomRight( this->view.getOrigin().getX() + static_cast<float>( this->view.getWidth() ), this->view.getOrigin().getY() + static_cast<float>( this->view.getHeight() ), this->view.getOrigin().getZ() );
@@ -108,6 +109,13 @@ namespace labophoto
 			}
 			else
 			{
+				Matrix moveToCenter = Matrix::translation( this->getX() + (this->getWidth() / 2.0f), this->getY() + (this->getHeight() / 2.0f), 0.0f );
+				Matrix moveBack = Matrix::translation( -1 * this->getX() + (this->getWidth() / -2.0f), -1 * this->getY() + (this->getHeight() / -2.0f), 0.0f );
+				
+				transformation.multiply( moveToCenter );
+				transformation.multiply( rotate );
+				transformation.multiply( moveBack );
+							
 				Matrix::modelview = transformation;
 				
 				textureCoordinates.push_back( Point2D( 0.0f, 1.0f ) );

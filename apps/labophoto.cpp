@@ -32,6 +32,8 @@ int main( int argc, char ** argv )
 		app->loadNegative( argv[1] );
 	}*/
 	
+	//app->loadNegative( "test.jpg" );
+	
 	bool running = true;
 	SDL_Event lastEvent;
 	unsigned int lastDrawTicks = 0;

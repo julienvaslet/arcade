@@ -2,6 +2,7 @@
 
 #include <labophoto/CropTool.h>
 #include <opengl/Texture2D.h>
+#include <opengl/Vector.h>
 #include <cmath>
 
 #ifdef DEBUG0
@@ -16,7 +17,7 @@ using namespace tools::logger;
 
 namespace labophoto
 {
-	CropTool::CropTool( Negative * negative ) : ColoredRectangle(), negative(negative), active(false), mouseCropPosition(MouseCropPosition::Outside), mousePosition(0.0f,0.0f), mouseIsDown(false)
+	CropTool::CropTool( Negative * negative ) : ColoredRectangle(), negative(negative), active(false), mouseCropPosition(MouseCropPosition::Outside), mousePosition(0.0f,0.0f), croppingStarted(false), rotationStarted(false), originalRotation(0.0f)
 	{
 	}
 	
@@ -152,10 +153,12 @@ namespace labophoto
 	
 	void CropTool::mousemove( const Point2D& mouse )
 	{
-		if( this->mouseIsDown )
-		{
+		if( this->croppingStarted )
 			this->resizeView( mouse );
-		}
+
+		else if( this->rotationStarted )
+			this->rotateView( mouse );
+			
 		else
 		{
 			MouseCropPosition position = this->getCropPosition( mouse );
@@ -163,17 +166,60 @@ namespace labophoto
 		}
 	}
 	
-	void CropTool::mousedown( const Point2D& mouse )
+	void CropTool::startCropping( const Point2D& mouse )
 	{
-		this->mouseIsDown = true;
-		this->originalView = Rectangle( this->negative->getView() );
-		this->mousePosition = mouse;
+		if( !this->rotationStarted )
+		{
+			this->croppingStarted = true;
+			this->originalView = Rectangle( this->negative->getView() );
+			this->mousePosition = mouse;
+		}
 	}
 	
-	void CropTool::mouseup( const Point2D& mouse )
+	void CropTool::stopCropping( const Point2D& mouse )
 	{
-		this->mouseIsDown = false;
-		this->resizeView( mouse );
+		if( this->croppingStarted )
+		{
+			this->croppingStarted = false;
+			this->resizeView( mouse );
+		}
+	}
+	
+	void CropTool::startRotation( const Point2D& mouse )
+	{
+		if( !this->croppingStarted )
+		{
+			this->rotationStarted = true;
+			this->originalRotation = this->negative->getRotation();
+			this->mousePosition = mouse;
+		}
+	}
+	
+	void CropTool::stopRotation( const Point2D& mouse )
+	{
+		if( this->rotationStarted )
+		{
+			this->rotationStarted = false;
+			this->rotateView( mouse );
+		}
+	}
+	
+	void CropTool::rotateView( const Point2D& point )
+	{
+		unsigned int textureWidth = this->negative->getNegativeWidth();
+		unsigned int textureHeight = this->negative->getNegativeHeight();
+		float ratio = 1.0f;
+		
+		if( textureWidth > 0 )
+			ratio = static_cast<float>( this->getWidth() ) / static_cast<float>( textureWidth );
+			
+		Point2D center( textureWidth / 2.0f, textureHeight / 2.0f );
+		Vector origin( ((this->mousePosition.getX() - this->getX()) / ratio) - center.getX(), ((this->mousePosition.getY() - this->getY()) / ratio) - center.getY(), 0.0f );
+		Vector current( ((point.getX() - this->getX()) / ratio) - center.getX(), ((point.getY() - this->getY()) / ratio) - center.getY(), 0.0f );
+		
+		float determinant = origin.getX() * current.getY() - origin.getY() * current.getX();
+		float angle = determinant < 0 ? 360.0f - origin.getAngle( current ) : origin.getAngle( current );
+		this->negative->setRotation( this->originalRotation + angle );
 	}
 	
 	void CropTool::resizeView( const Point2D& point )

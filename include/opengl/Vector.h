@@ -31,6 +31,9 @@ namespace opengl
 		
 			float norm() const;
 			Vector& normalize();
+			
+			float dot( const Vector& vector ) const;
+			float getAngle( const Vector& vector ) const;
 		
 			Vector& operator*=( float n );
 			Vector& operator*=( const Vector& vector );

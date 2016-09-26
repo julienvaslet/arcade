@@ -168,16 +168,20 @@ namespace labophoto
 	
 	void Labophoto::loadNegative( const string& path )
 	{
-		/*Resource::loadTexture2D( "labophoto.image", path, true );
+		Resource::loadTexture2D( "labophoto.image", path, true );
 
 		this->image->getTile()->setTexture( "labophoto.image" );
 		Texture2D * texture = static_cast<Texture2D *>( Resource::get( "labophoto.image" ) );
 		
 		// Only if width or height == 0
-		this->image->setView( 0, 0, texture->getWidth(), texture->getHeight() );
+		//this->image->setView( 0, 0, texture->getWidth(), texture->getHeight() );
+		
+		// test
+		this->image->setView( 500, 500, texture->getWidth() - 1000, texture->getHeight() - 1000 );
 		
 		this->resizeView();
-		this->setMode( 1 );*/
+		this->cropTool->activate( true );
+		this->setMode( 1 );
 	}
 	
 	void Labophoto::setLoadingAnimation( bool status )
@@ -238,7 +242,13 @@ namespace labophoto
 				if( this->cropTool->isActive() )
 				{
 					Point2D mouse( event->button.x, event->button.y );
-					this->cropTool->mousedown( mouse );
+					
+					if( event->button.button == SDL_BUTTON_LEFT )
+						this->cropTool->startCropping( mouse );
+						
+					else if( event->button.button == SDL_BUTTON_RIGHT )
+						this->cropTool->startRotation( mouse );
+						
 				}
 				
 				break;
@@ -249,7 +259,13 @@ namespace labophoto
 				if( this->cropTool->isActive() )
 				{
 					Point2D mouse( event->button.x, event->button.y );
-					this->cropTool->mouseup( mouse );
+					
+					if( event->button.button == SDL_BUTTON_LEFT )
+						this->cropTool->stopCropping( mouse );
+						
+					else if( event->button.button == SDL_BUTTON_RIGHT )
+						this->cropTool->stopRotation( mouse );
+					
 					this->synchronizeCropToolLabels();
 				}
 				
@@ -271,10 +287,7 @@ namespace labophoto
 		Texture2D * texture = static_cast<Texture2D *>( Resource::get( "labophoto.image" ) );
 		
 		// Only if width or height == 0
-		//this->image->setView( 0, 0, texture->getWidth(), texture->getHeight() );
-		
-		// test
-		this->image->setView( 500, 500, texture->getWidth() - 1000, texture->getHeight() - 1000 );
+		this->image->setView( 0, 0, texture->getWidth(), texture->getHeight() );
 		
 		this->resizeView();
 		this->setLoadingAnimation( false );

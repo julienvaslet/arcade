@@ -125,12 +125,19 @@ namespace opengl
 	
 	Matrix Matrix::translation( float x, float y, float z )
 	{
-		float matrix[16] =
+		/*float matrix[16] =
 		{
 			1.0f, 0.0f, 0.0f, x,
 			0.0f, 1.0f, 0.0f, y,
 			0.0f, 0.0f, 1.0f, z,
 			0.0f, 0.0f, 0.0f, 1.0f
+		};*/
+		float matrix[16] =
+		{
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			x, y, z, 1.0f
 		};
 	
 		return Matrix( matrix );

@@ -62,6 +62,16 @@ namespace opengl
 		return sqrt( this->x * this->x + this->y * this->y + this->z * this->z );
 	}
 	
+	float Vector::dot( const Vector& vector ) const
+	{
+		return (this->x * vector.x) + (this->y * vector.y) + (this->z * vector.z);
+	}
+	
+	float Vector::getAngle( const Vector& vector ) const
+	{
+		return acos( this->dot( vector ) / ( this->norm() * vector.norm() ) ) * 180.0f / M_PI;
+	}
+	
 	Vector& Vector::normalize()
 	{
 		*this /= this->norm();
