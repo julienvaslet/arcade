@@ -56,8 +56,6 @@ namespace snake
 		// Initializing random seed
 		srand( time(NULL) );
 		
-		Logger::get() << "Origin: " << this->map->getSnakeOrigin().getX() << ", " << this->map->getSnakeOrigin().getY() << Logger::endl;
-		
 		this->snake = new Snake();
 		this->snake->moveTo( this->map->getSnakeOrigin().getX(), this->map->getSnakeOrigin().getY() );
 		this->snake->setDirection( 1, 0 );
